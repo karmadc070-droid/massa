@@ -206,6 +206,8 @@
   .pf-info-row { display: flex; justify-content: space-between; font-size: 13.5px; padding: 9px 0; border-bottom: 1px solid #F2F5F3; }
   .pf-info-row:last-child { border-bottom: none; }
   .pf-info-row a { color: #2F6FB4; text-decoration: none; }
+  .agree-row { display: flex; align-items: center; gap: 10px; padding: 11px 2px; font-size: 14px; border-bottom: 1px solid #F0F3F1; cursor: pointer; }
+  .agree-row input { width: 18px; height: 18px; }
   .pf-video { display: inline-block; background: #EAF1EC; color: #1F4E5F; border-radius: 10px; padding: 10px 14px; font-weight: bold; font-size: 13px; text-decoration: none; }
   .pay-sheet { width: 390px; max-width: 100%; background: #fff; border-radius: 20px 20px 0 0; padding: 8px 18px 20px; max-height: 86vh; overflow: auto; }
   .pay-methods { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
@@ -375,14 +377,20 @@
   .tabbar div { cursor: pointer; transition: color .12s; }
 
   .note { max-width: 720px; margin: 26px auto 0; font-size: 12.5px; color: var(--muted); line-height: 1.7; text-align: center; }
+  /* 와이어프레임 설명용 요소 — 관리자(또는 ?dev=1)일 때만 노출 */
+  .devonly { display: none; }
+  body.devmode .devonly { display: revert; }
+  body.devmode .flow.devonly { display: flex; }
+  body:not(.devmode) { padding: 16px 12px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
+  body:not(.devmode) .phone { max-height: calc(100vh - 32px); }
 </style>
 </head>
 <body>
 
-<h1>mㅏssㅏ 고객 앱 와이어프레임 v3</h1>
-<div class="sub">하노이 MVP — 홈 배너 분기 · 후불 결제 (2026.06)</div>
+<h1 class="devonly">mㅏssㅏ 고객 앱 와이어프레임 v3</h1>
+<div class="sub devonly">하노이 MVP — 홈 배너 분기 · 후불 결제 (2026.06)</div>
 
-<div class="flow" id="flow"></div>
+<div class="flow devonly" id="flow"></div>
 
 <div class="phone">
   <div class="statusbar"><span>22:10</span><span>Hanoi · LTE · 45%</span></div>
@@ -576,9 +584,9 @@
   <!-- 스파 안내 — 프로모션 + 카테고리 그리드 -->
   <div class="screen" id="spa" data-title="스파 안내">
     <button class="map-cta" style="margin-bottom:12px" onclick="openMap()">🗺 지도로 스파샵 찾기 · 반경/할인/24시간</button>
-    <div class="promo-scroll">
     <div class="pf-sec" style="margin-top:4px">✨ AI 맞춤 추천</div>
     <div id="aiRecos"><div class="hint">추천을 불러오는 중…</div></div>
+    <div class="promo-scroll">
       <div class="promo p1"><div class="pt">해피아워 할인</div><div class="pd">14~17시 예약 시 20% 할인 · 세금·팁 포함가</div></div>
       <div class="promo p2"><div class="pt">첫 이용 490,000₫</div><div class="pd">60분 릴랙스 코스 첫 고객 체험가</div></div>
       <div class="promo p3"><div class="pt">제휴 스파 매장</div><div class="pd">매장 방문 — 직접 서비스를 경험해 보세요</div></div>
@@ -739,6 +747,7 @@
 
   <!-- 홈뷰티 등록 신청 -->
   <div class="screen" id="applyForm" data-title="제공자 등록 신청">
+    <div id="apStatusBox"></div>
     <div class="label">형태</div>
     <div class="chips" id="apType">
       <div class="chip sel" data-t="freelancer" onclick="pick(this);applyApType('freelancer')">프리랜서 (개인)</div>
@@ -821,7 +830,7 @@
       <div class="mp-vip-bar"><span class="mp-vip-arrow">→</span><span class="mp-vip-badge">VIP</span></div>
     </div>
     <div class="mp-cards">
-      <div class="mp-card c-partner" onclick="window.go('applyForm')"><div class="mp-card-t">마사지사·홈뷰티<br>파트너 되기</div><div class="mp-card-arrow">→</div></div>
+      <div class="mp-card c-partner" onclick="window.go('applyForm');loadApplyStatus()"><div class="mp-card-t">마사지사·홈뷰티<br>파트너 되기</div><div class="mp-card-arrow">→</div></div>
       <div class="mp-card c-invite" onclick="alert('친구 초대 링크가 복사되었습니다 (데모)')"><div class="mp-card-t">친구 초대</div><div class="mp-card-arrow">→</div></div>
     </div>
     <div class="mp-list">
@@ -831,6 +840,8 @@
       <div class="mp-row" onclick="window.go('profileInfo')"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg></span><span class="mp-name">개인 정보</span><span class="mp-chev">›</span></div>
       <div class="mp-row" id="mpLang"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h9"/><path d="M8.5 5c0 5-2 8-5.5 9"/><path d="M5.5 10c1.6 2.6 4.2 4.2 6.5 4.7"/><path d="M13 20l4-9 4 9M14.4 17h5.2"/></svg></span><span class="mp-name">언어</span><span class="mp-val" id="mpLangVal">한국인</span><span class="mp-chev">›</span></div>
       <div class="mp-row" id="mpCountry"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.6 2.6 14.4 0 17M12 3.5c-2.6 2.6-2.6 14.4 0 17"/></svg></span><span class="mp-name">국가</span><span class="mp-val" id="mpCountryVal">🇻🇳 Vietnam</span><span class="mp-chev">›</span></div>
+      <div class="mp-row" onclick="window.go('safety');loadSafety()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#E5484D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.4-3 8-7 10-4-2-7-5.6-7-10V6l7-3z"/><path d="M12 9v4M12 16h.01"/></svg></span><span class="mp-name">안전 센터</span><span class="mp-chev">›</span></div>
+      <div class="mp-row" onclick="window.go('terms');loadAgreements()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h7"/></svg></span><span class="mp-name">약관 및 개인정보</span><span class="mp-chev">›</span></div>
       <div class="mp-row" id="mpAbout"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5"/><circle cx="12" cy="8" r=".7" fill="#4A5A61" stroke="none"/></svg></span><span class="mp-name">회사 소개</span><span class="mp-chev">›</span></div>
       <div class="mp-row" id="mpPartnerBookings" style="display:none" onclick="window.go('partnerBookings');loadPartnerBookings()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round"><path d="M4 20v-1a4 4 0 014-4h1"/><circle cx="8.5" cy="8" r="3"/><path d="M14 13l2 2 4-4"/></svg></span><span class="mp-name">예약 관리 (파트너)</span><span class="mp-chev">›</span></div>
       <div class="mp-row" id="mpMySettleRow" style="display:none" onclick="window.go('partnerSettle');loadMySettle()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#B23A5B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v10M9.5 9.5h4a1.5 1.5 0 010 3h-3a1.5 1.5 0 000 3h4"/></svg></span><span class="mp-name">내 입금 현황</span><span class="mp-chev">›</span></div>
@@ -922,12 +933,36 @@
     <div id="eventsList"></div>
   </div>
   <div class="screen" id="adminSettlement" data-title="정산 관리">
-    <div class="notice">마사지사가 고객에게 받은 금액 중 <b>플랫폼 수수료 10%</b>를 회사에 입금합니다. 완료일로부터 <b>3일 이내</b> 입금이 원칙이며, 지연 시 경고를 보냅니다.</div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin:4px 2px 10px">
-      <span style="font-size:13px;color:var(--muted)">자동 경고 (지연 건 자동 알림)</span>
-      <label class="sw"><input type="checkbox" id="settAuto" onchange="toggleAutoWarn(this.checked)"><span class="sw-track"></span></label>
+    <div class="notice">마사지사가 고객에게 받은 금액 중 <b>플랫폼 수수료</b>를 회사에 입금합니다. 완료일 기준 기한 내 입금이 원칙이며, 지연 시 경고를 보냅니다.</div>
+    <div class="chips" id="settTab">
+      <div class="chip sel" data-t="live" onclick="pick(this);switchSettTab()">실시간 집계</div>
+      <div class="chip" data-t="cycle" onclick="pick(this);switchSettTab()">사이클 마감</div>
     </div>
-    <div id="settlementList"></div>
+    <div id="settCycleBox" style="display:none">
+      <div class="label">마감 기간</div>
+      <div class="chips" id="cycType">
+        <div class="chip sel" data-p="week" onclick="pick(this);fillCyclePeriod()">주간</div>
+        <div class="chip" data-p="month" onclick="pick(this);fillCyclePeriod()">월간</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:6px">
+        <input class="tx" id="cycStart" type="date" style="flex:1">
+        <input class="tx" id="cycEnd" type="date" style="flex:1">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <button class="chip sel" onclick="closeCycle()">이 기간 마감</button>
+        <button class="chip" onclick="loadCycles()">내역 새로고침</button>
+        <button class="chip" onclick="exportCyclesCsv()">CSV 내보내기</button>
+      </div>
+      <div id="cycMsg" class="hint" style="margin:8px 2px"></div>
+      <div id="cycleList"></div>
+    </div>
+    <div id="settLiveBox">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:4px 2px 10px">
+        <span style="font-size:13px;color:var(--muted)">자동 경고 (지연 건 자동 알림)</span>
+        <label class="sw"><input type="checkbox" id="settAuto" onchange="toggleAutoWarn(this.checked)"><span class="sw-track"></span></label>
+      </div>
+      <div id="settlementList"></div>
+    </div>
   </div>
   <div class="screen" id="adminAds" data-title="광고 관리">
     <div class="label">광고 제목</div>
@@ -1021,6 +1056,32 @@
     <div class="notice">회원 국적·언어 기준 분포와 국가별 예약·매출을 집계합니다.</div>
     <div id="countryList"></div>
   </div>
+  <div class="screen" id="terms" data-title="약관 및 개인정보">
+    <div class="notice">서비스 이용을 위해 아래 약관에 동의해 주세요. 동의 기록은 안전하게 보관됩니다.</div>
+    <div class="pf-sec">이용약관 (필수)</div>
+    <div class="pf-bio" style="max-height:150px;overflow:auto">mㅏssㅏ는 고객과 검증된 제공자를 연결하는 중개 플랫폼입니다. 서비스는 의료 행위가 아닌 이완·관리 목적의 케어이며, 치료가 필요한 증상은 의료기관 이용을 권장합니다. 예약 후 무단 취소·노쇼가 반복되면 이용이 제한될 수 있습니다. 결제는 서비스 완료 후 현장에서 이루어지며, 플랫폼은 결제·정산 내역을 기록·관리합니다. 이용자는 제공자에게 성적 요구를 포함한 부적절한 요구를 할 수 없으며, 위반 시 즉시 이용이 정지되고 관계 기관에 통보될 수 있습니다.</div>
+    <div class="pf-sec">개인정보 처리방침 (필수)</div>
+    <div class="pf-bio" style="max-height:150px;overflow:auto">수집 항목은 이름·연락처·국적·언어·위치(선택)이며, 예약 중개·안전 확인·정산 목적에 한해 이용합니다. 제공자에게는 서비스 수행에 필요한 최소 정보(이름·연락처·방문 주소)만 전달됩니다. 신분증·계좌 등 제공자 민감정보는 비공개 저장소에 보관되며 심사 담당자만 열람할 수 있습니다. 보관 기간은 회원 탈퇴 시까지이며, 관계 법령상 보존 의무가 있는 기록은 해당 기간 동안 보관 후 파기합니다.</div>
+    <div class="pf-sec">마케팅 정보 수신 (선택)</div>
+    <div class="pf-bio">할인·이벤트 소식을 알림으로 받습니다. 동의하지 않아도 서비스 이용에 제한이 없습니다.</div>
+    <div style="margin-top:12px">
+      <label class="agree-row"><input type="checkbox" id="agTerms"> <span>[필수] 이용약관에 동의합니다</span></label>
+      <label class="agree-row"><input type="checkbox" id="agPrivacy"> <span>[필수] 개인정보 처리방침에 동의합니다</span></label>
+      <label class="agree-row"><input type="checkbox" id="agMkt"> <span>[선택] 마케팅 정보 수신에 동의합니다</span></label>
+    </div>
+    <button class="cta" style="position:static;margin-top:12px" onclick="saveAgreements()">동의하고 시작하기</button>
+    <div id="agMsg" class="hint" style="margin-top:8px"></div>
+  </div>
+  <div class="screen" id="safety" data-title="안전 센터">
+    <div class="notice">서비스 중 불안하거나 위급한 상황이면 즉시 도움을 요청하세요. 위치와 함께 관리자에게 전달됩니다.</div>
+    <button class="cta" style="position:static;background:#E5484D;margin-bottom:12px" onclick="sendSos()">🚨 긴급 도움 요청 (SOS)</button>
+    <button class="chip" onclick="shareMyLocation()">📍 내 위치 공유하기</button>
+    <div class="pf-sec">안전 수칙</div>
+    <div class="pf-bio">예약은 반드시 앱 안에서 진행하고, 앱 밖 현금 거래나 개인 연락처 유도 요청은 거절하세요. 제공자 도착 시 인증 마크와 프로필 사진을 확인하고, 호텔이라면 프론트에 방문 사실을 알려두는 것이 안전합니다. 서비스 중 부적절한 언행이 있으면 즉시 중단을 요청하고 신고해 주세요.</div>
+    <div id="safetyMsg" class="hint" style="margin-top:10px"></div>
+    <div class="pf-sec">내 요청 기록</div>
+    <div id="safetyList"></div>
+  </div>
   </div>
   <div class="massa-fab" onclick="openBot()" title="massa bot" aria-label="massa bot"><span class="fab-ic">💬</span><span class="fab-name">massa bot</span><span class="fab-badge">AI</span></div>
   <div class="tabbar globaltab">
@@ -1030,13 +1091,16 @@
   </div>
 </div>
 
-<div class="note">
+<div class="note devonly">
   홈 배너 3개(마사지 홈서비스/방문 치료/스파 안내)가 각각 테라피스트 리스트·치료 리스트·카테고리 그리드로 이어집니다.<br>
   리스트의 [예약] 버튼 → 코스 → 시간 → 위치(호텔 폼) → 확인(후불) → 완료 순으로 진행됩니다.
 </div>
 
 <script>
 // 히스토리 스택 기반 화면 전환과 선택 토글을 처리하는 스크립트
+// ?dev=1 이면 와이어프레임 설명(제목·플로우·안내문)을 강제로 노출한다.
+window.DEV_FORCED = /[?&]dev=1\b/.test(location.search);
+if (window.DEV_FORCED) document.body.classList.add('devmode');
 const MAIN_FLOW = ['home', 'thList', 'menu', 'time', 'loc', 'confirm', 'done'];
 const NAMES = { home: '홈', thList: '마사지 홈서비스', therapy: '홈 뷰티', spa: '스파 안내',
                 stores: '매장 리스트', storeDtl: '매장 상세', provDtl: '프로필', menu: '코스', time: '시간', loc: '위치', confirm: '확인(후불)', done: '완료',
@@ -1212,8 +1276,9 @@ render();
 </script>
 
 <!-- 슈퍼베이스 실시간 데이터 연동 (1단계) -->
-<div id="dbStatus" style="position:fixed;top:8px;right:10px;z-index:99;font-size:11px;padding:5px 10px;border-radius:12px;background:#eee;color:#666">● DB 연결 중…</div>
-<script src="config.js"></script>
+<div id="dbStatus" class="devonly" style="position:fixed;top:8px;right:10px;z-index:99;font-size:11px;padding:5px 10px;border-radius:12px;background:#eee;color:#666">● DB 연결 중…</div>
+<script>window.MASSA_GEMINI_KEY = "";</script>
+<script src="config.js" onerror="void 0"></script>
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
@@ -1239,7 +1304,8 @@ function avatarImg(src) { return '<img src="' + src + '" alt="" style="width:100
 function avatarFor(p) { if (p.photo_url) return p.photo_url; if (p.photo_urls && p.photo_urls.length) return p.photo_urls[0]; let hh = 0; const s = String(p.id || p.display_name || ''); for (let i = 0; i < s.length; i++) hh = (hh * 31 + s.charCodeAt(i)) >>> 0; return AVATARS[hh % AVATARS.length]; }
 function providerCard(p, idx) {
   const photo = avatarFor(p);
-  const tag = p.review_count < 20 ? '<span class="tag new">신규 도착</span>'
+  const tag = p.hygiene_certified ? '<span class="tag q" style="background:#2E8B8B">위생 인증</span>'
+            : p.review_count < 20 ? '<span class="tag new">신규 도착</span>'
             : p.review_count > 150 ? '<span class="tag q">품질</span>' : '';
   const spec = (p.specialties || []).map(s => TYPE_KO[s] || s).join('·');
   const langs = (p.languages || []).includes('ko') ? ' · 한국어 가능' : (p.languages || []).includes('en') ? ' · 영어 가능' : '';
@@ -1494,7 +1560,43 @@ async function refreshSession() {
   const { data } = await sb.auth.getSession();
   SESSION = data.session;
   refreshNotiDot();
+  subscribeNotifications();
 }
+// 알림 실시간 구독 — 새 알림이 오면 배지·목록 즉시 갱신
+let NOTI_CH = null;
+function subscribeNotifications() {
+  if (!SESSION) { if (NOTI_CH) { sb.removeChannel(NOTI_CH); NOTI_CH = null; } return; }
+  if (NOTI_CH && NOTI_CH.__uid === SESSION.user.id) return;   // 이미 구독 중
+  if (NOTI_CH) { sb.removeChannel(NOTI_CH); NOTI_CH = null; }
+  const uid = SESSION.user.id;
+  NOTI_CH = sb.channel('noti-' + uid)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: 'user_id=eq.' + uid }, (payload) => {
+      const n = payload.new || {};
+      const dot = document.querySelector('.hdot'); if (dot) dot.style.display = 'block';
+      // 알림 화면을 보고 있으면 즉시 갱신
+      const sc = document.getElementById('notifications');
+      if (sc && sc.classList.contains('on')) { renderNotifications(); }
+      else showToast((n.kind === 'warning' ? '⚠️ ' : '🔔 ') + (n.title || '새 알림'), n.body || '');
+    })
+    .subscribe();
+  NOTI_CH.__uid = uid;
+}
+window.subscribeNotifications = subscribeNotifications;
+// 화면 상단 토스트
+function showToast(title, body) {
+  let t = document.getElementById('appToast');
+  if (!t) {
+    t = document.createElement('div'); t.id = 'appToast';
+    t.style.cssText = 'position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:400;max-width:360px;background:#24303A;color:#fff;border-radius:14px;padding:12px 16px;box-shadow:0 6px 20px rgba(0,0,0,.25);font-size:13.5px;cursor:pointer;display:none';
+    t.onclick = () => { t.style.display = 'none'; openNotifications(); };
+    document.body.appendChild(t);
+  }
+  t.innerHTML = '<div style="font-weight:bold;margin-bottom:2px">' + title + '</div>' + (body ? '<div style="opacity:.85;font-size:12.5px">' + String(body).slice(0, 90) + '</div>' : '');
+  t.style.display = 'block';
+  clearTimeout(t.__tm);
+  t.__tm = setTimeout(() => { t.style.display = 'none'; }, 6000);
+}
+window.showToast = showToast;
 async function refreshNotiDot() {
   const dot = document.querySelector('.hdot'); if (!dot) return;
   if (!SESSION) { dot.style.display = 'none'; return; }
@@ -1629,6 +1731,7 @@ async function loadMyBookings() {
     .eq('customer_id', SESSION.user.id).order('created_at', { ascending: false });
   if (error) { wrap.innerHTML = `<div class="notice">불러오기 실패: ${error.message}</div>`; return; }
   empty.style.display = data.length ? 'none' : 'block';
+  window.__myBookings = data;
   wrap.innerHTML = data.map(b => {
     const canCancel = ['requested', 'confirmed'].includes(b.status);
     const canReview = b.status === 'completed';
@@ -1680,12 +1783,22 @@ window.openPayment = function (bookingId, amount) {
     ov.querySelectorAll('.pay-m').forEach(el => el.onclick = () => { sel = el.dataset.m; render(); });
     const pc = ov.querySelector('#payCoupon'); if (pc) pc.onchange = () => { couponId = pc.value; render(); };
     ov.querySelector('#payGo').onclick = async () => {
+      const btn = ov.querySelector('#payGo'); btn.disabled = true;
       const paid = sel !== 'card_onsite';
-      const { error } = await sb.from('bookings').update({ payment_method: sel, is_paid: paid }).eq('id', bookingId);
-      if (error) { alert('결제 처리 실패: ' + error.message); return; }
-      if (couponId && paid) { await sb.from('user_coupons').update({ is_used: true }).eq('customer_id', SESSION.user.id).eq('coupon_id', couponId); const mm = (CACHE.myCoupons || []).find(x => x.coupon_id === couponId); if (mm) mm.is_used = true; }
+      const final = finalAmt();
+      const used = couponId ? applicable.find(x => x.coupon_id === couponId) : null;
+      // 실제 결제 금액을 예약에 반영(정산·매출 정확도)
+      const patch = { payment_method: sel, is_paid: paid, amount_vnd: final };
+      if (used) { patch.coupon_id = couponId; patch.discount_vnd = amount - final; }
+      const { error } = await sb.from('bookings').update(patch).eq('id', bookingId);
+      if (error) { btn.disabled = false; alert('결제 처리 실패: ' + error.message); return; }
+      // 쿠폰 사용 처리 (현장 결제 포함 — 실제로 할인이 적용되었으므로)
+      if (used) {
+        const { error: ce } = await sb.from('user_coupons').update({ is_used: true, used_at: new Date().toISOString() }).eq('customer_id', SESSION.user.id).eq('coupon_id', couponId).eq('is_used', false);
+        if (!ce) { const mm = (CACHE.myCoupons || []).find(x => x.coupon_id === couponId); if (mm) mm.is_used = true; }
+      }
       ov.style.display = 'none';
-      alert(paid ? '결제가 완료되었습니다. 감사합니다!' : '현장 결제로 확정되었습니다.');
+      alert((paid ? '결제가 완료되었습니다.' : '현장 결제로 확정되었습니다.') + (used ? '\n쿠폰 할인 ' + (amount - final).toLocaleString() + '₫이 적용되었습니다.' : ''));
       if (window.loadMyBookings) loadMyBookings();
     };
   };
@@ -1693,10 +1806,77 @@ window.openPayment = function (bookingId, amount) {
   ov.style.display = 'flex';
   ov.onclick = (e) => { if (e.target === ov) ov.style.display = 'none'; };
 };
-window.cancelBooking = async (id) => {
-  await sb.from('bookings').update({ status: 'cancelled' }).eq('id', id);
+// ── 고객 취소·노쇼 정책 ──
+const CANCEL_RULES = { free_hours: 1, warn: 3, block: 5, block_days: 7, window: 30 };  // 예약 1시간 전까지 무료 취소
+const CANCEL_REASONS = ['일정이 변경되었어요','다른 곳으로 예약했어요','가격이 부담돼요','실수로 예약했어요','기타'];
+window.cancelBooking = function (id) {
+  const b = (window.__myBookings || []).find(x => x.id === id);
+  const late = b && b.scheduled_at && (new Date(b.scheduled_at).getTime() - Date.now()) < CANCEL_RULES.free_hours * 36e5;
+  let ov = document.getElementById('cxlOv');
+  if (!ov) { ov = document.createElement('div'); ov.id = 'cxlOv'; ov.style.cssText = 'position:fixed;inset:0;z-index:210;background:rgba(20,25,28,.5);display:flex;align-items:flex-end;justify-content:center'; document.body.appendChild(ov); }
+  ov.innerHTML = '<div class="svc-sheet"><div class="svc-grip"></div><div class="svc-title">예약을 취소하시겠어요?</div>'
+    + (late
+        ? '<div class="notice" style="border-color:#E5484D;color:#B23A5B">⚠ 예약 ' + CANCEL_RULES.free_hours + '시간 이내 취소입니다. 마사지사가 이미 준비 중일 수 있어 <b>취소 횟수에 포함</b>됩니다.</div>'
+        : '<div class="notice">예약 ' + CANCEL_RULES.free_hours + '시간 전까지는 자유롭게 취소할 수 있습니다.</div>')
+    + '<div class="notice">최근 ' + CANCEL_RULES.window + '일 기준 임박 취소·노쇼가 ' + CANCEL_RULES.warn + '회면 경고, ' + CANCEL_RULES.block + '회면 ' + CANCEL_RULES.block_days + '일간 예약이 제한됩니다.</div>'
+    + CANCEL_REASONS.map(r => '<div class="svc-row" data-r="' + r + '">' + r + '</div>').join('')
+    + '<input class="tx" id="cxlEtc" placeholder="기타 사유(선택)" style="margin-top:8px">'
+    + '<button class="cta" style="position:static;margin-top:10px;background:#E5484D" onclick="submitCancel(\'' + id + '\',' + (late ? 'true' : 'false') + ')">취소 확정</button></div>';
+  ov.style.display = 'flex';
+  ov.onclick = (e) => { if (e.target === ov) ov.style.display = 'none'; };
+  ov.querySelectorAll('.svc-row').forEach(r => r.onclick = () => { ov.querySelectorAll('.svc-row').forEach(x => x.classList.remove('on')); r.classList.add('on'); });
+};
+window.submitCancel = async function (id, late) {
+  const ov = document.getElementById('cxlOv');
+  const sel = ov.querySelector('.svc-row.on');
+  const etc = (ov.querySelector('#cxlEtc').value || '').trim();
+  const reason = (sel ? sel.dataset.r : '') + (etc ? (sel ? ' — ' : '') + etc : '');
+  if (!reason) { alert('사유를 선택하거나 입력해 주세요.'); return; }
+  await sb.from('bookings').update({ status: 'cancelled', cancelled_at: new Date().toISOString(), cancel_reason: reason, cancelled_by: 'customer' }).eq('id', id);
+  ov.style.display = 'none';
+  let note = '';
+  if (late) note = await applyCustomerPenalty();
+  alert('예약이 취소되었습니다.' + (note ? '\n\n' + note : ''));
   loadMyBookings();
 };
+// 임박 취소·노쇼 누적 → 경고·예약 제한
+async function applyCustomerPenalty() {
+  if (!SESSION) return '';
+  const since = new Date(Date.now() - CANCEL_RULES.window * 864e5).toISOString();
+  const { data: rows } = await sb.from('bookings')
+    .select('scheduled_at, cancelled_at, no_show_at')
+    .eq('customer_id', SESSION.user.id).gte('created_at', since).limit(200);
+  let n = 0;
+  (rows || []).forEach(b => {
+    if (b.no_show_at) { n++; return; }
+    if (b.cancelled_at && b.scheduled_at && (new Date(b.scheduled_at) - new Date(b.cancelled_at)) < CANCEL_RULES.free_hours * 36e5) n++;
+  });
+  const patch = { cancel_count: n };
+  let note = '';
+  if (n >= CANCEL_RULES.block) {
+    patch.booking_blocked_until = new Date(Date.now() + CANCEL_RULES.block_days * 864e5).toISOString();
+    note = '🚫 임박 취소·노쇼 ' + n + '회 — ' + CANCEL_RULES.block_days + '일간 새 예약이 제한됩니다.';
+  } else if (n >= CANCEL_RULES.warn) {
+    note = '⚠ 임박 취소·노쇼 ' + n + '회 — ' + CANCEL_RULES.block + '회가 되면 ' + CANCEL_RULES.block_days + '일간 예약이 제한됩니다.';
+  }
+  await sb.from('profiles').update(patch).eq('id', SESSION.user.id);
+  if (note) await sb.from('notifications').insert({ user_id: SESSION.user.id, title: '예약 취소 누적 안내', body: note, kind: 'warning' });
+  return note;
+}
+window.applyCustomerPenalty = applyCustomerPenalty;
+// 예약 생성 전 제한 여부 확인
+async function ensureNotBlocked() {
+  if (!SESSION) return true;
+  try {
+    const { data } = await sb.from('profiles').select('booking_blocked_until').eq('id', SESSION.user.id).single();
+    if (data && data.booking_blocked_until && new Date(data.booking_blocked_until) > new Date()) {
+      alert('임박 취소·노쇼가 누적되어 ' + new Date(data.booking_blocked_until).toLocaleDateString() + '까지 새 예약이 제한됩니다.');
+      return false;
+    }
+  } catch (e) {}
+  return true;
+}
+window.ensureNotBlocked = ensureNotBlocked;
 window.openReview = (bookingId, providerId) => {
   if (!SESSION) { openAuth(); return; }
   const rating = { overall: 5, kindness: 5, cleanliness: 5, price: 5, skill: 5 };
@@ -1709,7 +1889,7 @@ window.openReview = (bookingId, providerId) => {
     + cats.map(c => '<div class="rev-label">' + c[1] + '</div>' + starRow(c[0])).join('')
     + '<div class="rev-label">재방문 의사</div><div class="rev-revisit"><span class="seg on" data-v="1">있음</span><span class="seg" data-v="0">없음</span></div>'
     + '<div class="rev-label">후기</div><textarea id="revComment" placeholder="후기를 남겨주세요"></textarea>'
-    + '<div class="rev-label">사진 URL (선택)</div><input id="revPhoto0" placeholder="https://…"><input id="revPhoto1" placeholder="https://…">'
+    + '<div class="rev-label">사진 첨부 (선택 · 최대 2장)</div><input id="revPhoto0" type="file" accept="image/*" onchange="onRevFile(this)"><input id="revPhoto1" type="file" accept="image/*" onchange="onRevFile(this)"><div id="revPhotoMsg" class="hint"></div>'
     + '<div class="rev-label">영상 URL (선택)</div><input id="revVideo" placeholder="https://…">'
     + '<button class="cta" id="revSubmit">리뷰 등록</button></div>';
   ov.style.display = 'flex';
@@ -1725,7 +1905,7 @@ window.openReview = (bookingId, providerId) => {
     ov.querySelectorAll('.rev-revisit .seg').forEach(x => x.classList.remove('on')); s.classList.add('on'); revisit = s.dataset.v === '1';
   });
   ov.querySelector('#revSubmit').onclick = async () => {
-    const photos = [ov.querySelector('#revPhoto0').value, ov.querySelector('#revPhoto1').value].map(x => x.trim()).filter(Boolean);
+    const photos = [ov.querySelector('#revPhoto0').dataset.url, ov.querySelector('#revPhoto1').dataset.url].filter(Boolean);
     const row = { booking_id: bookingId, customer_id: SESSION.user.id, provider_id: providerId,
       rating: rating.overall, rating_kindness: rating.kindness, rating_cleanliness: rating.cleanliness,
       rating_price: rating.price, rating_skill: rating.skill, revisit,
@@ -1808,6 +1988,7 @@ async function loadAccount() {
   const cv = document.getElementById('mpCountryVal'); if (cv && CUR_PROFILE.nationality) cv.textContent = countryLabel(CUR_PROFILE.nationality);
   const role = CUR_PROFILE.role;
   const isAdm = role === 'admin';           // 앱 관리자: 전체 관리
+  document.body.classList.toggle('devmode', isAdm || window.DEV_FORCED);
   const canReview = isAdm || role === 'reviewer'; // 등록 심사 관리자: 승인만
   // 파트너(제공자 등록자) 여부 — 등록된 제공자가 있으면 파트너 메뉴 노출
   let isPartner = isAdm;
@@ -1867,6 +2048,21 @@ async function applyUniformToEl(el, file, origPath) {
     else console.warn('유니폼 변환 실패(원본 유지):', (fe && fe.message) || data);
   }
 }
+// 리뷰 사진 업로드(공개 버킷)
+window.onRevFile = async function (el) {
+  const f = el.files && el.files[0];
+  const msg = document.getElementById('revPhotoMsg');
+  if (!f) { el.dataset.url = ''; return; }
+  if (!SESSION) { openAuth(); el.value = ''; return; }
+  const ext = (f.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+  const p = 'reviews/' + SESSION.user.id + '/' + Date.now() + '_' + Math.random().toString(36).slice(2, 6) + '.' + ext;
+  el.disabled = true; if (msg) msg.textContent = '업로드 중…';
+  const { error } = await sb.storage.from('provider-photos').upload(p, f, { contentType: f.type || undefined });
+  el.disabled = false;
+  if (error) { if (msg) { msg.style.color = '#B23A5B'; msg.textContent = '업로드 실패: ' + error.message; } el.value = ''; el.dataset.url = ''; return; }
+  el.dataset.url = sb.storage.from('provider-photos').getPublicUrl(p).data.publicUrl;
+  if (msg) { msg.style.color = '#1E6B45'; msg.textContent = '사진이 첨부되었습니다.'; }
+};
 window.onApFile = async function (el) {
   const f = el.files && el.files[0];
   if (!f) { el.dataset.url = ''; el.dataset.path = ''; return; }
@@ -1936,6 +2132,59 @@ window.openApSvcSheet = function () {
 };
 window.closeApSvcSheet = function () { const ov = document.getElementById('apSvcSheet'); if (ov) ov.style.display = 'none'; syncApSvcChip(); };
 
+// 내 신청 상태(대기·반려 사유·승인) 표시 + 재제출 안내
+async function loadApplyStatus() {
+  const box = document.getElementById('apStatusBox'); if (!box) return;
+  box.innerHTML = '';
+  if (!SESSION) return;
+  const uid = SESSION.user.id;
+  const { data } = await sb.from('providers').select('id, display_name, application_status, reject_reason, reviewed_at')
+    .or('profile_id.eq.' + uid + ',owner_id.eq.' + uid).order('created_at', { ascending: false });
+  const list = data || [];
+  if (!list.length) return;
+  box.innerHTML = list.map(p => {
+    if (p.application_status === 'pending') {
+      return '<div class="notice">⏳ <b>' + p.display_name + '</b> — 심사 대기 중입니다. 관리자가 서류를 확인하고 있어요.</div>';
+    }
+    if (p.application_status === 'rejected') {
+      return '<div class="notice" style="border-color:#E5484D;color:#B23A5B">🚫 <b>' + p.display_name + '</b> — 반려되었습니다.'
+        + '<br>사유: ' + (p.reject_reason || '-')
+        + '<br>아래 내용을 수정한 뒤 <b>재제출</b> 버튼을 눌러 주세요.'
+        + '<div style="margin-top:8px"><button class="chip sel" onclick="resubmitApplication(\'' + p.id + '\')">이 신청 재제출</button></div></div>';
+    }
+    return '<div class="notice" style="border-color:#3E7C4F;color:#1E6B45">✅ <b>' + p.display_name + '</b> — 승인 완료. 고객 목록에 노출됩니다.</div>';
+  }).join('');
+}
+window.loadApplyStatus = loadApplyStatus;
+// 반려된 신청을 수정 내용으로 다시 제출
+window.resubmitApplication = async function (providerId) {
+  if (!SESSION) { openAuth(); return; }
+  const gv = id => (document.getElementById(id).value || '').trim();
+  const gf = id => (document.getElementById(id).dataset.url || null);
+  const photos = [0, 1, 2, 3, 4].map(i => document.getElementById('apPhoto' + i).dataset.url || '').filter(Boolean);
+  const patch = { application_status: 'pending', reject_reason: null };
+  const name = document.getElementById('apName').value.trim();
+  if (name) patch.display_name = name;
+  if (photos.length) { patch.photo_url = photos[0]; patch.photo_urls = photos; }
+  const bio = document.getElementById('apBio').value.trim(); if (bio) patch.bio = bio;
+  const area = document.getElementById('apArea').value.trim(); if (area) patch.service_area = area;
+  if (gv('apContact')) patch.phone = gv('apContact');
+  const { error } = await sb.from('providers').update(patch).eq('id', providerId);
+  if (error) { alert('재제출 실패: ' + error.message); return; }
+  // KYC 서류도 새로 올린 것이 있으면 갱신
+  const kyc = {};
+  if (gv('apContact')) kyc.contact = gv('apContact');
+  if (gv('apBank')) kyc.bank_name = gv('apBank');
+  if (gv('apAccount')) kyc.bank_account = gv('apAccount');
+  if (gf('apIdFront')) kyc.id_front_url = gf('apIdFront');
+  if (gf('apIdBack')) kyc.id_back_url = gf('apIdBack');
+  if (gf('apLicense')) kyc.business_license_url = gf('apLicense');
+  if (gf('apCert')) kyc.cert_url = gf('apCert');
+  if (Object.keys(kyc).length) { try { await sb.from('provider_kyc').update(kyc).eq('provider_id', providerId); } catch (e) {} }
+  alert('재제출되었습니다. 관리자 심사를 기다려 주세요.');
+  loadApplyStatus();
+};
+
 async function submitApplication() {
   if (!SESSION) { openAuth(); return; }
   const msg = document.getElementById('apMsg');
@@ -1986,26 +2235,115 @@ async function loadPartnerBookings() {
   if (!SESSION) { openAuth(); return; }
   const wrap = document.getElementById('partnerList');
   wrap.innerHTML = '<div class="hint">불러오는 중…</div>';
+  // 내 제재 상태 배너
+  let penaltyBanner = '';
+  try {
+    const mine = await myProviders();
+    const worst = mine.sort((a, b) => (b.penalty_level || 0) - (a.penalty_level || 0))[0];
+    if (worst) {
+      const sus = worst.suspended_until && new Date(worst.suspended_until) > new Date();
+      const lv = worst.penalty_level || 0;
+      if (sus) penaltyBanner = '<div class="notice" style="border-color:#E5484D;color:#B23A5B">🚫 예약 접수가 정지되었습니다 (~' + new Date(worst.suspended_until).toLocaleDateString() + '). 최근 거절 ' + (worst.reject_count || 0) + '회.</div>';
+      else if (lv >= 2) penaltyBanner = '<div class="notice" style="border-color:#E8A33D">⚠ 거절 누적 ' + (worst.reject_count || 0) + '회 — 목록 노출이 낮아진 상태입니다. 거절을 줄이면 회복됩니다.</div>';
+      else if (lv === 1) penaltyBanner = '<div class="notice">⚠ 거절 누적 ' + (worst.reject_count || 0) + '회 — 경고 단계입니다. 8회부터 노출이 낮아집니다.</div>';
+    }
+  } catch (e) {}
   const { data, error } = await sb.from('bookings')
     .select('*, services(name), profiles!bookings_customer_id_fkey(full_name)')
     .order('created_at', { ascending: false }).limit(30);
   if (error) { wrap.innerHTML = `<div class="notice">불러오기 실패: ${error.message}</div>`; return; }
   wrap.innerHTML = data.map(b => {
     const acts = [];
-    if (b.status === 'requested') { acts.push(['수락', 'confirmed', 'sel']); acts.push(['거절', 'cancelled', '']); }
-    else if (b.status === 'confirmed') acts.push(['완료 처리', 'completed', 'sel']);
+    if (b.status === 'requested') { acts.push(['수락', 'confirmed', 'sel']); acts.push(['거절', '__reject__', '']); }
+    else if (b.status === 'confirmed') { acts.push(['완료 처리', 'completed', 'sel']); acts.push(['노쇼 처리', '__noshow__', '']); }
     return `<div class="card" style="cursor:default">
       <div class="trow1"><span class="t">${b.services?.name || '서비스'}</span><span style="color:#2E8B8B;font-weight:bold;font-size:12px">${STATUS_KO[b.status]}</span></div>
       <div class="d">${b.hotel_name || ''} ${b.room_number || ''} · ${new Date(b.scheduled_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
-      <div style="margin-top:8px;display:flex;gap:8px">${acts.map(a => `<button class="chip ${a[2]}" onclick="setBookingStatus('${b.id}','${a[1]}')">${a[0]}</button>`).join('')}</div>
+      <div style="margin-top:8px;display:flex;gap:8px">${acts.map(a => `<button class="chip ${a[2]}" onclick="${a[1] === '__reject__' ? `openReject('${b.id}','${b.provider_id || ''}')` : a[1] === '__noshow__' ? `markNoShow('${b.id}','${b.customer_id || ''}')` : `setBookingStatus('${b.id}','${a[1]}')`}">${a[0]}</button>`).join('')}</div>
     </div>`;
   }).join('') || '<div class="notice">예약이 없습니다.</div>';
+  wrap.innerHTML = penaltyBanner + wrap.innerHTML;
 }
 window.loadPartnerBookings = loadPartnerBookings;
 window.setBookingStatus = async (id, st) => {
-  await sb.from('bookings').update({ status: st }).eq('id', id);
+  await sb.from('bookings').update(Object.assign({ status: st }, st === 'completed' ? { completed_at: new Date().toISOString() } : st === 'accepted' ? { accepted_at: new Date().toISOString() } : {})).eq('id', id);
   loadPartnerBookings();
 };
+// 파트너: 고객 노쇼 처리 (고객 페널티 누적)
+window.markNoShow = async function (bookingId, customerId) {
+  if (!confirm('고객이 나타나지 않았나요? 노쇼로 처리하면 고객에게 페널티가 누적됩니다.')) return;
+  await sb.from('bookings').update({ status: 'cancelled', no_show_at: new Date().toISOString(), cancelled_by: 'provider', cancel_reason: '고객 노쇼' }).eq('id', bookingId);
+  if (customerId) {
+    // 최근 30일 임박취소·노쇼 재계산
+    const since = new Date(Date.now() - 30 * 864e5).toISOString();
+    const { data: rows } = await sb.from('bookings').select('scheduled_at, cancelled_at, no_show_at').eq('customer_id', customerId).gte('created_at', since).limit(200);
+    let n = 0;
+    (rows || []).forEach(b => { if (b.no_show_at) { n++; return; } if (b.cancelled_at && b.scheduled_at && (new Date(b.scheduled_at) - new Date(b.cancelled_at)) < 36e5) n++; });
+    const patch = { no_show_count: (rows || []).filter(x => x.no_show_at).length, cancel_count: n };
+    let note = '';
+    if (n >= 5) { patch.booking_blocked_until = new Date(Date.now() + 7 * 864e5).toISOString(); note = '🚫 임박 취소·노쇼 ' + n + '회 — 7일간 새 예약이 제한됩니다.'; }
+    else if (n >= 3) note = '⚠ 임박 취소·노쇼 ' + n + '회 — 5회가 되면 7일간 예약이 제한됩니다.';
+    await sb.from('profiles').update(patch).eq('id', customerId);
+    if (note) await sb.from('notifications').insert({ user_id: customerId, title: '노쇼 처리 안내', body: '예약 시간에 방문이 확인되지 않아 노쇼로 처리되었습니다.\n' + note, kind: 'warning' });
+  }
+  alert('노쇼로 처리했습니다.');
+  loadPartnerBookings();
+};
+
+// ── 예약 거절: 사유 입력 + 누적 페널티 ──
+const REJECT_REASONS = ['이미 다른 예약이 있음','요청 시간에 근무 불가','거리가 너무 멂','요청 서비스 미제공','고객 요청 사항 수용 불가','기타'];
+const PENALTY_RULES = { warn: 5, lower: 8, suspend: 12, days: 3, window: 30 };  // 최근 30일 기준
+window.openReject = function (bookingId, providerId) {
+  let ov = document.getElementById('rejOv');
+  if (!ov) { ov = document.createElement('div'); ov.id = 'rejOv'; ov.style.cssText = 'position:fixed;inset:0;z-index:210;background:rgba(20,25,28,.5);display:flex;align-items:flex-end;justify-content:center'; document.body.appendChild(ov); }
+  ov.innerHTML = '<div class="svc-sheet"><div class="svc-grip"></div><div class="svc-title">거절 사유를 선택해 주세요</div>'
+    + '<div class="notice">최근 ' + PENALTY_RULES.window + '일 거절이 ' + PENALTY_RULES.warn + '회면 경고, ' + PENALTY_RULES.lower + '회면 노출 저하, ' + PENALTY_RULES.suspend + '회면 ' + PENALTY_RULES.days + '일 예약 정지됩니다.</div>'
+    + REJECT_REASONS.map(r => '<div class="svc-row" data-r="' + r + '">' + r + '</div>').join('')
+    + '<input class="tx" id="rejEtc" placeholder="기타 사유를 입력하세요" style="margin-top:8px">'
+    + '<button class="cta" style="position:static;margin-top:10px" onclick="submitReject(\'' + bookingId + '\',\'' + providerId + '\')">거절 확정</button></div>';
+  ov.style.display = 'flex';
+  ov.onclick = (e) => { if (e.target === ov) ov.style.display = 'none'; };
+  ov.querySelectorAll('.svc-row').forEach(r => r.onclick = () => { ov.querySelectorAll('.svc-row').forEach(x => x.classList.remove('on')); r.classList.add('on'); });
+};
+window.submitReject = async function (bookingId, providerId) {
+  const ov = document.getElementById('rejOv');
+  const sel = ov.querySelector('.svc-row.on');
+  const etc = (ov.querySelector('#rejEtc').value || '').trim();
+  const reason = sel ? (sel.dataset.r === '기타' ? (etc || '기타') : sel.dataset.r) : etc;
+  if (!reason) { alert('사유를 선택하거나 입력해 주세요.'); return; }
+  await sb.from('bookings').update({ status: 'cancelled', rejected_at: new Date().toISOString(), reject_reason: reason }).eq('id', bookingId);
+  ov.style.display = 'none';
+  const msg = await applyRejectPenalty(providerId);
+  alert('예약을 거절했습니다.' + (msg ? '\n\n' + msg : ''));
+  loadPartnerBookings();
+};
+// 최근 30일 거절 수를 세어 등급을 갱신하고 안내 문구를 반환
+async function applyRejectPenalty(providerId) {
+  if (!providerId) return '';
+  const since = new Date(Date.now() - PENALTY_RULES.window * 864e5).toISOString();
+  const { count } = await sb.from('bookings').select('id', { count: 'exact', head: true })
+    .eq('provider_id', providerId).not('rejected_at', 'is', null).gte('rejected_at', since);
+  const n = count || 0;
+  let level = 0, note = '';
+  if (n >= PENALTY_RULES.suspend) level = 3;
+  else if (n >= PENALTY_RULES.lower) level = 2;
+  else if (n >= PENALTY_RULES.warn) level = 1;
+  const patch = { reject_count: n, penalty_level: level };
+  if (level === 3) { patch.suspended_until = new Date(Date.now() + PENALTY_RULES.days * 864e5).toISOString(); patch.is_active = false; }
+  await sb.from('providers').update(patch).eq('id', providerId);
+  if (level === 1) note = '⚠ 최근 ' + PENALTY_RULES.window + '일 거절 ' + n + '회 — 경고 단계입니다. ' + PENALTY_RULES.lower + '회부터 목록 노출이 낮아집니다.';
+  if (level === 2) note = '⚠ 거절 ' + n + '회 — 목록 노출이 낮아집니다. ' + PENALTY_RULES.suspend + '회면 ' + PENALTY_RULES.days + '일 예약이 정지됩니다.';
+  if (level === 3) note = '🚫 거절 ' + n + '회 — ' + PENALTY_RULES.days + '일간 예약 접수가 정지되었습니다.';
+  // 파트너에게 알림도 남김
+  if (level > 0) {
+    const { data: pr } = await sb.from('providers').select('profile_id, owner_id').eq('id', providerId).single();
+    const uid = pr && (pr.profile_id || pr.owner_id);
+    if (uid) await sb.from('notifications').insert({ user_id: uid, title: '예약 거절 누적 안내', body: note, kind: 'warning' });
+  }
+  return note;
+}
+window.applyRejectPenalty = applyRejectPenalty;
+
 
 // ── 관리자: 신청 승인/거절 ──
 async function loadAdminApps() {
@@ -2027,7 +2365,7 @@ async function loadAdminApps() {
     <div class="d">신분증 ${lnk(idF,'앞')}/${lnk(idB,'뒤')}${lic ? ' · ' + lnk(lic,'사업자등록증') : ''}${cert ? ' · ' + lnk(cert,'자격증') : ''}</div>
     <div style="margin-top:8px;display:flex;gap:8px">
       <button class="chip sel" onclick="reviewApp('${p.id}','approved')">승인</button>
-      <button class="chip" onclick="reviewApp('${p.id}','rejected')">거절</button>
+      <button class="chip" style="border-color:#E5484D;color:#E5484D" onclick="openKycReject('${p.id}')">반려 (사유 입력)</button>
     </div></div>`;
   }));
   wrap.innerHTML = cards.join('') || '<div class="notice">대기 중인 신청이 없습니다.</div>';
@@ -2053,37 +2391,146 @@ window.loadAdminStats = loadAdminStats;
 async function loadAdminReports() {
   const wrap = document.getElementById('reportsList'); if (!wrap) return;
   wrap.innerHTML = '<div class="hint">불러오는 중…</div>';
+  // 안전 알림(SOS) 우선 표시
+  let sosHtml = '';
+  try {
+    const { data: sos } = await sb.from('safety_alerts').select('*').eq('status', 'open').order('created_at', { ascending: false }).limit(10);
+    if (sos && sos.length) sosHtml = '<div class="pf-sec" style="color:#E5484D">🚨 미처리 안전 요청 ' + sos.length + '건</div>' + sos.map(a => '<div class="card" style="cursor:default;border-color:#E5484D"><div class="trow1"><span class="t">' + (a.kind === 'sos' ? '긴급 도움 요청' : '위치 공유') + '</span><span style="font-size:12px;color:#E5484D;font-weight:bold">미처리</span></div><div class="d">' + new Date(a.created_at).toLocaleString() + (a.lat ? ' · <a href="https://maps.google.com/?q=' + a.lat + ',' + a.lng + '" target="_blank">지도에서 위치 보기</a>' : ' · 위치 없음') + '</div><div style="margin-top:8px"><button class="chip sel" onclick="handleSafety(\'' + a.id + '\')">처리 완료</button></div></div>').join('') + '<div class="pf-sec">신고 목록</div>';
+  } catch (e) {}
   const { data, error } = await sb.from('reports').select('*').order('created_at', { ascending: false });
   if (error) { wrap.innerHTML = '<div class="notice">불러오기 실패: ' + error.message + '</div>'; return; }
   const stKo = { open: '접수', resolved: '처리완료', rejected: '반려' };
   const stCol = { open: '#E8A33D', resolved: '#1E6B45', rejected: '#B23A5B' };
-  wrap.innerHTML = (data && data.length) ? data.map(r => '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + (r.target_name || '대상') + '</span><span style="font-size:12px;font-weight:bold;color:' + stCol[r.status] + '">' + stKo[r.status] + '</span></div><div class="d">' + (r.reason || '') + '</div>' + (r.status === 'open' ? '<div style="margin-top:8px;display:flex;gap:8px"><button class="chip sel" onclick="resolveReport(\'' + r.id + '\',\'resolved\')">처리완료</button><button class="chip" onclick="resolveReport(\'' + r.id + '\',\'rejected\')">반려</button></div>' : '') + '</div>').join('') : '<div class="notice">신고가 없습니다.</div>';
+  const ACT_KO = { warn: '경고', lower: '노출 저하', suspend: '예약 정지', none: '조치 없음' };
+  wrap.innerHTML = sosHtml + ((data && data.length) ? data.map(r => '<div class="card" style="cursor:default">'
+    + '<div class="trow1"><span class="t">' + (r.target_name || '대상') + '</span><span style="font-size:12px;font-weight:bold;color:' + stCol[r.status] + '">' + stKo[r.status] + '</span></div>'
+    + '<div class="d">' + (r.reason || '') + '</div>'
+    + '<div class="d" style="color:var(--muted)">접수 ' + new Date(r.created_at).toLocaleDateString() + '</div>'
+    + (r.action_taken ? '<div class="d" style="color:#B23A5B;font-weight:bold">조치: ' + (ACT_KO[r.action_taken] || r.action_taken) + '</div>' : '')
+    + (r.resolution ? '<div class="d">회신: ' + r.resolution + '</div>' : '')
+    + (r.status === 'open' ? '<div style="margin-top:8px;display:flex;gap:8px"><button class="chip sel" onclick="openResolve(\'' + r.id + '\',\'' + (r.target_id || '') + '\',\'' + String(r.target_name || '').replace(/'/g, "") + '\')">처리하기</button><button class="chip" onclick="resolveReport(\'' + r.id + '\',\'rejected\')">반려</button></div>' : '')
+    + '</div>').join('') : '<div class="notice">신고가 없습니다.</div>');
 }
 window.loadAdminReports = loadAdminReports;
-window.resolveReport = async (id, st) => { await sb.from('reports').update({ status: st }).eq('id', id); loadAdminReports(); };
+window.handleSafety = async (id) => { await sb.from('safety_alerts').update({ status: 'handled' }).eq('id', id); loadAdminReports(); };
+window.resolveReport = async (id, st) => {
+  const patch = { status: st, resolved_at: new Date().toISOString(), resolved_by: SESSION ? SESSION.user.id : null };
+  if (st === 'rejected') patch.resolution = '검토 결과 조치 대상이 아닌 것으로 확인되었습니다.';
+  await sb.from('reports').update(patch).eq('id', id);
+  await notifyReporter(id, st === 'rejected' ? '신고 검토 결과, 조치 대상이 아닌 것으로 확인되었습니다.' : '신고가 처리되었습니다.');
+  loadAdminReports();
+};
+// 신고자에게 결과 회신
+async function notifyReporter(reportId, body) {
+  try {
+    const { data: r } = await sb.from('reports').select('reporter_id, target_name').eq('id', reportId).single();
+    if (r && r.reporter_id) await sb.from('notifications').insert({ user_id: r.reporter_id, title: '신고 처리 결과 안내', body: '[' + (r.target_name || '대상') + '] ' + body, kind: 'info' });
+  } catch (e) {}
+}
+// 신고 처리 시트: 제재 선택 + 신고자 회신
+const REPORT_ACTIONS = [['none', '조치 없음 (경고성 안내만)'], ['warn', '경고 (1단계)'], ['lower', '노출 저하 (2단계)'], ['suspend', '예약 정지 3일 (3단계)']];
+window.openResolve = function (reportId, targetId, targetName) {
+  let ov = document.getElementById('rptOv');
+  if (!ov) { ov = document.createElement('div'); ov.id = 'rptOv'; ov.style.cssText = 'position:fixed;inset:0;z-index:210;background:rgba(20,25,28,.5);display:flex;align-items:flex-end;justify-content:center'; document.body.appendChild(ov); }
+  ov.innerHTML = '<div class="svc-sheet"><div class="svc-grip"></div><div class="svc-title">신고 처리 — ' + (targetName || '대상') + '</div>'
+    + '<div class="notice">선택한 제재는 해당 제공자에게 즉시 적용되고, 신고자에게 결과가 회신됩니다.</div>'
+    + REPORT_ACTIONS.map(a => '<div class="svc-row" data-a="' + a[0] + '">' + a[1] + '</div>').join('')
+    + '<div class="label" style="margin-top:8px">신고자 회신 문구</div>'
+    + '<input class="tx" id="rptMsg" placeholder="예: 확인 후 해당 제공자에게 경고 조치했습니다.">'
+    + '<button class="cta" style="position:static;margin-top:10px" onclick="submitResolve(\'' + reportId + '\',\'' + (targetId || '') + '\')">처리 확정</button></div>';
+  ov.style.display = 'flex';
+  ov.onclick = (e) => { if (e.target === ov) ov.style.display = 'none'; };
+  ov.querySelectorAll('.svc-row').forEach(r => r.onclick = () => { ov.querySelectorAll('.svc-row').forEach(x => x.classList.remove('on')); r.classList.add('on'); });
+};
+window.submitResolve = async function (reportId, targetId) {
+  const ov = document.getElementById('rptOv');
+  const sel = ov.querySelector('.svc-row.on');
+  if (!sel) { alert('조치를 선택해 주세요.'); return; }
+  const action = sel.dataset.a;
+  const msg = (ov.querySelector('#rptMsg').value || '').trim();
+  // 제공자 제재 적용
+  if (targetId && action !== 'none') {
+    const patch = { penalty_level: action === 'warn' ? 1 : action === 'lower' ? 2 : 3 };
+    if (action === 'suspend') { patch.suspended_until = new Date(Date.now() + 3 * 864e5).toISOString(); patch.is_active = false; }
+    await sb.from('providers').update(patch).eq('id', targetId);
+    // 제공자에게 통보
+    try {
+      const { data: pr } = await sb.from('providers').select('profile_id, owner_id').eq('id', targetId).single();
+      const uid = pr && (pr.profile_id || pr.owner_id);
+      const label = action === 'warn' ? '경고' : action === 'lower' ? '목록 노출 저하' : '3일 예약 정지';
+      if (uid) await sb.from('notifications').insert({ user_id: uid, title: '신고 접수에 따른 조치 안내', body: '고객 신고가 확인되어 ' + label + ' 조치가 적용되었습니다. 반복 시 제재가 강화될 수 있습니다.', kind: 'warning' });
+    } catch (e) {}
+  }
+  await sb.from('reports').update({ status: 'resolved', action_taken: action, resolution: msg || null, resolved_at: new Date().toISOString(), resolved_by: SESSION ? SESSION.user.id : null }).eq('id', reportId);
+  await notifyReporter(reportId, msg || (action === 'none' ? '검토 결과 별도 조치 없이 종결되었습니다.' : '확인 후 해당 제공자에게 조치했습니다. 신고해 주셔서 감사합니다.'));
+  ov.style.display = 'none';
+  alert('처리되었습니다. 신고자에게 결과가 회신되었습니다.');
+  loadAdminReports();
+};
 async function loadAdminMembers() {
   const wrap = document.getElementById('membersList'); if (!wrap) return;
   wrap.innerHTML = '<div class="hint">불러오는 중…</div>';
-  const { data, error } = await sb.from('profiles').select('id,full_name,role,phone,created_at').order('created_at', { ascending: false });
+  const { data, error } = await sb.from('profiles').select('id,full_name,role,phone,created_at,cancel_count,no_show_count,booking_blocked_until').order('created_at', { ascending: false });
   if (error) { wrap.innerHTML = '<div class="notice">불러오기 실패: ' + error.message + '</div>'; return; }
-  wrap.innerHTML = (data && data.length) ? data.map(u => '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + (u.full_name || '(이름 없음)') + '</span><span style="font-size:12px;color:#2E8B8B;font-weight:bold">' + u.role + '</span></div><div class="d">' + (u.phone || '-') + '</div></div>').join('') : '<div class="notice">회원이 없습니다.</div>';
+  wrap.innerHTML = (data && data.length) ? data.map(u => {
+    const blocked = u.booking_blocked_until && new Date(u.booking_blocked_until) > new Date();
+    return '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + (u.full_name || '(이름 없음)') + '</span><span style="font-size:12px;color:#2E8B8B;font-weight:bold">' + u.role + '</span></div>'
+      + '<div class="d">' + (u.phone || '-') + '</div>'
+      + (((u.cancel_count || 0) > 0 || (u.no_show_count || 0) > 0) ? '<div class="d" style="color:' + (blocked ? '#E5484D' : 'var(--muted)') + '">임박취소 ' + (u.cancel_count || 0) + '회 · 노쇼 ' + (u.no_show_count || 0) + '회' + (blocked ? ' · 🚫 예약 제한 ~' + new Date(u.booking_blocked_until).toLocaleDateString() : '') + '</div>' : '')
+      + (blocked ? '<div style="margin-top:8px"><button class="chip" style="border-color:#1E6B45;color:#1E6B45" onclick="unblockCustomer(\'' + u.id + '\')">예약 제한 해제</button></div>' : '')
+      + '</div>';
+  }).join('') : '<div class="notice">회원이 없습니다.</div>';
 }
 window.loadAdminMembers = loadAdminMembers;
+window.unblockCustomer = async (id) => { await sb.from('profiles').update({ booking_blocked_until: null, cancel_count: 0, no_show_count: 0 }).eq('id', id); loadAdminMembers(); };
 async function loadPartnerRevenue() {
   if (!SESSION) { openAuth(); return; }
   const wrap = document.getElementById('revenueList'); if (!wrap) return;
   wrap.innerHTML = '<div class="hint">불러오는 중…</div>';
-  const { data, error } = await sb.from('bookings').select('*, services(name)').order('created_at', { ascending: false });
+  const mine = await myProviders();
+  const ids = mine.map(p => p.id);
+  if (!ids.length) { wrap.innerHTML = '<div class="notice">등록된 제공자 정보가 없습니다.</div>'; return; }
+  const { data, error } = await sb.from('bookings').select('*, services(name)').in('provider_id', ids).order('created_at', { ascending: false }).limit(500);
   if (error) { wrap.innerHTML = '<div class="notice">불러오기 실패: ' + error.message + '</div>'; return; }
   const rows = data || [], paid = rows.filter(b => b.is_paid);
-  const total = paid.reduce((a, b) => a + b.amount_vnd, 0);
   const now = Date.now();
-  const wk = paid.filter(b => (now - new Date(b.created_at).getTime()) < 7 * 864e5).reduce((a, b) => a + b.amount_vnd, 0);
+  const sum = (arr) => arr.reduce((a, b) => a + (b.amount_vnd || 0), 0);
+  const total = sum(paid);
+  const inDays = (d) => paid.filter(b => (now - new Date(b.completed_at || b.created_at).getTime()) < d * 864e5);
+  const wk = sum(inDays(7)), mo = sum(inDays(30));
+  const fee = Math.round(total * FEE_RATE), net = total - fee;
   const completed = rows.filter(b => b.status === 'completed').length;
-  const kpis = [['총 매출', total.toLocaleString() + '₫'], ['최근 7일', wk.toLocaleString() + '₫'], ['완료 건수', completed], ['결제 건수', paid.length]];
+  const kpis = [
+    ['총 매출', total.toLocaleString() + '₫'],
+    ['내 수령(수수료 제외)', net.toLocaleString() + '₫'],
+    ['최근 7일', wk.toLocaleString() + '₫'],
+    ['최근 30일', mo.toLocaleString() + '₫'],
+    ['완료 건수', completed],
+    ['결제 건수', paid.length]
+  ];
+  // 월별 추이(최근 6개월)
+  const mKey = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  const months = {};
+  paid.forEach(b => { const k = mKey(new Date(b.completed_at || b.created_at)); months[k] = (months[k] || 0) + (b.amount_vnd || 0); });
+  const mk = Object.keys(months).sort().slice(-6);
+  const maxV = Math.max(...mk.map(k => months[k]), 1);
   const pmKo = { card: '카드', qr: 'QR', bank_transfer: '이체', card_onsite: '현장', cash: '현금', qr_onsite: 'QR' };
-  wrap.innerHTML = '<div class="kpi-grid">' + kpis.map(k => '<div class="kpi"><div class="kpi-v" style="font-size:18px">' + k[1] + '</div><div class="kpi-l">' + k[0] + '</div></div>').join('') + '</div>'
-    + '<div class="pf-sec">최근 결제</div>' + (paid.length ? paid.slice(0, 10).map(b => '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + (b.services ? b.services.name : '서비스') + '</span><span style="font-weight:bold">' + b.amount_vnd.toLocaleString() + '₫</span></div><div class="d">' + new Date(b.created_at).toLocaleDateString('ko-KR') + ' · ' + (pmKo[b.payment_method] || b.payment_method) + '</div></div>').join('') : '<div class="notice">결제 내역이 없습니다.</div>');
+  let html = '<div class="kpi-grid">' + kpis.map(k => '<div class="kpi"><div class="kpi-v" style="font-size:17px">' + k[1] + '</div><div class="kpi-l">' + k[0] + '</div></div>').join('') + '</div>';
+  html += '<div class="card" style="background:#FBF1DF;cursor:default"><div class="trow1"><span class="t">플랫폼 수수료 (' + (FEE_RATE * 100).toFixed(0) + '%)</span><span style="color:#B23A5B;font-weight:bold">' + fee.toLocaleString() + '₫</span></div><div class="d">완료일 + ' + DUE_DAYS + '일 이내 회사 계좌로 입금해 주세요. 상세는 [내 입금 현황]에서 확인할 수 있습니다.</div></div>';
+  if (mk.length) {
+    html += '<div class="card" style="cursor:default"><div class="trow1"><span class="t">월별 매출 (최근 6개월)</span></div>'
+      + mk.map(k => '<div class="d" style="display:flex;align-items:center;gap:8px"><span style="width:60px">' + k + '</span><span style="flex:1;height:9px;background:#EEF2F0;border-radius:5px;overflow:hidden"><span style="display:block;height:100%;width:' + Math.round(months[k] / maxV * 100) + '%;background:#3E7C4F"></span></span><span style="width:92px;text-align:right">' + months[k].toLocaleString() + '₫</span></div>').join('') + '</div>';
+  }
+  // 정산 사이클 요약
+  try {
+    const { data: cyc } = await sb.from('settlement_cycle').select('*').in('provider_id', ids).order('period_start', { ascending: false }).limit(3);
+    if (cyc && cyc.length) {
+      html += '<div class="pf-sec">최근 정산</div>' + cyc.map(c => '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + c.period_start + ' ~ ' + c.period_end + '</span><span style="font-size:12px;font-weight:bold;color:' + (c.status === 'paid' ? '#1E6B45' : '#E8A33D') + '">' + (c.status === 'paid' ? '입금 완료' : '입금 대기') + '</span></div><div class="d">' + c.booking_count + '건 · 매출 ' + Number(c.gross_vnd).toLocaleString() + '₫ · 수수료 ' + Number(c.fee_vnd).toLocaleString() + '₫</div></div>').join('')
+        + '<div style="margin-top:8px"><button class="chip" onclick="window.go(\'partnerSettle\');loadMySettle()">내 입금 현황 보기 ›</button></div>';
+    }
+  } catch (e) {}
+  html += '<div class="pf-sec">최근 결제</div>' + (paid.length ? paid.slice(0, 10).map(b => '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + (b.services ? b.services.name : '서비스') + '</span><span style="font-weight:bold">' + b.amount_vnd.toLocaleString() + '₫</span></div><div class="d">' + new Date(b.completed_at || b.created_at).toLocaleDateString('ko-KR') + ' · ' + (pmKo[b.payment_method] || b.payment_method || '') + '</div></div>').join('') : '<div class="notice">결제 내역이 없습니다.</div>');
+  wrap.innerHTML = html;
 }
 window.loadPartnerRevenue = loadPartnerRevenue;
 async function loadPartnerSchedule() {
@@ -2132,12 +2579,12 @@ function fmtDate(d) { const x = new Date(d); return (x.getMonth() + 1) + '/' + x
 async function loadSettlement() {
   const wrap = document.getElementById('settlementList'); if (!wrap) return;
   wrap.innerHTML = '<div class="hint">불러오는 중…</div>';
-  const { data, error } = await sb.from('bookings').select('provider_id, amount_vnd, is_paid, created_at, providers(display_name)').eq('is_paid', true);
+  const { data, error } = await sb.from('bookings').select('provider_id, amount_vnd, is_paid, created_at, completed_at, providers(display_name)').eq('is_paid', true);
   if (error) { wrap.innerHTML = '<div class="notice">불러오기 실패: ' + error.message + '</div>'; return; }
   const { data: setts } = await sb.from('settlement').select('*');
   const smap = {}; (setts || []).forEach(s => smap[s.provider_id] = s);
   const g = {};
-  (data || []).forEach(b => { const k = b.provider_id || 'none'; if (!g[k]) g[k] = { id: b.provider_id, name: b.providers ? b.providers.display_name : '미배정', sum: 0, cnt: 0, first: b.created_at }; g[k].sum += b.amount_vnd; g[k].cnt++; if (b.created_at < g[k].first) g[k].first = b.created_at; });
+  (data || []).forEach(b => { const t = b.completed_at || b.created_at; const k = b.provider_id || 'none'; if (!g[k]) g[k] = { id: b.provider_id, name: b.providers ? b.providers.display_name : '미배정', sum: 0, cnt: 0, first: t }; g[k].sum += b.amount_vnd; g[k].cnt++; if (t < g[k].first) g[k].first = t; });
   const rows = Object.values(g).sort((a, b) => b.sum - a.sum);
   const now = Date.now();
   // 자동 경고: 지연·미입금·미경고 건 자동 기록
@@ -2174,6 +2621,105 @@ async function loadSettlement() {
   }).join('') : '<div class="notice">정산할 결제 내역이 없습니다.</div>';
 }
 window.loadSettlement = loadSettlement;
+
+// ── 정산 사이클(주/월 마감) ──
+function ymd(d) { return d.toISOString().slice(0, 10); }
+window.switchSettTab = function () {
+  const t = (document.querySelector('#settTab .chip.sel') || {}).dataset;
+  const cyc = t && t.t === 'cycle';
+  document.getElementById('settCycleBox').style.display = cyc ? '' : 'none';
+  document.getElementById('settLiveBox').style.display = cyc ? 'none' : '';
+  if (cyc) { fillCyclePeriod(); loadCycles(); }
+};
+window.fillCyclePeriod = function () {
+  const p = (document.querySelector('#cycType .chip.sel') || {}).dataset;
+  const type = p && p.p === 'month' ? 'month' : 'week';
+  const now = new Date(); let s, e;
+  if (type === 'month') {
+    s = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    e = new Date(now.getFullYear(), now.getMonth(), 0);
+  } else {
+    const day = now.getDay() || 7;                 // 월요일 시작
+    e = new Date(now); e.setDate(now.getDate() - day);          // 지난주 일요일
+    s = new Date(e); s.setDate(e.getDate() - 6);                // 지난주 월요일
+  }
+  document.getElementById('cycStart').value = ymd(s);
+  document.getElementById('cycEnd').value = ymd(e);
+};
+window.closeCycle = async function () {
+  const msg = document.getElementById('cycMsg');
+  const p = (document.querySelector('#cycType .chip.sel') || {}).dataset;
+  const type = p && p.p === 'month' ? 'month' : 'week';
+  const s = document.getElementById('cycStart').value, e = document.getElementById('cycEnd').value;
+  if (!s || !e) { msg.style.color = '#B23A5B'; msg.textContent = '기간을 선택하세요.'; return; }
+  msg.style.color = 'var(--muted)'; msg.textContent = '마감 중…';
+  const { data, error } = await sb.rpc('close_settlement_cycle', { p_period_type: type, p_start: s, p_end: e });
+  if (error) { msg.style.color = '#B23A5B'; msg.textContent = '마감 실패: ' + error.message; return; }
+  msg.style.color = '#1E6B45'; msg.textContent = (data || 0) + '건의 정산 내역을 마감했습니다.';
+  loadCycles();
+};
+async function loadCycles() {
+  const wrap = document.getElementById('cycleList'); if (!wrap) return;
+  wrap.innerHTML = '<div class="hint">불러오는 중…</div>';
+  const { data, error } = await sb.from('settlement_cycle').select('*, providers(display_name)').order('period_start', { ascending: false }).limit(100);
+  if (error) { wrap.innerHTML = '<div class="notice">불러오기 실패: ' + error.message + '</div>'; return; }
+  window.__cycles = data || [];
+  if (!data || !data.length) { wrap.innerHTML = '<div class="notice">마감된 정산 내역이 없습니다. 기간을 선택해 마감하세요.</div>'; return; }
+  const ST = { open: ['진행중', '#7A8C94'], closed: ['입금 대기', '#E8A33D'], paid: ['입금 완료', '#1E6B45'] };
+  wrap.innerHTML = data.map(c => {
+    const s = ST[c.status] || [c.status, '#7A8C94'];
+    const overdue = c.status !== 'paid' && c.due_date && new Date(c.due_date) < new Date();
+    return '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + (c.providers ? c.providers.display_name : '(삭제됨)') + '</span><span style="color:' + (overdue ? '#E5484D' : s[1]) + ';font-weight:bold;font-size:12px">' + (overdue ? '⚠ 기한 초과' : s[0]) + '</span></div>'
+      + '<div class="d">' + c.period_start + ' ~ ' + c.period_end + ' · ' + c.booking_count + '건</div>'
+      + '<div class="d">고객 결제 ' + Number(c.gross_vnd).toLocaleString() + '₫ · <b style="color:#1E6B45">회사 수취 ' + Number(c.fee_vnd).toLocaleString() + '₫</b></div>'
+      + '<div class="d">입금기한 ' + (c.due_date || '-') + (c.paid_at ? ' · 입금 ' + new Date(c.paid_at).toLocaleDateString() : '') + '</div>'
+      + (c.proof_url ? '<div class="d"><a href="' + c.proof_url + '" target="_blank">📎 입금 증빙 보기</a></div>' : '<div class="d" style="color:var(--muted)">증빙 미첨부</div>')
+      + '<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">'
+      + (c.status !== 'paid' ? '<button class="chip sel" onclick="markCyclePaid(\'' + c.id + '\')">입금 확인</button>' : '')
+      + '<button class="chip" onclick="cycleReceipt(\'' + c.id + '\')">영수증</button>'
+      + '</div></div>';
+  }).join('');
+}
+window.loadCycles = loadCycles;
+window.markCyclePaid = async (id) => { await sb.from('settlement_cycle').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('id', id); loadCycles(); };
+window.cycleReceipt = function (id) {
+  const c = (window.__cycles || []).find(x => x.id === id); if (!c) return;
+  const name = c.providers ? c.providers.display_name : '';
+  const w = window.open('', '_blank', 'width=420,height=620');
+  if (!w) { alert('팝업이 차단되었습니다. 팝업을 허용해 주세요.'); return; }
+  w.document.write('<meta charset="utf-8"><title>정산 영수증</title>'
+    + '<div style="font-family:system-ui,sans-serif;padding:24px;max-width:360px">'
+    + '<h2 style="margin:0 0 4px">m\u314fss\u314f 정산 영수증</h2>'
+    + '<div style="color:#7A8C94;font-size:13px;margin-bottom:16px">' + c.period_start + ' ~ ' + c.period_end + ' (' + (c.period_type === 'month' ? '월간' : '주간') + ')</div>'
+    + '<table style="width:100%;font-size:14px;border-collapse:collapse">'
+    + '<tr><td style="padding:8px 0;color:#7A8C94">제공자</td><td style="text-align:right;font-weight:bold">' + name + '</td></tr>'
+    + '<tr><td style="padding:8px 0;color:#7A8C94">완료 건수</td><td style="text-align:right">' + c.booking_count + '건</td></tr>'
+    + '<tr><td style="padding:8px 0;color:#7A8C94">고객 결제 총액</td><td style="text-align:right">' + Number(c.gross_vnd).toLocaleString() + '₫</td></tr>'
+    + '<tr><td style="padding:8px 0;color:#7A8C94">플랫폼 수수료</td><td style="text-align:right;color:#B23A5B;font-weight:bold">' + Number(c.fee_vnd).toLocaleString() + '₫</td></tr>'
+    + '<tr><td style="padding:8px 0;color:#7A8C94">제공자 수령</td><td style="text-align:right;color:#1E6B45;font-weight:bold">' + Number(c.net_vnd).toLocaleString() + '₫</td></tr>'
+    + '<tr><td style="padding:8px 0;color:#7A8C94">입금 기한</td><td style="text-align:right">' + (c.due_date || '-') + '</td></tr>'
+    + '<tr><td style="padding:8px 0;color:#7A8C94">상태</td><td style="text-align:right">' + (c.status === 'paid' ? '입금 완료' : '입금 대기') + '</td></tr>'
+    + '</table>'
+    + '<div style="margin-top:20px;color:#7A8C94;font-size:12px">발행일 ' + new Date().toLocaleString() + '</div>'
+    + '<button onclick="window.print()" style="margin-top:16px;padding:10px 16px;border:0;border-radius:10px;background:#3E7C4F;color:#fff;font-weight:bold;cursor:pointer">인쇄</button>'
+    + '</div>');
+};
+window.exportCyclesCsv = function () {
+  const rows = window.__cycles || [];
+  if (!rows.length) { alert('내보낼 내역이 없습니다. 먼저 마감하세요.'); return; }
+  const head = ['제공자', '기간유형', '시작', '종료', '건수', '고객결제', '수수료', '제공자수령', '상태', '입금기한', '입금일'];
+  const body = rows.map(c => [
+    (c.providers ? c.providers.display_name : ''), c.period_type, c.period_start, c.period_end,
+    c.booking_count, c.gross_vnd, c.fee_vnd, c.net_vnd, c.status, c.due_date || '', c.paid_at ? new Date(c.paid_at).toISOString().slice(0, 10) : ''
+  ]);
+  const csv = [head, ...body].map(r => r.map(v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"').join(',')).join('\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'massa_settlement_' + new Date().toISOString().slice(0, 10) + '.csv';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+};
 async function loadMySettle() {
   if (!SESSION) { openAuth(); return; }
   const wrap = document.getElementById('mySettleList'); if (!wrap) return;
@@ -2183,11 +2729,11 @@ async function loadMySettle() {
   const ids = (mine || []).map(p => p.id);
   if (!ids.length) { wrap.innerHTML = '<div class="notice">등록된 제공자 정보가 없습니다. 먼저 제공자 등록을 완료하세요.</div>'; return; }
   const nameMap = {}; (mine || []).forEach(p => nameMap[p.id] = p.display_name);
-  const { data: bks } = await sb.from('bookings').select('provider_id, amount_vnd, created_at, is_paid').in('provider_id', ids).eq('is_paid', true);
+  const { data: bks } = await sb.from('bookings').select('provider_id, amount_vnd, created_at, completed_at, is_paid').in('provider_id', ids).eq('is_paid', true);
   const { data: setts } = await sb.from('settlement').select('*').in('provider_id', ids);
   const smap = {}; (setts || []).forEach(s => smap[s.provider_id] = s);
   const g = {};
-  (bks || []).forEach(b => { const k = b.provider_id; if (!g[k]) g[k] = { id: k, name: nameMap[k] || '', sum: 0, cnt: 0, first: b.created_at }; g[k].sum += b.amount_vnd; g[k].cnt++; if (b.created_at < g[k].first) g[k].first = b.created_at; });
+  (bks || []).forEach(b => { const t = b.completed_at || b.created_at; const k = b.provider_id; if (!g[k]) g[k] = { id: k, name: nameMap[k] || '', sum: 0, cnt: 0, first: t }; g[k].sum += b.amount_vnd; g[k].cnt++; if (t < g[k].first) g[k].first = t; });
   const rows = Object.values(g);
   if (!rows.length) { wrap.innerHTML = '<div class="notice">아직 정산할 완료 예약이 없습니다.</div>'; return; }
   const now = Date.now(); let totalOwe = 0;
@@ -2204,9 +2750,43 @@ async function loadMySettle() {
       + '<div class="d">입금기한 ' + fmtDate(dueMs) + '까지' + (overdue ? ' · 기한 초과' : '') + '</div></div>';
   }).join('');
   const head = '<div class="card" style="background:#FBF1DF;cursor:default"><div class="trow1"><span class="t">회사 입금 합계</span><span style="color:#B23A5B;font-weight:bold">' + totalOwe.toLocaleString() + '₫</span></div><div class="d">완료일 + 3일 이내 입금 원칙 · 입금 계좌는 관리자 안내를 따라주세요.</div></div>';
-  wrap.innerHTML = head + cards;
+  const cyc = await loadMyCycles(ids);
+  wrap.innerHTML = head + cards + cyc;
 }
 window.loadMySettle = loadMySettle;
+
+// 파트너: 마감된 정산 사이클 + 입금 증빙 업로드
+async function loadMyCycles(ids) {
+  const { data } = await sb.from('settlement_cycle').select('*').in('provider_id', ids).order('period_start', { ascending: false }).limit(20);
+  const list = data || [];
+  if (!list.length) return '';
+  const ST = { closed: ['입금 대기', '#E8A33D'], paid: ['입금 완료', '#1E6B45'], open: ['진행중', '#7A8C94'] };
+  return '<div class="pf-sec">마감된 정산</div>' + list.map(c => {
+    const s = ST[c.status] || [c.status, '#7A8C94'];
+    const overdue = c.status !== 'paid' && c.due_date && new Date(c.due_date) < new Date();
+    return '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + c.period_start + ' ~ ' + c.period_end + '</span><span style="color:' + (overdue ? '#E5484D' : s[1]) + ';font-weight:bold;font-size:12px">' + (overdue ? '⚠ 기한 초과' : s[0]) + '</span></div>'
+      + '<div class="d">' + c.booking_count + '건 · 고객 결제 ' + Number(c.gross_vnd).toLocaleString() + '₫</div>'
+      + '<div class="d" style="color:#B23A5B;font-weight:bold">회사에 입금할 금액 ' + Number(c.fee_vnd).toLocaleString() + '₫ · 기한 ' + (c.due_date || '-') + '</div>'
+      + (c.proof_url ? '<div class="d"><a href="' + c.proof_url + '" target="_blank">📎 첨부한 증빙 보기</a></div>' : '')
+      + (c.status !== 'paid' ? '<div class="label" style="margin-top:8px">입금 증빙 첨부 (이체 캡처)</div><input class="tx" type="file" accept="image/*" onchange="uploadProof(this,\'' + c.id + '\')">' : '')
+      + '</div>';
+  }).join('');
+}
+window.uploadProof = async function (el, cycleId) {
+  const f = el.files && el.files[0]; if (!f) return;
+  if (!SESSION) { openAuth(); return; }
+  const ext = (f.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+  const p = 'proof/' + SESSION.user.id + '/' + Date.now() + '.' + ext;
+  el.disabled = true;
+  const { error } = await sb.storage.from('provider-photos').upload(p, f, { contentType: f.type || undefined });
+  if (error) { el.disabled = false; alert('업로드 실패: ' + error.message); return; }
+  const url = sb.storage.from('provider-photos').getPublicUrl(p).data.publicUrl;
+  const { error: e2 } = await sb.from('settlement_cycle').update({ proof_url: url }).eq('id', cycleId);
+  el.disabled = false;
+  if (e2) { alert('증빙 저장 실패: ' + e2.message); return; }
+  alert('입금 증빙이 첨부되었습니다. 관리자 확인 후 입금 완료로 처리됩니다.');
+  loadMySettle();
+};
 
 // ── 파트너: 내 제공자 목록 헬퍼 ──
 async function myProviders() {
@@ -2409,7 +2989,7 @@ async function loadAdminBookings() {
   }).join('') : '<div class="notice">해당 상태의 예약이 없습니다.</div>';
 }
 window.loadAdminBookings = loadAdminBookings;
-window.adminSetBooking = async (id, status) => { await sb.from('bookings').update({ status }).eq('id', id); loadAdminBookings(); };
+window.adminSetBooking = async (id, status) => { const patch = { status }; if (status === 'completed') patch.completed_at = new Date().toISOString(); if (status === 'accepted') patch.accepted_at = new Date().toISOString(); await sb.from('bookings').update(patch).eq('id', id); loadAdminBookings(); };
 
 // ── 관리자: 기사(마사지사) 관리 ──
 async function loadAdminProviders() {
@@ -2423,12 +3003,18 @@ async function loadAdminProviders() {
   const kindKo = { masseur: '마사지사', therapist: '홈 뷰티' };
   wrap.innerHTML = (data && data.length) ? data.map(p => '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + p.display_name + ' <span style="font-size:11px;color:var(--muted)">' + (kindKo[p.kind] || p.kind) + '</span></span><label class="sw"><input type="checkbox" ' + (p.is_active ? 'checked' : '') + ' onchange="toggleActive(\'' + p.id + '\',this.checked)"><span class="sw-track"></span></label></div>'
     + '<div class="d">★ ' + Number(p.rating).toFixed(1) + ' · 리뷰 ' + p.review_count + ' · ' + (p.base_district || '-') + ' · ' + (p.application_status === 'approved' ? '승인' : p.application_status) + '</div>'
+    + (function () { const lv = p.penalty_level || 0; const sus = p.suspended_until && new Date(p.suspended_until) > new Date(); if (!lv && !sus) return ''; const t = sus ? '🚫 예약 정지 (~' + new Date(p.suspended_until).toLocaleDateString() + ')' : lv >= 2 ? '⚠ 노출 저하' : '⚠ 경고'; return '<div class="d" style="color:#E5484D;font-weight:bold">' + t + ' · 최근 거절 ' + (p.reject_count || 0) + '회</div>'; })()
     + '<div class="d">' + (p.specialties || []).map(s => TYPE_KO[s] || s).join('·') + ' · ' + (p.phone || '연락처 없음') + '</div>'
-    + '<div style="margin-top:8px;display:flex;gap:8px"><button class="chip" onclick="openProfile(\'' + p.id + '\')">프로필</button>'
-    + (p.is_verified ? '' : '<button class="chip sel" onclick="adminVerify(\'' + p.id + '\')">인증 부여</button>') + '</div></div>').join('') : '<div class="notice">검색 결과가 없습니다.</div>';
+    + '<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button class="chip" onclick="openProfile(\'' + p.id + '\')">프로필</button>'
+    + (p.is_verified ? '' : '<button class="chip sel" onclick="adminVerify(\'' + p.id + '\')">인증 부여</button>')
+    + (((p.penalty_level || 0) > 0 || p.suspended_until) ? '<button class="chip" style="border-color:#1E6B45;color:#1E6B45" onclick="clearPenalty(\'' + p.id + '\')">제재 해제</button>' : '')
+    + (p.hygiene_certified ? '<span class="chip sel" style="background:#2E8B8B;border-color:#2E8B8B">위생 인증됨</span>' : '<button class="chip" style="border-color:#2E8B8B;color:#2E8B8B" onclick="setHygiene(\'' + p.id + '\')">위생 인증 부여</button>')
+    + '</div></div>').join('') : '<div class="notice">검색 결과가 없습니다.</div>';
 }
 window.loadAdminProviders = loadAdminProviders;
 window.adminVerify = async (id) => { await sb.from('providers').update({ is_verified: true }).eq('id', id); loadAdminProviders(); };
+window.setHygiene = async (id) => { if (!confirm('위생 교육·1회용 키트 사용을 확인했습니까? 확인 시 위생 인증 뱃지가 부여됩니다.')) return; await sb.from('providers').update({ hygiene_certified: true, hygiene_checked_at: new Date().toISOString() }).eq('id', id); loadAdminProviders(); };
+window.clearPenalty = async (id) => { if (!confirm('이 제공자의 제재(경고·노출저하·정지)를 해제할까요?')) return; await sb.from('providers').update({ penalty_level: 0, suspended_until: null, reject_count: 0, is_active: true }).eq('id', id); loadAdminProviders(); };
 
 // ── 관리자: 수수료 설정 ──
 async function loadFeeSettings() {
@@ -2518,6 +3104,75 @@ async function loadCountryStats() {
   wrap.innerHTML = html;
 }
 window.loadCountryStats = loadCountryStats;
+
+// ── 약관 동의 ──
+const TERMS_VERSION = '2026-07-1';
+async function loadAgreements() {
+  if (!SESSION) { openAuth(); return; }
+  const msg = document.getElementById('agMsg');
+  const { data } = await sb.from('profiles').select('terms_agreed_at, privacy_agreed_at, marketing_agreed_at, terms_version').eq('id', SESSION.user.id).single();
+  if (!data) return;
+  document.getElementById('agTerms').checked = !!data.terms_agreed_at;
+  document.getElementById('agPrivacy').checked = !!data.privacy_agreed_at;
+  document.getElementById('agMkt').checked = !!data.marketing_agreed_at;
+  if (data.terms_agreed_at && data.privacy_agreed_at) {
+    msg.style.color = '#1E6B45';
+    msg.textContent = '동의 완료 · ' + new Date(data.terms_agreed_at).toLocaleDateString() + (data.terms_version ? ' (v' + data.terms_version + ')' : '');
+  } else { msg.style.color = 'var(--muted)'; msg.textContent = '필수 항목에 동의해야 예약을 진행할 수 있습니다.'; }
+}
+window.loadAgreements = loadAgreements;
+window.saveAgreements = async function () {
+  if (!SESSION) { openAuth(); return; }
+  const msg = document.getElementById('agMsg');
+  const t = document.getElementById('agTerms').checked, p = document.getElementById('agPrivacy').checked, m = document.getElementById('agMkt').checked;
+  if (!t || !p) { msg.style.color = '#B23A5B'; msg.textContent = '필수 항목(이용약관·개인정보)에 동의해 주세요.'; return; }
+  const now = new Date().toISOString();
+  const { error } = await sb.from('profiles').update({ terms_agreed_at: now, privacy_agreed_at: now, marketing_agreed_at: m ? now : null, terms_version: TERMS_VERSION }).eq('id', SESSION.user.id);
+  if (error) { msg.style.color = '#B23A5B'; msg.textContent = '저장 실패: ' + error.message; return; }
+  if (CUR_PROFILE) { CUR_PROFILE.terms_agreed_at = now; CUR_PROFILE.privacy_agreed_at = now; }
+  msg.style.color = '#1E6B45'; msg.textContent = '동의가 저장되었습니다. 감사합니다.';
+};
+// 예약 진행 전 필수 동의 확인
+async function ensureAgreed() {
+  if (!SESSION) return true;
+  try {
+    const { data } = await sb.from('profiles').select('terms_agreed_at, privacy_agreed_at').eq('id', SESSION.user.id).single();
+    if (data && data.terms_agreed_at && data.privacy_agreed_at) return true;
+    alert('예약 전에 이용약관과 개인정보 처리방침에 동의해 주세요.');
+    window.go('terms'); loadAgreements();
+    return false;
+  } catch (e) { return true; }
+}
+window.ensureAgreed = ensureAgreed;
+
+// ── 안전 센터 (SOS · 위치 공유) ──
+async function loadSafety() {
+  if (!SESSION) { openAuth(); return; }
+  const wrap = document.getElementById('safetyList'); if (!wrap) return;
+  const { data } = await sb.from('safety_alerts').select('*').eq('user_id', SESSION.user.id).order('created_at', { ascending: false }).limit(10);
+  const list = data || [];
+  wrap.innerHTML = list.length ? list.map(a => '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + (a.kind === 'sos' ? '🚨 긴급 요청' : '📍 위치 공유') + '</span><span style="font-size:12px;color:' + (a.status === 'handled' ? '#1E6B45' : '#E8A33D') + ';font-weight:bold">' + (a.status === 'handled' ? '처리됨' : '접수') + '</span></div><div class="d">' + new Date(a.created_at).toLocaleString() + (a.lat ? ' · ' + a.lat.toFixed(4) + ', ' + a.lng.toFixed(4) : '') + '</div></div>').join('') : '<div class="hint">기록이 없습니다.</div>';
+}
+window.loadSafety = loadSafety;
+async function createSafetyAlert(kind, note) {
+  if (!SESSION) { openAuth(); return; }
+  const msg = document.getElementById('safetyMsg');
+  const send = async (lat, lng) => {
+    const { error } = await sb.from('safety_alerts').insert({ user_id: SESSION.user.id, kind, lat, lng, note: note || null });
+    if (error) { msg.style.color = '#B23A5B'; msg.textContent = '전송 실패: ' + error.message; return; }
+    msg.style.color = '#1E6B45';
+    msg.textContent = kind === 'sos' ? '🚨 긴급 요청이 전달되었습니다. 관리자가 즉시 확인합니다. 위급 시 현지 긴급전화(113)로도 신고하세요.' : '📍 현재 위치가 공유되었습니다.';
+    loadSafety();
+  };
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => send(pos.coords.latitude, pos.coords.longitude),
+      () => send(null, null)
+    );
+  } else send(null, null);
+}
+window.sendSos = () => { if (confirm('긴급 도움을 요청할까요? 현재 위치와 함께 관리자에게 즉시 전달됩니다.')) createSafetyAlert('sos'); };
+window.shareMyLocation = () => createSafetyAlert('share_location');
 window.markSettled = async (id) => { await sb.from('settlement').upsert({ provider_id: id, status: 'paid', settled_at: new Date().toISOString(), updated_at: new Date().toISOString() }); loadSettlement(); };
 async function warnProvider(providerId) {
   const { data: p } = await sb.from('providers').select('profile_id, owner_id, display_name').eq('id', providerId).single();
@@ -2593,11 +3248,48 @@ window.createStaff = async () => {
   document.getElementById('stName').value = ''; const _sp = document.getElementById('stPhoto'); if (_sp) { _sp.value = ''; _sp.dataset.url = ''; } const _spp = document.getElementById('stPhotoPrev'); if (_spp) _spp.innerHTML = ''; STAFF_SPEC_SEL = new Set(); syncStaffSpecChip();
   alert('직원이 추가되었습니다.'); loadStaff();
 };
-window.reviewApp = async (id, status) => {
-  const patch = { application_status: status, is_verified: status === 'approved', is_active: status === 'approved' };
+window.reviewApp = async (id, status, reason) => {
+  const patch = { application_status: status, is_verified: status === 'approved', is_active: status === 'approved',
+    reviewed_at: new Date().toISOString(), reviewed_by: SESSION ? SESSION.user.id : null,
+    reject_reason: status === 'rejected' ? (reason || null) : null };
   const { error } = await sb.from('providers').update(patch).eq('id', id);
-  if (error) alert('실패: ' + error.message);
+  if (error) { alert('실패: ' + error.message); return; }
+  // 신청자에게 결과 알림
+  try {
+    const { data: pr } = await sb.from('providers').select('profile_id, owner_id, display_name').eq('id', id).single();
+    const uid = pr && (pr.profile_id || pr.owner_id);
+    if (uid) {
+      const body = status === 'approved'
+        ? '등록 신청이 승인되었습니다. 이제 고객 목록에 노출되며 예약을 받을 수 있어요.'
+        : '등록 신청이 반려되었습니다.\n사유: ' + (reason || '-') + '\n계정 → 제공자 등록 신청에서 내용을 수정해 다시 제출해 주세요.';
+      await sb.from('notifications').insert({ user_id: uid, title: status === 'approved' ? '등록 승인 안내' : '등록 반려 안내', body, kind: status === 'approved' ? 'info' : 'warning' });
+    }
+  } catch (e) {}
   loadAdminApps();
+};
+// KYC 반려 사유 입력
+const KYC_REJECT_REASONS = ['신분증 사진이 흐리거나 식별 불가','신분증 정보와 입력 정보 불일치','계좌 정보 오류·명의 불일치','사업자등록증 미제출 또는 불일치','프로필 사진 부적합','자격증 확인 불가','기타'];
+window.openKycReject = function (providerId) {
+  let ov = document.getElementById('kycRejOv');
+  if (!ov) { ov = document.createElement('div'); ov.id = 'kycRejOv'; ov.style.cssText = 'position:fixed;inset:0;z-index:210;background:rgba(20,25,28,.5);display:flex;align-items:flex-end;justify-content:center'; document.body.appendChild(ov); }
+  ov.innerHTML = '<div class="svc-sheet"><div class="svc-grip"></div><div class="svc-title">반려 사유를 선택해 주세요</div>'
+    + '<div class="notice">사유는 신청자에게 알림으로 전달되며, 수정 후 재제출할 수 있습니다.</div>'
+    + KYC_REJECT_REASONS.map(r => '<div class="svc-row" data-r="' + r + '">' + r + '</div>').join('')
+    + '<input class="tx" id="kycRejEtc" placeholder="추가 설명(선택)" style="margin-top:8px">'
+    + '<button class="cta" style="position:static;margin-top:10px" onclick="submitKycReject(\'' + providerId + '\')">반려 확정</button></div>';
+  ov.style.display = 'flex';
+  ov.onclick = (e) => { if (e.target === ov) ov.style.display = 'none'; };
+  ov.querySelectorAll('.svc-row').forEach(r => r.onclick = () => { ov.querySelectorAll('.svc-row').forEach(x => x.classList.remove('on')); r.classList.add('on'); });
+};
+window.submitKycReject = async function (providerId) {
+  const ov = document.getElementById('kycRejOv');
+  const sel = ov.querySelector('.svc-row.on');
+  const etc = (ov.querySelector('#kycRejEtc').value || '').trim();
+  if (!sel && !etc) { alert('사유를 선택하거나 입력해 주세요.'); return; }
+  const reason = (sel ? sel.dataset.r : '') + (etc ? (sel ? ' — ' : '') + etc : '');
+  ov.style.display = 'none';
+  await reviewApp(providerId, 'rejected', reason);
+  alert('반려 처리되었습니다. 신청자에게 사유가 전달되었습니다.');
 };
 
 // ── 계정 메뉴(역할별 이동) ──
@@ -2662,6 +3354,11 @@ const TITLE_I18N = {
   '예약 관리 (관리자)': ['Quản lý đặt chỗ (Admin)','Bookings (Admin)','预约管理（管理员）','予約管理（管理者）'], '기사(마사지사) 관리': ['Quản lý KTV','Providers','技师管理','セラピスト管理'],
   '수수료 관리': ['Phí nền tảng','Commission','手续费管理','手数料管理'], '쿠폰 관리': ['Quản lý coupon','Coupons (Admin)','优惠券管理','クーポン管理'],
   '매출 분석': ['Phân tích doanh thu','Sales Analytics','营收分析','売上分析'], '국가별 통계': ['Thống kê theo quốc gia','Country Stats','国家统计','国別統計'],
+  '약관 및 개인정보': ['Điều khoản & Bảo mật','Terms & Privacy','条款与隐私','規約とプライバシー'], '안전 센터': ['Trung tâm an toàn','Safety Center','安全中心','セーフティセンター'],
+  '🚨 긴급 도움 요청 (SOS)': ['🚨 Yêu cầu trợ giúp khẩn cấp','🚨 Emergency help (SOS)','🚨 紧急求助','🚨 緊急ヘルプ'],
+  '📍 내 위치 공유하기': ['📍 Chia sẻ vị trí','📍 Share my location','📍 分享我的位置','📍 現在地を共有'],
+  '약관 및 개인정보': ['Điều khoản & Bảo mật','Terms & Privacy','条款与隐私','規約とプライバシー'],
+  '안전 센터': ['Trung tâm an toàn','Safety Center','安全中心','セーフティセンター'],
   '쿠폰 발행': ['Phát hành coupon','Issue coupon','发行优惠券','クーポン発行'], '저장': ['Lưu','Save','保存','保存'],
   '예약 관리 (관리자)': ['Quản lý đặt chỗ (Admin)','Bookings (Admin)','预约管理（管理员）','予約管理（管理者）'],
   '기사(마사지사) 관리': ['Quản lý KTV','Providers','技师管理','セラピスト管理'],
@@ -2824,7 +3521,10 @@ const FILTER_STATE = { thList: { spec:'all', gender:'전체', status:'전체', t
 
 function computeProviders(screenId) {
   const kind = screenId === 'thList' ? 'masseur' : 'therapist';
-  let list = CACHE.providers.filter(p => p.kind === kind);
+  const now = Date.now();
+  let list = CACHE.providers.filter(p => p.kind === kind)
+    // 정지 중인 제공자는 목록에서 제외
+    .filter(p => !(p.suspended_until && new Date(p.suspended_until).getTime() > now));
   const f = FILTER_STATE[screenId];
   if (f.spec && f.spec !== 'all') list = list.filter(p => (p.specialties || []).includes(f.spec));
   if (f.gender !== '전체') { const g = f.gender === '남성' ? 'male' : 'female'; list = list.filter(p => p.gender === g); }
@@ -2833,6 +3533,8 @@ function computeProviders(screenId) {
     const isNew = p.review_count < 20, isQ = p.review_count > 150;
     return f.tags.some(t => (t === '신규 도착' && isNew) || (t === '품질' && isQ) || (t === '새로 업데이트' && isNew));
   });
+  // 노출 저하 등급은 목록 하단으로
+  list.sort((a, b) => ((a.penalty_level || 0) >= 2 ? 1 : 0) - ((b.penalty_level || 0) >= 2 ? 1 : 0));
   return list;
 }
 function refreshList(screenId) { fillList(screenId, computeProviders(screenId)); }
