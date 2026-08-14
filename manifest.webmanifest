@@ -1,0 +1,29 @@
+{
+  "name": "massa — 홈 마사지·홈뷰티",
+  "short_name": "massa",
+  "description": "하노이 집·호텔로 찾아가는 마사지·홈뷰티 방문 예약 서비스",
+  "id": "/",
+  "start_url": "./?src=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F4F6F7",
+  "theme_color": "#1F4E5F",
+  "lang": "ko",
+  "dir": "ltr",
+  "categories": ["lifestyle", "health", "beauty"],
+  "icons": [
+    { "src": "icon-48.png", "sizes": "48x48", "type": "image/png" },
+    { "src": "icon-72.png", "sizes": "72x72", "type": "image/png" },
+    { "src": "icon-96.png", "sizes": "96x96", "type": "image/png" },
+    { "src": "icon-144.png", "sizes": "144x144", "type": "image/png" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "예약 내역", "short_name": "예약", "url": "./?src=pwa#bookings" },
+    { "name": "계정", "short_name": "계정", "url": "./?src=pwa#account" }
+  ]
+}

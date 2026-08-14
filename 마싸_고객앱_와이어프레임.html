@@ -3,7 +3,16 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="하노이 집·호텔로 찾아가는 마사지·홈뷰티 방문 예약. 검증된 테라피스트를 원하는 시간에 부르세요.">
+<meta name="theme-color" content="#1F4E5F">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="massa">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>mㅏssㅏ 고객 앱 와이어프레임 v3 — 하노이 MVP</title>
 <style>
   :root {
@@ -1112,6 +1121,10 @@
 
 <script>
 // 히스토리 스택 기반 화면 전환과 선택 토글을 처리하는 스크립트
+// 서비스 워커 등록 — 설치형(PWA/TWA) 실행과 오프라인 셸을 위해 필요하다.
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
 // ?dev=1 이면 와이어프레임 설명(제목·플로우·안내문)을 강제로 노출한다.
 window.DEV_FORCED = /[?&]dev=1\b/.test(location.search);
 if (window.DEV_FORCED) document.body.classList.add('devmode');
