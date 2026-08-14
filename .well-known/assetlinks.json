@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.massa.hanoi",
+        "sha256_cert_fingerprints": ["7B:AC:10:B2:1C:AC:F7:69:8C:D1:5F:3B:DD:87:A3:FF:1C:C4:B4:52:F9:DF:7E:1D:3E:56:56:9E:89:B0:19:5A"]
+      }
+    }]

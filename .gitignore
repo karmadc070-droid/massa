@@ -4,3 +4,8 @@ config.js
 
 .~lock.*
 
+
+android-package/
+*.keystore
+signing-key-info.txt
+
