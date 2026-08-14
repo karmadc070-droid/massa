@@ -9,3 +9,7 @@ android-package/
 *.keystore
 signing-key-info.txt
 
+
+data_safety_sample.csv
+massa_data_safety.csv
+
