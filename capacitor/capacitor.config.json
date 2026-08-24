@@ -1,0 +1,19 @@
+{
+  "appId": "app.massa.hanoi",
+  "appName": "massa",
+  "webDir": "www",
+  "backgroundColor": "#1F4E5Fff",
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "backgroundColor": "#1F4E5Fff",
+      "showSpinner": false
+    },
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    }
+  },
+  "ios": {
+    "contentInset": "always"
+  }
+}

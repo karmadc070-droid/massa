@@ -1,0 +1,123 @@
+# Codemagic 클라우드 빌드 — massa iOS App Store (모아학원 검증 파이프라인 이식)
+workflows:
+  ios-appstore:
+    name: massa iOS App Store 빌드·TestFlight 업로드
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    working_directory: capacitor
+    integrations:
+      # Codemagic Teams > Integrations 에 등록된 App Store Connect 키 (모아학원과 동일 계정이라 재사용)
+      app_store_connect: moahagwon_asc_key
+    environment:
+      groups:
+        - ios_signing
+      vars:
+        BUNDLE_ID: "app.massa.hanoi"
+        XCODE_SCHEME: "App"
+      node: 22
+      xcode: latest
+      cocoapods: default
+    scripts:
+      # 저장소 루트의 배포본을 그대로 www로 복사 — 웹과 앱의 내용 불일치를 원천 차단
+      - name: 웹 자산을 저장소 루트에서 가져오기
+        script: |
+          rm -rf www && mkdir -p www
+          cp ../index.html ../manifest.webmanifest ../sw.js ../privacy.html ../terms.html ../delete-account.html www/
+          cp ../*.png ../*.jpg www/ 2>/dev/null || true
+          cp -r ../icons www/icons
+          rm -f www/masaage1.png www/wag1.png
+          ls -la www | head -40
+      - name: 의존성 설치
+        script: npm install
+      - name: 네이티브 기능 번들 생성 + index.html에 주입
+        script: |
+          npm run build:native
+          test -s www/capacitor-native.js || { echo "번들 생성 실패"; exit 1; }
+          node -e '
+            const fs=require("fs");
+            const p="www/index.html";
+            let s=fs.readFileSync(p,"utf8");
+            const tag="<script src=\"capacitor-native.js\"></script>\n";
+            if(!s.includes("capacitor-native.js")){
+              if(!s.includes("</head>")) { console.error("</head> 없음"); process.exit(1); }
+              s=s.replace("</head>", tag+"</head>");
+              fs.writeFileSync(p,s);
+            }
+            console.log("주입 확인:", s.split("capacitor-native.js").length-1);
+          '
+      # Capacitor 8은 SPM이 기본이지만 App.xcworkspace가 필요한 build-ipa 때문에 CocoaPods를 쓴다 (모아학원에서 검증)
+      - name: iOS 네이티브 프로젝트 생성 + 자산 동기화
+        script: |
+          npx cap add ios --packagemanager CocoaPods
+          test -d ios/App/App.xcworkspace || { echo "App.xcworkspace 없음 — CocoaPods 템플릿 실패"; exit 1; }
+          npx @capacitor/assets generate --ios --iconBackgroundColor '#1F4E5F' --splashBackgroundColor '#1F4E5F' || true
+          npx cap sync ios
+      - name: Info.plist 권한 문구 추가 (위치·카메라·사진)
+        script: |
+          PLIST=ios/App/App/Info.plist
+          /usr/libexec/PlistBuddy -c "Add :NSLocationWhenInUseUsageDescription string '내 주변 테라피스트 검색과 방문 서비스 위치 확인에 사용됩니다.'" "$PLIST" || true
+          /usr/libexec/PlistBuddy -c "Add :NSCameraUsageDescription string '프로필·서류 사진 촬영에 카메라를 사용합니다.'" "$PLIST" || true
+          /usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryUsageDescription string '프로필·서류 사진 업로드를 위해 사진 보관함에 접근합니다.'" "$PLIST" || true
+          echo "----- Info.plist 확인 -----"
+          /usr/libexec/PlistBuddy -c "Print :NSLocationWhenInUseUsageDescription" "$PLIST"
+      # 푸시(APNs)는 entitlements 가 있어야 동작한다. cap add ios 가 만들어주지 않으므로 직접 넣는다.
+      - name: entitlements 추가 (푸시)
+        script: |
+          ENT=ios/App/App/App.entitlements
+          if [ ! -f "$ENT" ]; then
+            /usr/libexec/PlistBuddy -c "Save" "$ENT"
+          fi
+          /usr/libexec/PlistBuddy -c "Delete :aps-environment" "$ENT" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :aps-environment string production" "$ENT"
+          echo "----- entitlements 확인 -----"
+          /usr/libexec/PlistBuddy -c "Print" "$ENT"
+          python3 - <<'PY'
+          import re
+          p = "ios/App/App.xcodeproj/project.pbxproj"
+          s = open(p).read()
+          if "CODE_SIGN_ENTITLEMENTS" not in s:
+              s = s.replace("PRODUCT_BUNDLE_IDENTIFIER =",
+                            "CODE_SIGN_ENTITLEMENTS = App/App.entitlements;\n\t\t\t\tPRODUCT_BUNDLE_IDENTIFIER =")
+              open(p, "w").write(s)
+              print("CODE_SIGN_ENTITLEMENTS 추가함")
+          else:
+              print("CODE_SIGN_ENTITLEMENTS 이미 있음")
+          PY
+      # 서명 파일이 Apple 계정에 없으면 --create 가 인증서와 프로파일을 새로 만든다 (개인키는 Codemagic secure 변수 재사용)
+      - name: 서명 인증서·프로파일 확보
+        script: |
+          set -e
+          if [ -z "$CERTIFICATE_PRIVATE_KEY" ]; then
+            echo "환경변수 CERTIFICATE_PRIVATE_KEY 가 없습니다."
+            echo "Codemagic > App settings > Environment variables 에 secure 로 등록하세요."
+            exit 1
+          fi
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --platform IOS \
+            --strict-match-identifier \
+            --certificate-key "@env:CERTIFICATE_PRIVATE_KEY" \
+            --create
+          keychain add-certificates
+      - name: 인증서·프로파일 적용
+        script: xcode-project use-profiles
+      - name: 빌드 번호 자동 증가
+        script: |
+          cd ios/App
+          LATEST=$(app-store-connect get-latest-app-store-build-number "$BUNDLE_ID" || echo 0)
+          agvtool new-version -all $((LATEST + 1))
+      - name: 아카이브(IPA) 빌드
+        script: |
+          xcode-project build-ipa \
+            --workspace ios/App/App.xcworkspace \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        # 첫 심사 제출은 App Store Connect 웹에서 수동으로 진행
+        submit_to_app_store: false

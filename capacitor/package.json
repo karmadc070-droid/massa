@@ -1,0 +1,23 @@
+{
+  "name": "massa",
+  "version": "1.0.0",
+  "description": "mㅏssㅏ — 하노이 홈 마사지·홈뷰티 방문 예약",
+  "private": true,
+  "scripts": {
+    "build:native": "esbuild native-src/native.js --bundle --format=iife --target=es2020 --minify --outfile=www/capacitor-native.js",
+    "sync": "cap sync",
+    "open:ios": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.4.1",
+    "@capacitor/geolocation": "^8.2.2",
+    "@capacitor/push-notifications": "^8.1.2",
+    "@capacitor/splash-screen": "^8.0.2"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.4.1",
+    "@capacitor/ios": "^8.4.1",
+    "esbuild": "^0.25.0"
+  }
+}
