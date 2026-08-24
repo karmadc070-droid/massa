@@ -933,6 +933,14 @@
   <div class="screen" id="adminReports" data-title="신고 관리">
     <div id="reportsList"></div>
   </div>
+  <div class="screen" id="chat" data-title="채팅">
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px">
+      <button class="chip" onclick="reportChat()">🚩 신고</button>
+      <button class="chip" onclick="blockChat()">⛔ 차단</button>
+    </div>
+    <div class="chat-msgs" id="chatMsgs"></div>
+    <div class="chat-input"><input id="chatInput" placeholder="메시지를 입력하세요" onkeydown="if(event.key==='Enter')sendChat()"><button onclick="sendChat()">전송</button></div>
+  </div>
   <div class="screen" id="adminMembers" data-title="회원 관리">
     <div id="membersList"></div>
   </div>
@@ -1384,7 +1392,7 @@ window.filterBeauty = function (el) {
 // AI 마사지사 추천 — 내 예약·즐겨찾기·평점·거리 기반 점수화
 async function loadAiRecos() {
   const wrap = document.getElementById('aiRecos'); if (!wrap) return;
-  const provs = (CACHE.providers || []).filter(p => p.is_active !== false);
+  const provs = (CACHE.providers || []).filter(p => p.is_active !== false && !BLOCKED.has(p.id));
   if (!provs.length) { wrap.innerHTML = '<div class="hint">추천할 마사지사를 준비 중입니다.</div>'; return; }
   let liked = new Set(), mySpecs = {}, myDistrict = null;
   if (SESSION) {
@@ -1503,7 +1511,8 @@ async function openProfile(pid) {
     + '<div class="pf-rev-summary"><div class="pf-rev-avg"><div class="big">' + avg.toFixed(1) + '</div><div class="tstars">' + ('★'.repeat(Math.round(avg)) || '★') + '</div><div style="font-size:11px;color:var(--muted)">(' + total + ' 리뷰)</div></div><div class="pf-bars">' + bars + '</div></div>'
     + detailHtml
     + revItems
-    + '<div class="pf-report" onclick="openReport(\'' + p.display_name + '\',\'' + pid + '\')">🚩 이 제공자 신고하기</div>';
+    + '<div class="pf-report" onclick="openReport(\'' + p.display_name + '\',\'' + pid + '\')">🚩 이 제공자 신고하기</div>'
+    + '<div class="pf-report" onclick="toggleBlock(\'' + pid + '\',\'' + p.display_name + '\')">⛔ ' + (BLOCKED.has(pid) ? '차단 해제하기' : '이 제공자 차단하기') + '</div>';
 
   body.querySelectorAll('.pf-svc').forEach(card => {
     card.querySelectorAll('.chip').forEach(ch => ch.onclick = () => {
@@ -1594,6 +1603,7 @@ async function refreshSession() {
   SESSION = data.session;
   refreshNotiDot();
   subscribeNotifications();
+  loadBlocks();
 }
 // 알림 실시간 구독 — 새 알림이 오면 배지·목록 즉시 갱신
 let NOTI_CH = null;
@@ -2602,8 +2612,33 @@ window.openReport = (name, pid) => {
   if (!SESSION) { openAuth(); return; }
   const reason = prompt('신고 사유를 입력하세요 (' + name + ')');
   if (!reason) return;
-  sb.from('reports').insert({ reporter_id: SESSION.user.id, target_type: 'provider', target_id: pid, target_name: name, reason }).then(({ error }) => alert(error ? '실패: ' + error.message : '신고가 접수되었습니다. 감사합니다.'));
+  sb.from('reports').insert({ reporter_id: SESSION.user.id, target_type: 'provider', target_id: pid, target_name: name, reason }).then(({ error }) => alert(error ? '실패: ' + error.message : '신고가 접수되었습니다. 24시간 내에 검토합니다.'));
 };
+// ── 사용자 차단 (UGC 안전 장치) — 차단한 제공자는 목록·검색에서 숨겨진다 ──
+let BLOCKED = new Set();
+async function loadBlocks() {
+  if (!SESSION) { BLOCKED = new Set(); return; }
+  const { data } = await sb.from('blocks').select('blocked_id').eq('blocker_id', SESSION.user.id);
+  BLOCKED = new Set((data || []).map(r => r.blocked_id));
+}
+window.toggleBlock = async (pid, name) => {
+  if (!SESSION) { openAuth(); return; }
+  if (BLOCKED.has(pid)) {
+    await sb.from('blocks').delete().eq('blocker_id', SESSION.user.id).eq('blocked_id', pid);
+    BLOCKED.delete(pid); alert('차단을 해제했습니다.');
+  } else {
+    if (!confirm((name || '이 제공자') + '을(를) 차단할까요?\n차단하면 목록과 검색에서 숨겨집니다.')) return;
+    const { error } = await sb.from('blocks').insert({ blocker_id: SESSION.user.id, blocked_id: pid });
+    if (error && !/duplicate/i.test(error.message)) { alert('실패: ' + error.message); return; }
+    BLOCKED.add(pid); alert('차단했습니다. 목록에서 숨겨집니다.'); window.go('home');
+  }
+};
+window.reportChat = () => {
+  if (!CHAT_PID) return;
+  const p = (CACHE.providers || []).find(x => x.id === CHAT_PID);
+  openReport(p ? p.display_name : '제공자', CHAT_PID);
+};
+window.blockChat = () => { if (CHAT_PID) toggleBlock(CHAT_PID); };
 let FEE_RATE = 0.10;          // 플랫폼 수수료(설정에서 변경 가능)
 let DUE_DAYS = 3;             // 완료 후 입금 기한(일)
 let SETT_AUTO = false;        // 자동 경고
