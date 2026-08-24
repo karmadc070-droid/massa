@@ -20,16 +20,21 @@
 - [x] `capacitor/` 스캐폴드: package.json, capacitor.config.json, native-src/native.js(위치 shim + 푸시), assets/icon.png(1024)·splash.png(2732)
 - [x] `codemagic.yaml` (iOS 워크플로) — www 복사, 네이티브 번들 주입, cap add ios(CocoaPods), Info.plist 권한 문구, APNs entitlements, 서명 자동화, TestFlight 업로드
 
-## 3. 남은 작업 (이 순서대로)
+## 3. 빌드 파이프라인 — ✅ 가동 (2026-08-24)
 
-1. **Apple Developer 사용권 계약 동의** — App Store Connect 상단 경고. 계정 소유자가 developer.apple.com → 계정에서 동의해야 새 앱 제출 가능. (사용자 직접)
-2. **Codemagic에 massa 앱 연결** — codemagic.io 로그인 → Add application → GitHub karmadc070-droid/massa 선택.
-   - 모아학원과 같은 팀이면 App Store Connect 통합(moahagwon_asc_key)과 ios_signing 그룹(CERTIFICATE_PRIVATE_KEY) 재사용 가능.
-   - 모아학원 Codemagic이 parkdongchun-77 GitHub 계정에 연결돼 있다면 karmadc070-droid repo 접근 권한 추가 필요.
-3. **첫 빌드 실행** (ios-appstore 워크플로) → TestFlight 업로드 확인.
-4. **App Store 등록정보 작성** — 스크린샷(6.7" 1290×2796 등), 설명(스토어등록_정보.md 재활용), 개인정보 URL https://massa-seven.vercel.app/privacy.html, 심사 메모(데모 계정 demo@massa.app / massa1234).
-5. **개인정보 보호(누트리션 라벨) 설문** — Play 데이터 보안 답변(massa_data_safety.csv) 기준으로 작성.
-6. **심사 제출** → 승인 후 **사전 주문(Pre-Order)** 설정 (출시일 지정, 베트남 지역).
+- Codemagic massa 앱 연결 완료 (public repo URL 방식, 앱 ID 6a8c482d21afff14a210fad7)
+- CERTIFICATE_PRIVATE_KEY 등록 완료 (ios_signing 그룹, `C:\Users\user\Claude\apple-keys\codemagic_certificate_private_key.pem` 재사용)
+- **빌드 1 성공**: IPA 생성 → App Store Connect 업로드·처리 완료 → 수출 규정 답변(비면제 암호화 없음) → 상태 "제출 준비 완료"
+- 빌드 시 마지막 자동 단계(TestFlight 베타 심사 제출)만 "테스트 정보 미입력"으로 실패했음 — 외부 테스터 쓸 때만 필요, 무해
+- codemagic.yaml에 ITSAppUsesNonExemptEncryption=false 추가함 (다음 빌드부터 암호화 질문 생략)
+
+## 4. 남은 작업 (이 순서대로)
+
+1. **Apple Developer 사용권 계약 동의** — 계정 소유자가 developer.apple.com에서 동의해야 심사 제출 가능. (사용자 직접)
+2. **App Store 등록정보 작성** — 스크린샷(6.7" 1290×2796 등), 설명(스토어등록_정보.md 재활용), 개인정보 URL https://massa-seven.vercel.app/privacy.html, 심사 메모(데모 계정 demo@massa.app / massa1234).
+3. **개인정보 보호(누트리션 라벨) 설문** — Play 데이터 보안 답변(massa_data_safety.csv) 기준으로 작성.
+4. **심사 제출** → 승인 후 **사전 주문(Pre-Order)** 설정 (출시일 지정, 베트남 지역).
+5. (선택) TestFlight 테스트 정보 입력 + 내부 테스터 그룹 생성 → 실기기 테스트.
 
 ## 4. 주의사항
 

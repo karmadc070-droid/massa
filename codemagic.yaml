@@ -58,6 +58,7 @@ workflows:
           /usr/libexec/PlistBuddy -c "Add :NSLocationWhenInUseUsageDescription string '내 주변 테라피스트 검색과 방문 서비스 위치 확인에 사용됩니다.'" "$PLIST" || true
           /usr/libexec/PlistBuddy -c "Add :NSCameraUsageDescription string '프로필·서류 사진 촬영에 카메라를 사용합니다.'" "$PLIST" || true
           /usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryUsageDescription string '프로필·서류 사진 업로드를 위해 사진 보관함에 접근합니다.'" "$PLIST" || true
+          /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" "$PLIST" || true
           echo "----- Info.plist 확인 -----"
           /usr/libexec/PlistBuddy -c "Print :NSLocationWhenInUseUsageDescription" "$PLIST"
       # 푸시(APNs)는 entitlements 가 있어야 동작한다. cap add ios 가 만들어주지 않으므로 직접 넣는다.
