@@ -3929,9 +3929,11 @@ async function load() {
     };
     const delRow = document.getElementById('acDeleteRow');
     if (delRow) delRow.onclick = async () => {
-      if (!confirm('정말 계정을 삭제하시겠어요? (데모에서는 로그아웃 처리되며, 실제 삭제는 관리자 처리 필요)')) return;
+      if (!confirm('계정을 삭제하면 프로필, 예약 내역, 리뷰, 채팅이 모두 영구 삭제되며 되돌릴 수 없습니다. 계속하시겠어요?')) return;
+      const { error } = await sb.rpc('delete_my_account');
+      if (error) { alert('삭제에 실패했습니다: ' + error.message); return; }
       await sb.auth.signOut(); await refreshSession(); window.go('home');
-      alert('로그아웃되었습니다. 실제 계정 삭제는 관리자에게 요청하세요.');
+      alert('계정이 삭제되었습니다. 이용해 주셔서 감사합니다.');
     };
     const logoutRow = document.getElementById('acLogoutRow');
     if (logoutRow) logoutRow.onclick = async () => { await sb.auth.signOut(); await refreshSession(); window.go('home'); };
