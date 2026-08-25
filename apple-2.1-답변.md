@@ -10,10 +10,10 @@ Thank you for reviewing massa. Please find the requested information below.
 **1. Screen recording**
 The attached screen recording was captured on a physical iPhone running the TestFlight build. It demonstrates the app launch, the signed-in account screen, browsing verified therapists near the user, and the complete core booking flow (select therapist → view profile → choose course and duration → choose date and time → enter the hotel/home address → booking confirmed with a booking number).
 
-Please note: the recording was captured on build 1. Build 2 (uploaded with this reply) additionally exposes the in-app chat entry point and the report/block controls described in item 4 below. Everything else in the recording is unchanged.
+Please note: the recording was captured on build 1. Build 5 (uploaded with this reply) additionally exposes the in-app chat entry point and the report/block controls described in item 4 below. Everything else in the recording is unchanged.
 
 **2. Devices and OS tested on**
-- iPhone (physical device) — latest iOS, via TestFlight build 1.0 (1)
+- iPhone (physical device) — latest iOS, via TestFlight, build 1.0 (5)
 - Android devices via Google Play internal testing (same hybrid codebase)
 
 **3. App functions and target audience**
