@@ -103,16 +103,13 @@ workflows:
           keychain add-certificates
       - name: 인증서·프로파일 적용
         script: xcode-project use-profiles
-      # App Store 번호만 보면 미출시 상태에서 0이 나와 build 1과 중복된다 (ENTITY_ERROR.ATTRIBUTE.INVALID.DUPLICATE)
+      # app-store-connect 조회는 이 파이프라인에서 항상 0을 반환해 build 1과 중복됐다.
+      # Codemagic의 앱별 빌드 카운터(PROJECT_BUILD_NUMBER)는 매 빌드마다 증가하므로 중복이 없다.
       - name: 빌드 번호 자동 증가
         script: |
           cd ios/App
-          TF=$(app-store-connect get-latest-testflight-build-number "$BUNDLE_ID" 2>/dev/null | tr -dc '0-9')
-          AS=$(app-store-connect get-latest-app-store-build-number "$BUNDLE_ID" 2>/dev/null | tr -dc '0-9')
-          TF=${TF:-0}; AS=${AS:-0}
-          LATEST=$TF; [ "$AS" -gt "$LATEST" ] && LATEST=$AS
-          echo "TestFlight=$TF AppStore=$AS -> 새 빌드 번호 $((LATEST + 1))"
-          agvtool new-version -all $((LATEST + 1))
+          echo "PROJECT_BUILD_NUMBER=$PROJECT_BUILD_NUMBER"
+          agvtool new-version -all "$PROJECT_BUILD_NUMBER"
       - name: 아카이브(IPA) 빌드
         script: |
           xcode-project build-ipa \
