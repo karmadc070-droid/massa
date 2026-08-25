@@ -38,16 +38,27 @@
 - 심사 정보: 데모 demo@massa.app / massa1234, 연락처 Dongchun Park
 - 빌드 1(1.0) 첨부 → **심사를 위해 제출 완료** — 현재 상태 "1.0 심사 대기 중"
 
+## 4-1. Guideline 2.1 리젝 → 재제출 (2026-08-25 밤)
+
+- 빌드 1이 2.1 Information Needed로 리젝. 요구 7개 항목(실기기 녹화 + 기능·대상·설정·외부서비스·지역차·규제 설명)에 영문 답변 작성 → 심사 정보 메모 + Resolution Center 회신, `massa-demo.mp4` 첨부
+- 리젝 대응으로 코드 3건 수정: 채팅 화면 마크업 복구 + 프로필에 채팅 진입 버튼, 신고·차단 기능(blocks 테이블), 네이티브 앱에서 devmode(와이어프레임 UI) 차단
+- **계정 삭제를 앱 내에서 완결**로 변경 (Apple 5.1.1(v)). `public.delete_my_account()` RPC를 massa-db에 설치, index.html에서 `sb.rpc('delete_my_account')` 호출. 테스트 계정 생성→삭제→재로그인 거부까지 검증 완료
+- **빌드 6으로 재제출 완료** — 상태 "심사 대기 중" (제출 ID 4555e070-577b-46fd-aefe-c5deea7695bf)
+
 ## 5. 다음 할 일
 
-1. 심사 결과 대기 (보통 1~7일). 리젝 시 4.2(최소 기능성) 가능성 → 푸시·위치 네이티브 기능 어필 답변 준비
+1. 심사 결과 대기 (보통 1~7일)
 2. 승인되면 사전 주문이 자동 게시됨 (베트남·한국, 출시일 2026-10-01 — 날짜는 가격 및 사용 가능 여부에서 변경 가능)
-3. (선택) TestFlight 내부 테스터 그룹 생성 → 실기기 테스트
+3. Zalo 앱 등록 (계정 본인인증 필요) → /root/massa/.env 시크릿 입력 → `docker compose up -d functions`
 
 ## 6. 작업 요령 (다음 세션 참고)
 
 - ASC 폼은 JS 값 주입을 React가 무시함 → 스크린샷 업로드는 `shots.141-164-46-88.sslip.io`(VPS 임시 파일서버, /root/shots + caddy 컨테이너 /srv/shots) fetch → DataTransfer 주입으로 성공
 - 심사 정보 저장은 UI가 POST 409로 실패 → Iris API(`/iris/v1/appStoreReviewDetails`, `/iris/v1/reviewSubmissions` + Items POST) 직접 호출로 해결, 최종 제출은 UI "제출 초안(1개) → 심사를 위해 제출" 버튼
+- ASC 배포 페이지는 URL로 직접 열면 렌더링이 안 됨 → `/apps`로 먼저 들어가 SPA 내부 링크를 `.click()`으로 따라갈 것
+- 빌드 번호는 `app-store-connect get-latest-*`가 항상 0을 반환해 중복 실패 → codemagic.yaml은 `$PROJECT_BUILD_NUMBER` 사용. 빌드 트리거는 codemagic.io 탭에서 `POST https://api.codemagic.io/builds`
+- 첨부 파일 업로드는 GitHub raw에서 fetch → File → DataTransfer로 input[type=file]에 주입
+- VPS 콘솔(noVNC)은 Shift가 전달되지 않아 `|`, `{`, `"`, 대문자를 못 씀 → `curl -s --location <raw url> -o /tmp/x.sh` 후 `sh /tmp/x.sh` 방식으로 우회
 
 ## 4. 주의사항
 
