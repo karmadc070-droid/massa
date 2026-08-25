@@ -1133,8 +1133,12 @@
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
-// ?dev=1 이면 와이어프레임 설명(제목·플로우·안내문)을 강제로 노출한다.
-window.DEV_FORCED = /[?&]dev=1\b/.test(location.search);
+// 네이티브 앱(iOS·Android 셸)에서는 와이어프레임 설명 UI를 절대 노출하지 않는다.
+window.IS_NATIVE_APP = location.protocol === 'capacitor:' || location.protocol === 'ionic:'
+  || !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())
+  || window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+// ?dev=1 이면 와이어프레임 설명(제목·플로우·안내문)을 강제로 노출한다(웹 전용).
+window.DEV_FORCED = /[?&]dev=1\b/.test(location.search) && !window.IS_NATIVE_APP;
 if (window.DEV_FORCED) document.body.classList.add('devmode');
 const MAIN_FLOW = ['home', 'thList', 'menu', 'time', 'loc', 'confirm', 'done'];
 const NAMES = { home: '홈', thList: '마사지 홈서비스', therapy: '홈 뷰티', spa: '스파 안내',
@@ -2031,7 +2035,7 @@ async function loadAccount() {
   const cv = document.getElementById('mpCountryVal'); if (cv && CUR_PROFILE.nationality) cv.textContent = countryLabel(CUR_PROFILE.nationality);
   const role = CUR_PROFILE.role;
   const isAdm = role === 'admin';           // 앱 관리자: 전체 관리
-  document.body.classList.toggle('devmode', isAdm || window.DEV_FORCED);
+  document.body.classList.toggle('devmode', (isAdm || window.DEV_FORCED) && !window.IS_NATIVE_APP);
   const canReview = isAdm || role === 'reviewer'; // 등록 심사 관리자: 승인만
   // 파트너(제공자 등록자) 여부 — 등록된 제공자가 있으면 파트너 메뉴 노출
   let isPartner = isAdm;
