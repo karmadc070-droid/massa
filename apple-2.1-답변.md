@@ -8,7 +8,9 @@
 Thank you for reviewing massa. Please find the requested information below.
 
 **1. Screen recording**
-A screen recording captured on a physical iPhone (attached) demonstrates: app launch, account registration and login, the core booking flow (choose therapist → course → time → location → confirm), in-app chat with a therapist including the content **report** and user **block** features, the location permission prompt, and the account deletion flow (Account → Delete Account).
+The attached screen recording was captured on a physical iPhone running the TestFlight build. It demonstrates the app launch, the signed-in account screen, browsing verified therapists near the user, and the complete core booking flow (select therapist → view profile → choose course and duration → choose date and time → enter the hotel/home address → booking confirmed with a booking number).
+
+Please note: the recording was captured on build 1. Build 2 (uploaded with this reply) additionally exposes the in-app chat entry point and the report/block controls described in item 4 below. Everything else in the recording is unchanged.
 
 **2. Devices and OS tested on**
 - iPhone (physical device) — latest iOS, via TestFlight build 1.0 (1)
@@ -18,7 +20,15 @@ A screen recording captured on a physical iPhone (attached) demonstrates: app la
 massa is an on-demand home massage and home beauty booking platform for Hanoi, Vietnam. Customers (adults 18+, including local residents, business travelers and tourists staying in hotels) can book verified massage therapists and beauty professionals to visit their home or hotel room at a chosen time. The app solves the problem of finding trustworthy, vetted therapists on demand: providers pass a 3-step verification (license check, identity check, in-person interview) before being listed. Payment is made on-site after the service (card, MoMo/ZaloPay QR, or cash) — the app itself processes no payments.
 
 **4. Setup and access instructions**
-Launch the app → tap 계정(Account) tab → sign in with the demo account provided in App Review Information (demo@massa.app / massa1234, customer role). Main flow: Home → "마사지 홈서비스" (Home massage) → select a therapist → choose course/duration → choose time → enter address or hotel/room → confirm. Chat: on a therapist profile tap the chat button. Report/Block: available on each therapist profile ("🚩 신고하기 / ⛔ 차단하기") and in the chat header. Account deletion: Account → 계정 삭제.
+No special hardware, environment or configuration is required. Launch the app → tap the 계정 (Account) tab at the bottom right → sign in with the demo account listed in App Review Information (demo@massa.app / massa1234).
+
+- Booking flow: 탐색 (Explore) tab → "마사지 홈서비스" → select a therapist → 예약 (Book) → choose course and duration → choose date and time → enter the address or hotel name and room number → 예약 확정 (Confirm). A booking number is issued.
+- In-app chat: open any therapist profile and tap "💬 채팅으로 문의하기" near the top of the profile.
+- Report objectionable content: therapist profile → scroll to the bottom → "🚩 이 제공자 신고하기", or the "🚩 신고" button in the chat header. Reports are reviewed by our moderation team within 24 hours.
+- Block a user: therapist profile → "⛔ 이 제공자 차단하기", or the "⛔ 차단" button in the chat header. Blocked providers disappear from the listing immediately.
+- Account deletion: 계정 (Account) tab → scroll to 계정 삭제 (Delete account).
+
+The demo account also has partner (therapist) permissions enabled so that the reviewer can inspect the partner-side screens (schedule, earnings, customer chat) from the same login. A regular customer account does not see those rows.
 
 **5. External services used**
 - Self-hosted Supabase (PostgreSQL, Auth, Storage, Realtime) on our own VPS (Vultr, Seoul region) — application database, authentication, image storage, realtime chat: https://massa.141-164-46-88.sslip.io
