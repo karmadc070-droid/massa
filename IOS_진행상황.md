@@ -45,6 +45,16 @@
 - **계정 삭제를 앱 내에서 완결**로 변경 (Apple 5.1.1(v)). `public.delete_my_account()` RPC를 massa-db에 설치, index.html에서 `sb.rpc('delete_my_account')` 호출. 테스트 계정 생성→삭제→재로그인 거부까지 검증 완료
 - **빌드 6으로 재제출 완료** — 상태 "심사 대기 중" (제출 ID 4555e070-577b-46fd-aefe-c5deea7695bf)
 
+## 4-2. 2차 리젝 → build 8 재제출 (2026-08-27)
+
+Apple이 8/26 iPad Air(M3)/iPadOS 26.6에서 심사, 세 건 지적.
+
+- **4.0 Design** — 로그인 시 외부 Safari로 이동. 원인은 미완성 소셜 로그인 버튼 3개(Google·카카오·Zalo). VPS Supabase `/auth/v1/settings` 조회 결과 공급자가 전부 false(email·phone만 true)여서 authorize 엔드포인트가 `provider is not enabled` 에러 페이지를 Safari에 띄웠다. → 버튼과 OAuth 코드 전량 제거, 이메일 로그인만 남김
+- **4.8 Login Services** — 서드파티 로그인이 사라졌으므로 해당 없음. 소셜 로그인을 다시 넣을 때 Sign in with Apple을 함께 구현하기로 함(사용자 결정)
+- **2.1(a)** — "회원가입/로그인" 탭 시 무한 로딩. 원인은 핸들러에 try/catch·타임아웃 부재. → 15초 타임아웃 + 예외 처리 + 버튼 재활성화 + 실패 사유 표시
+- 부가: 계정 화면에 `window.__BUILD__` 표시(codemagic.yaml에서 PROJECT_BUILD_NUMBER 주입) — 구버전 테스트로 인한 혼선 방지
+- **build 8 재제출 완료**, 회신에 세 건 원인·수정 내용 기재
+
 ## 5. 다음 할 일
 
 1. 심사 결과 대기 (보통 1~7일)
