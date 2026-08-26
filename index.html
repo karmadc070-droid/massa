@@ -1668,46 +1668,35 @@ function openAuth() {
     <div style="font-size:11px;color:#2E8B8B;margin-top:6px">데모 계정이 입력돼 있습니다 · demo@massa.app / massa1234</div>
     <div id="auMsg" style="font-size:12px;color:#B23A5B;min-height:18px;margin:8px 0"></div>
     <button id="auSignup" style="width:100%;background:#1F4E5F;color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:bold;margin-bottom:8px">회원가입 / 로그인</button>
-    <div style="display:flex;align-items:center;gap:8px;color:#9AA8AE;font-size:11px;margin:8px 0"><div style="flex:1;height:1px;background:#E2E8EA"></div>또는<div style="flex:1;height:1px;background:#E2E8EA"></div></div>
-    <button id="auGoogle" style="width:100%;background:#fff;color:#333;border:1.5px solid #E2E8EA;border-radius:12px;padding:12px;font-size:13px;font-weight:bold;margin-bottom:8px">🇬 Google로 계속</button>
-    <button id="auKakao" style="width:100%;background:#FEE500;color:#3A2929;border:none;border-radius:12px;padding:12px;font-size:13px;font-weight:bold;margin-bottom:8px">💬 카카오로 계속</button>
-    <button id="auZalo" style="width:100%;background:#0068FF;color:#fff;border:none;border-radius:12px;padding:12px;font-size:13px;font-weight:bold;margin-bottom:8px">Z Zalo로 계속</button>
     <button id="auClose" style="width:100%;background:#F4F6F7;color:#556;border:none;border-radius:12px;padding:11px;font-size:13px">닫기</button>
   </div>`;
   document.body.appendChild(ov);
   document.getElementById('auClose').onclick = () => ov.style.display = 'none';
-  const oauth = async (provider) => {
-    const msg = document.getElementById('auMsg');
-    msg.style.color = '#B23A5B'; msg.textContent = provider + ' 로그인 연결 중…';
-    if (location.protocol === 'file:') { msg.textContent = '소셜 로그인은 http 주소에서만 동작합니다(file:// 불가). 이메일 로그인을 이용하거나 웹서버로 열어주세요.'; return; }
-    try {
-      const { error } = await sb.auth.signInWithOAuth({ provider, options: { redirectTo: location.href } });
-      if (error) msg.textContent = provider + ' 미설정: 슈퍼베이스 Auth에서 ' + provider + ' 공급자를 켜야 합니다. (설정가이드 참고)';
-    } catch (e) { msg.textContent = provider + ' 연동 오류: ' + e.message; }
-  };
-  document.getElementById('auGoogle').onclick = () => oauth('google');
-  document.getElementById('auKakao').onclick = () => oauth('kakao');
-  document.getElementById('auZalo').onclick = () => {
-    const msg = document.getElementById('auMsg');
-    msg.style.color = '#B23A5B';
-    if (location.protocol === 'file:') { msg.textContent = 'Zalo 로그인은 http(s) 주소에서만 동작합니다(file:// 불가). 웹서버로 열어주세요.'; return; }
-    msg.style.color = '#1E6B45'; msg.textContent = 'Zalo로 이동 중…';
-    // 커스텀 OAuth: zalo-login Edge Function 으로 이동(성공 시 앱으로 복귀)
-    location.href = SUPABASE_URL + '/functions/v1/zalo-login?redirect_to=' + encodeURIComponent(location.origin + location.pathname);
-  };
   document.getElementById('auSignup').onclick = async () => {
     const email = document.getElementById('auEmail').value.trim();
     const pw = document.getElementById('auPw').value;
     const msg = document.getElementById('auMsg');
+    const btn = document.getElementById('auSignup');
     msg.style.color = '#B23A5B'; msg.textContent = '처리 중…';
-    let r = await sb.auth.signInWithPassword({ email, password: pw });
-    if (r.error) {
-      const up = await sb.auth.signUp({ email, password: pw });
-      if (up.error) { msg.textContent = up.error.message; return; }
-      if (!up.data.session) { r = await sb.auth.signInWithPassword({ email, password: pw }); }
-      else r = up;
+    btn.disabled = true;
+    // 네트워크가 막히면 응답이 오지 않아 화면이 멈춘다 — 15초에서 끊고 사유를 보여준다
+    const limit = (p) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('서버 응답이 없습니다. 네트워크 상태를 확인해 주세요.')), 15000))]);
+    let r;
+    try {
+      r = await limit(sb.auth.signInWithPassword({ email, password: pw }));
+      if (r.error) {
+        const up = await limit(sb.auth.signUp({ email, password: pw }));
+        if (up.error) { msg.textContent = up.error.message; btn.disabled = false; return; }
+        if (!up.data.session) { r = await limit(sb.auth.signInWithPassword({ email, password: pw })); }
+        else r = up;
+      }
+    } catch (e) {
+      msg.textContent = '로그인에 실패했습니다: ' + e.message;
+      btn.disabled = false;
+      return;
     }
-    if (r.error) { msg.textContent = r.error.message + ' (이메일 확인 설정을 꺼주세요)'; return; }
+    btn.disabled = false;
+    if (r.error) { msg.textContent = r.error.message; return; }
     await refreshSession();
     try {
       const { data: fav } = await sb.from('favorites').select('provider_id').eq('customer_id', SESSION.user.id);
