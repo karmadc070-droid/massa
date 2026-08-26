@@ -110,6 +110,17 @@ workflows:
           cd ios/App
           echo "PROJECT_BUILD_NUMBER=$PROJECT_BUILD_NUMBER"
           agvtool new-version -all "$PROJECT_BUILD_NUMBER"
+      # 계정 화면에 설치된 빌드 번호를 표시해 구버전 테스트로 인한 혼선을 막는다
+      - name: 빌드 번호를 index.html에 주입
+        script: |
+          node -e '
+            const fs=require("fs"), p="www/index.html";
+            let s=fs.readFileSync(p,"utf8");
+            const tag="<script>window.__BUILD__=\"" + process.env.PROJECT_BUILD_NUMBER + "\";</script>\n";
+            s=s.replace("</head>", tag+"</head>");
+            fs.writeFileSync(p,s);
+            console.log("주입된 빌드 번호:", process.env.PROJECT_BUILD_NUMBER);
+          '
       - name: 아카이브(IPA) 빌드
         script: |
           xcode-project build-ipa \

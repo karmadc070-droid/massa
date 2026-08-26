@@ -2037,7 +2037,9 @@ async function loadAccount() {
     mpAdminRow: canReview, mpStatsRow: isAdm, mpReportsRow: isAdm, mpMembersRow: isAdm, mpSettlementRow: isAdm, mpAdsRow: isAdm
   };
   Object.keys(rowVis).forEach(id => { const el = document.getElementById(id); if (el) el.style.display = rowVis[id] ? 'flex' : 'none'; });
-  const msg = document.getElementById('acMsg'); if (msg) msg.textContent = SESSION.user.email;
+  // 빌드 번호를 함께 보여 어떤 버전이 설치됐는지 바로 확인할 수 있게 한다
+  const msg = document.getElementById('acMsg');
+  if (msg) msg.textContent = SESSION.user.email + (window.__BUILD__ ? ' · build ' + window.__BUILD__ : '');
 }
 window.loadAccount = loadAccount;
 async function editField(field) {
