@@ -1154,29 +1154,6 @@ const NAMES = { home: '홈', thList: '마사지 홈서비스', therapy: '홈 뷰
 // 운영 콘솔은 계정(운영 메뉴) 화면에서 시작한다
 let stack = ['account'];
 
-// ── 운영 콘솔 접근 제어 ──
-// 관리자·심사자·파트너가 아니면 화면을 열지 않는다. 고객 계정으로는 아무것도 볼 수 없다.
-async function guardConsole() {
-  const shell = document.querySelector('.phone');
-  const deny = (msg) => {
-    if (shell) shell.innerHTML = '<div style="padding:40px 24px;text-align:center;font-family:sans-serif">'
-      + '<div style="font-size:19px;font-weight:bold;color:#1F4E5F;margin-bottom:10px">mㅏssㅏ 운영 콘솔</div>'
-      + '<div style="font-size:13px;color:#7A8C94;line-height:1.7;margin-bottom:18px">' + msg + '</div>'
-      + '<button onclick="location.reload()" style="background:#1F4E5F;color:#fff;border:none;border-radius:10px;padding:11px 20px;font-size:13px">다시 시도</button></div>';
-  };
-  await refreshSession();
-  if (!SESSION) { openAuth(); return false; }
-  const role = CUR_PROFILE && CUR_PROFILE.role;
-  if (role === 'admin' || role === 'reviewer') return true;
-  // 파트너(제공자 등록자)도 자기 운영 화면은 볼 수 있어야 한다
-  const { data: prov } = await sb.from('providers').select('id').eq('owner_id', SESSION.user.id).limit(1);
-  if (prov && prov.length) return true;
-  deny('이 페이지는 관리자·파트너 전용입니다.<br>운영 권한이 있는 계정으로 로그인해 주세요.');
-  await sb.auth.signOut();
-  return false;
-}
-window.guardConsole = guardConsole;
-
 const flowEl = document.getElementById('flow');
 const titleEl = document.getElementById('appTitle');
 
@@ -1633,6 +1610,29 @@ function currentService() {
 
 // ── Auth ──
 let SESSION = null;
+// ── 운영 콘솔 접근 제어 ──
+// 관리자·심사자·파트너가 아니면 화면을 열지 않는다. 고객 계정으로는 아무것도 볼 수 없다.
+async function guardConsole() {
+  const shell = document.querySelector('.phone');
+  const deny = (msg) => {
+    if (shell) shell.innerHTML = '<div style="padding:40px 24px;text-align:center;font-family:sans-serif">'
+      + '<div style="font-size:19px;font-weight:bold;color:#1F4E5F;margin-bottom:10px">mㅏssㅏ 운영 콘솔</div>'
+      + '<div style="font-size:13px;color:#7A8C94;line-height:1.7;margin-bottom:18px">' + msg + '</div>'
+      + '<button onclick="location.reload()" style="background:#1F4E5F;color:#fff;border:none;border-radius:10px;padding:11px 20px;font-size:13px">다시 시도</button></div>';
+  };
+  await refreshSession();
+  if (!SESSION) { deny('운영 권한이 있는 계정으로 로그인해 주세요.'); openAuth(); return false; }
+  const role = CUR_PROFILE && CUR_PROFILE.role;
+  if (role === 'admin' || role === 'reviewer') return true;
+  // 파트너(제공자 등록자)도 자기 운영 화면은 볼 수 있어야 한다
+  const { data: prov } = await sb.from('providers').select('id').eq('owner_id', SESSION.user.id).limit(1);
+  if (prov && prov.length) return true;
+  deny('이 페이지는 관리자·파트너 전용입니다.<br>운영 권한이 있는 계정으로 로그인해 주세요.');
+  await sb.auth.signOut();
+  return false;
+}
+window.guardConsole = guardConsole;
+
 async function refreshSession() {
   const { data } = await sb.auth.getSession();
   SESSION = data.session;
