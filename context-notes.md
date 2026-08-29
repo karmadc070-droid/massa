@@ -50,6 +50,21 @@
 
 또한 noVNC 콘솔은 Shift가 안 먹으므로 `&&`를 쓸 수 없다(`77`로 깨진다). 명령은 한 줄씩 따로 입력한다.
 
+## 2026-08-29 · 비밀번호 재설정에 massa.moahagwon.com 을 새로 만든 이유
+
+**결정**: 재설정 페이지를 `admin.moahagwon.com`에 얹지 않고 `massa.moahagwon.com`을 새로 만들었다.
+
+**근거**
+- 재설정 메일은 고객에게도 간다. 링크가 `admin.`으로 시작하면 피싱처럼 보인다.
+- Vercel 임시 도메인(`massa-seven.vercel.app`)은 git 미연동이라 갱신이 안 되고 있었다. 같은 VPS에서 고객용 웹앱까지 서빙하면 C2 항목도 함께 해결된다.
+- A 레코드 하나 + Caddy 블록 하나로 끝나 비용도 복잡도도 늘지 않는다.
+
+**GoTrue 쪽 필수 설정**: `GOTRUE_SITE_URL`과 `GOTRUE_URI_ALLOW_LIST`에 이 주소가 없으면 `resetPasswordForEmail`의 `redirectTo`가 무시되고 SITE_URL로 돌아간다. 지금 SITE_URL은 옛 Vercel 주소라 반드시 함께 바꿔야 한다.
+
+## 2026-08-29 · Resend DNS는 수동 입력하지 말 것
+
+Resend 도메인 화면의 DKIM 값은 UI에서 `p=MIGfMA0GCSqG[…]SIb3...` 처럼 중간 생략 표시가 붙어 나온다. 실제로 생략된 문자가 없는데도 `[…]`가 보이므로, 눈으로 읽어 옮기면 틀릴 위험이 있다. Cloudflare를 쓰면 **Auto configure** 버튼이 DKIM·MX·SPF 3개를 직접 넣어주므로 그쪽을 쓴다. 버튼을 눌러도 화면이 바로 안 바뀌고 "Temporarily unavailable"이 뜰 수 있는데, Cloudflare DNS 목록을 열어보면 이미 들어가 있다.
+
 ## 알려진 함정 (반복 확인됨)
 
 - **GitHub 푸시**: 저장소 소유자는 `karmadc070-droid`, PC 자격증명은 `parkdongchun-77`. 협업자로 초대·수락해 해결함. push가 멈추면 대기 중인 git 프로세스를 죽이고 재시도.

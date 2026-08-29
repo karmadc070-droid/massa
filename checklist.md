@@ -12,6 +12,19 @@
 - [x] A6. 심사 정보에는 서버 URL이 없어 갱신 불필요 — 확인함
 - [x] A7. build 14로 1.0.1 심사 제출 완료 (2026-08-29) → 남은 verify: TestFlight 실기기에서 로그인·예약 동작
 
+## A2. 비밀번호 재설정 메일 (Resend)
+
+목표: 비밀번호를 잊은 사용자가 메일로 재설정할 수 있게 한다. GoTrue의 SMTP가 더미라 지금은 메일이 안 나간다.
+
+- [x] A2-1. Resend 가입·도메인 `moahagwon.com` 추가, Auto configure로 Cloudflare에 DKIM·MX·SPF 등록 — 2026-08-29
+- [x] A2-2. `massa.moahagwon.com` A 레코드(DNS only) + Caddy 정적 서빙 → `/srv/massa-web` (index.html, reset.html)
+- [x] A2-3. `reset.html` 작성 (메일 링크로 들어와 새 비밀번호 설정) → verify: 200 응답 + 토큰 없이 열면 "만료" 안내 확인함
+- [x] A2-4. index.html·admin.html 로그인창에 "비밀번호를 잊으셨나요?" 추가 → verify: 모듈 문법 검사 통과
+- [ ] A2-5. Resend 도메인 Verified 대기 (DNS 전파)
+- [ ] A2-6. Resend API 키 발급 → VPS `/root/resend.key`에 저장 (사용자가 직접, 클립보드로)
+- [ ] A2-7. `scripts/vps-setup-smtp.sh` 실행 → verify: auth 컨테이너 env에 smtp.resend.com 반영
+- [ ] A2-8. 실제 재설정 메일 수신 + 비밀번호 변경 + 새 비밀번호로 로그인 → verify: 전 과정 1회 성공
+
 ## B. 관리자·파트너 기능 웹 이전 (23개 화면)
 
 목표: 앱은 고객 전용으로 남기고, 운영 기능은 `admin.moahagwon.com`에서 관리자 로그인 후 사용한다.
