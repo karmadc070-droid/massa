@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<!-- 비밀번호 재설정 메일의 링크가 열리는 페이지. 새 비밀번호를 입력받아 갱신한다 -->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>mㅏssㅏ 비밀번호 재설정</title>
+<style>
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+         background:#F4F6F7; display:flex; align-items:center; justify-content:center; min-height:100vh; padding:16px }
+  .card { width:100%; max-width:340px; background:#fff; border-radius:18px; padding:24px }
+  h1 { font-size:18px; color:#1F4E5F; margin:0 0 4px }
+  p.sub { font-size:12px; color:#7A8C94; margin:0 0 16px }
+  input { width:100%; box-sizing:border-box; border:1.5px solid #E2E8EA; border-radius:10px;
+          padding:12px; font-size:14px; margin-bottom:8px }
+  button { width:100%; background:#1F4E5F; color:#fff; border:none; border-radius:12px;
+           padding:13px; font-size:14px; font-weight:bold }
+  button:disabled { opacity:.5 }
+  #msg { font-size:13px; min-height:20px; margin:8px 0; color:#B23A5B }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>비밀번호 재설정</h1>
+  <p class="sub">새로 사용할 비밀번호를 입력해 주세요.</p>
+  <input id="pw1" type="password" autocomplete="new-password" placeholder="새 비밀번호 (6자 이상)">
+  <input id="pw2" type="password" autocomplete="new-password" placeholder="새 비밀번호 확인">
+  <div id="msg"></div>
+  <button id="save">비밀번호 변경</button>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const SUPABASE_URL = 'https://api.moahagwon.com';
+const SUPABASE_KEY = 'eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJyb2xlIjogImFub24iLCAiaXNzIjogInN1cGFiYXNlIiwgImlhdCI6IDE3ODc0NTg4OTMsICJleHAiOiAyMTAyODE4ODkzfQ.7taJaAzxPRIkd0PeC5qnuacficFnazkBN54ttblUv-o';
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const msg = document.getElementById('msg');
+const btn = document.getElementById('save');
+
+// 메일 링크의 토큰으로 세션이 만들어지기를 기다린다. 없으면 링크가 만료됐거나 잘못 열린 것이다
+const { data } = await sb.auth.getSession();
+if (!data.session) {
+  msg.textContent = '재설정 링크가 만료되었거나 올바르지 않습니다. 앱에서 다시 요청해 주세요.';
+  btn.disabled = true;
+}
+
+btn.onclick = async () => {
+  const p1 = document.getElementById('pw1').value;
+  const p2 = document.getElementById('pw2').value;
+  msg.style.color = '#B23A5B';
+  if (p1.length < 6) { msg.textContent = '비밀번호는 6자 이상이어야 합니다.'; return; }
+  if (p1 !== p2) { msg.textContent = '두 비밀번호가 일치하지 않습니다.'; return; }
+  btn.disabled = true; msg.textContent = '변경 중…';
+  const { error } = await sb.auth.updateUser({ password: p1 });
+  if (error) { msg.textContent = '변경에 실패했습니다: ' + error.message; btn.disabled = false; return; }
+  msg.style.color = '#1E6B45';
+  msg.textContent = '비밀번호가 변경되었습니다. 앱으로 돌아가 새 비밀번호로 로그인해 주세요.';
+  btn.disabled = true;
+};
+</script>
+</body>
+</html>
