@@ -352,6 +352,21 @@ ADD.update({
 'AI 변환 실패 — 원본 사진을 유지합니다.': [
   'Chuyển đổi AI thất bại — giữ nguyên ảnh gốc.', 'AI conversion failed — keeping the original photo.',
   'AI转换失败 — 保留原图。', 'AI変換に失敗しました — 元の写真を維持します。'],
+'약': ['khoảng', 'approx.', '约', '約'],
+'원': ['₩', 'KRW', '韩元', '円'],
+'⚠ 예약': ['⚠ Đặt lịch', '⚠ Booking', '⚠ 预约', '⚠ 予約'],
+'시간 이내 취소입니다. 마사지사가 이미 준비 중일 수 있어': [
+  'giờ trước giờ hẹn — chuyên viên có thể đã chuẩn bị, nên lần hủy này',
+  'hours before the appointment — the therapist may already be preparing, so this cancellation',
+  '小时内取消 — 按摩师可能已在准备，因此本次取消',
+  '時間以内のキャンセルです。セラピストがすでに準備中の可能性があるため'],
+'취소 횟수에 포함': ['được tính vào số lần hủy', 'counts toward your cancellation limit', '将计入取消次数', 'キャンセル回数に含まれます'],
+'됩니다.': ['.', '.', '。', '。'],
+'시간 전까지는 자유롭게 취소할 수 있습니다.': [
+  'giờ trước giờ hẹn, bạn có thể hủy thoải mái.',
+  'hours before the appointment, you can cancel freely.',
+  '小时前可自由取消。',
+  '時間前までは自由にキャンセルできます。'],
 '임박 취소·노쇼가 누적되어': [
   'Do hủy sát giờ và không đến bị tích lũy,', 'Due to repeated last-minute cancellations and no-shows,',
   '因临近取消与爽约累计，', '直前キャンセル・無断不参加が累積したため'],
