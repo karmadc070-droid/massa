@@ -378,6 +378,67 @@ ADD.update({
   '因临近取消与爽约累计，', '直前キャンセル・無断不参加が累積したため'],
 })
 
+# ── 제공자 프로필 상세 ──
+ADD.update({
+'✓ 인증': ['✓ Đã xác minh', '✓ Verified', '✓ 已认证', '✓ 認証済み'],
+'💬 예약 후 채팅하기': ['💬 Nhắn tin sau khi đặt lịch', '💬 Chat after booking', '💬 预约后聊天', '💬 予約後にチャット'],
+'✅ 팁 없음, 이동비 없음': ['✅ Không tip, không phí di chuyển', '✅ No tips, no travel fee', '✅ 无小费，无交通费', '✅ チップなし・出張費なし'],
+'소개가 아직 없습니다.': ['Chưa có phần giới thiệu.', 'No introduction yet.', '暂无介绍。', '紹介文はまだありません。'],
+'이용 정보': ['Thông tin dịch vụ', 'Service info', '使用信息', 'ご利用案内'],
+'🕒 영업시간': ['🕒 Giờ làm việc', '🕒 Hours', '🕒 营业时间', '🕒 営業時間'],
+'📍 주소': ['📍 Địa chỉ', '📍 Address', '📍 地址', '📍 住所'],
+'📞 전화': ['📞 Điện thoại', '📞 Phone', '📞 电话', '📞 電話'],
+'🗨️ 카카오톡': ['🗨️ KakaoTalk', '🗨️ KakaoTalk', '🗨️ KakaoTalk', '🗨️ カカオトーク'],
+'시설 소개': ['Giới thiệu cơ sở', 'Facilities', '设施介绍', '施設のご紹介'],
+'개인 룸 · 위생 키트 · 샤워 시설': ['Phòng riêng · Bộ vệ sinh · Phòng tắm', 'Private room · Hygiene kit · Shower', '独立房间·卫生套装·淋浴设施', '個室・衛生キット・シャワー設備'],
+'개인 룸 · 샤워 시설 · 1회용 위생 키트': ['Phòng riêng · Phòng tắm · Bộ vệ sinh dùng một lần', 'Private room · Shower · Single-use hygiene kit', '独立房间·淋浴·一次性卫生套装', '個室・シャワー・使い捨て衛生キット'],
+'내 서비스': ['Dịch vụ của tôi', 'My services', '我的服务', '提供サービス'],
+'모두 보기': ['Xem tất cả', 'See all', '查看全部', 'すべて見る'],
+'아직 리뷰가 없습니다.': ['Chưa có đánh giá nào.', 'No reviews yet.', '暂无评价。', 'まだレビューがありません。'],
+'🚩 이 제공자 신고하기': ['🚩 Báo cáo người này', '🚩 Report this provider', '🚩 举报该服务者', '🚩 この提供者を通報する'],
+'이 제공자 차단하기': ['Chặn người này', 'Block this provider', '屏蔽该服务者', 'この提供者をブロックする'],
+'차단 해제하기': ['Bỏ chặn', 'Unblock', '解除屏蔽', 'ブロックを解除'],
+'프로필 보기 ›': ['Xem hồ sơ ›', 'View profile ›', '查看档案 ›', 'プロフィールを見る ›'],
+'불러오는 중…': ['Đang tải…', 'Loading…', '加载中…', '読み込み中…'],
+'등록된 서비스가 없습니다.': ['Chưa có dịch vụ nào.', 'No services registered.', '暂无登记的服务。', '登録されたサービスがありません。'],
+})
+
+# ── 서비스 메뉴 이름 (DB 값) ──
+ADD.update({
+'오일 마사지 + 부항 요법': ['Massage dầu + giác hơi', 'Oil massage + cupping', '精油按摩＋拔罐', 'オイルマッサージ＋カッピング'],
+'핫 스톤마사지': ['Massage đá nóng', 'Hot stone massage', '热石按摩', 'ホットストーンマッサージ'],
+'태국식 마사지': ['Massage Thái', 'Thai massage', '泰式按摩', 'タイ式マッサージ'],
+'아로마 마사지': ['Massage tinh dầu', 'Aroma massage', '芳香按摩', 'アロママッサージ'],
+'다리 마사지': ['Massage chân', 'Leg massage', '腿部按摩', '脚のマッサージ'],
+'어깨·목 마사지': ['Massage vai · cổ', 'Shoulder & neck massage', '肩颈按摩', '肩・首のマッサージ'],
+'머리 마사지': ['Massage đầu', 'Head massage', '头部按摩', 'ヘッドマッサージ'],
+'오일 없는 마사지': ['Massage không dầu', 'Massage without oil', '无油按摩', 'オイルなしマッサージ'],
+'스포츠 테라피': ['Trị liệu thể thao', 'Sports therapy', '运动理疗', 'スポーツセラピー'],
+'풋 테라피': ['Trị liệu bàn chân', 'Foot therapy', '足部理疗', 'フットセラピー'],
+'등 테라피': ['Trị liệu lưng', 'Back therapy', '背部理疗', 'バックセラピー'],
+'목·어깨 테라피': ['Trị liệu cổ · vai', 'Neck & shoulder therapy', '颈肩理疗', '首・肩セラピー'],
+'헤드 테라피': ['Trị liệu đầu', 'Head therapy', '头部理疗', 'ヘッドセラピー'],
+'강한 압': ['Lực mạnh', 'Firm pressure', '力度较强', '強めの圧'],
+})
+
+# ── 알림 ──
+ADD.update({
+'분 전': ['phút trước', 'min ago', '分钟前', '分前'],
+'시간 전': ['giờ trước', 'hours ago', '小时前', '時間前'],
+'일 전': ['ngày trước', 'days ago', '天前', '日前'],
+'테라피스트 Linh N.는 서비스 예약을 간절히 기다리고 있습니다.': [
+  'Chuyên viên Linh N. đang mong chờ lịch đặt của bạn.',
+  'Therapist Linh N. is looking forward to your booking.',
+  '理疗师 Linh N. 正期待您的预约。',
+  'セラピストのLinh N.があなたのご予約をお待ちしています。'],
+'서비스가 완료되었습니다. 평가를 남겨주세요': [
+  'Dịch vụ đã hoàn tất. Hãy để lại đánh giá nhé.', 'Your service is complete. Please leave a review.',
+  '服务已完成，请留下评价。', 'サービスが完了しました。レビューをお願いします。'],
+'연결됨': ['Đã kết nối', 'Connected', '已连接', '接続済み'],
+'테라피스트와 연결되었습니다': ['Đã kết nối với chuyên viên', 'You are connected with a therapist', '已与理疗师建立联系', 'セラピストとつながりました'],
+'완료': ['Hoàn tất', 'Completed', '已完成', '完了'],
+})
+
 # 화면 제목
 TITLES = {
 '계정 정보': ['Thông tin tài khoản', 'Account', '账户信息', 'アカウント情報'],

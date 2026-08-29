@@ -1316,7 +1316,7 @@ async function openProfile(pid) {
   const irow = (l, v) => '<div class="pf-info-row"><span>' + l + '</span><span>' + v + '</span></div>';
   const contactHtml = '<div class="pf-sec">이용 정보</div><div class="pf-info">'
     + irow('🕒 영업시간', p.business_hours || '-')
-    + irow('📍 주소', p.base_district ? ('하노이 ' + p.base_district) : '-')
+    + irow('📍 주소', p.base_district ? ('<span>하노이</span> <span>' + p.base_district + '</span>') : '-')
     + (isAdminUser() && p.phone ? '<div class="pf-info-row"><span>📞 전화</span><a href="tel:' + p.phone + '">' + p.phone + '</a></div>' : '')
     + (isAdminUser() && p.zalo ? irow('💬 Zalo', p.zalo) : '')
     + (isAdminUser() && p.kakao ? irow('🗨️ 카카오톡', p.kakao) : '')
@@ -1325,7 +1325,7 @@ async function openProfile(pid) {
   const videoHtml = p.video_url ? '<div class="pf-sec">영상</div><a class="pf-video" href="' + p.video_url + '" target="_blank">▶ 소개 영상 보기</a>' : '';
   body.innerHTML = '<div class="pf-photo-wrap">' + photoHtml + '</div>'
     + '<div class="pf-name">' + p.display_name + (p.is_verified ? ' <span class="badge">✓ 인증</span>' : '') + '<span class="pf-fav" id="pfFav" onclick="toggleFavorite(\'' + pid + '\')">' + ((CACHE.favorites && CACHE.favorites.has(pid)) ? '♥' : '♡') + '</span></div>'
-    + '<div class="pf-meta"><span>◎ 100m</span><span class="star">★ ' + Number(p.rating).toFixed(1) + '</span><span>(' + p.review_count + ' 리뷰)</span></div>'
+    + '<div class="pf-meta"><span>◎ 100m</span><span class="star">★ ' + Number(p.rating).toFixed(1) + '</span><span>(' + p.review_count + ' <span>리뷰</span>)</span></div>'
     + '<div style="margin:10px 0"><button class="chip sel" style="width:100%;padding:11px 0;font-size:14px" onclick="openChat(\'' + pid + '\',\'' + p.display_name + '\')">💬 예약 후 채팅하기</button></div>'
     + care
     + '<div class="pf-bio">' + (p.bio || '소개가 아직 없습니다.') + '</div>'
@@ -1333,11 +1333,11 @@ async function openProfile(pid) {
     + '<div class="pf-sec">내 서비스</div>' + svcHtml
     + '<div class="pf-rev-header"><div class="pf-sec" style="margin:0">리뷰</div><span class="more">모두 보기</span></div>'
     + aiReviewInsight(rv || [])
-    + '<div class="pf-rev-summary"><div class="pf-rev-avg"><div class="big">' + avg.toFixed(1) + '</div><div class="tstars">' + ('★'.repeat(Math.round(avg)) || '★') + '</div><div style="font-size:11px;color:var(--muted)">(' + total + ' 리뷰)</div></div><div class="pf-bars">' + bars + '</div></div>'
+    + '<div class="pf-rev-summary"><div class="pf-rev-avg"><div class="big">' + avg.toFixed(1) + '</div><div class="tstars">' + ('★'.repeat(Math.round(avg)) || '★') + '</div><div style="font-size:11px;color:var(--muted)">(' + total + ' <span>리뷰</span>)</div></div><div class="pf-bars">' + bars + '</div></div>'
     + detailHtml
     + revItems
     + '<div class="pf-report" onclick="openReport(\'' + p.display_name + '\',\'' + pid + '\')">🚩 이 제공자 신고하기</div>'
-    + '<div class="pf-report" onclick="toggleBlock(\'' + pid + '\',\'' + p.display_name + '\')">⛔ ' + (BLOCKED.has(pid) ? '차단 해제하기' : '이 제공자 차단하기') + '</div>';
+    + '<div class="pf-report" onclick="toggleBlock(\'' + pid + '\',\'' + p.display_name + '\')">⛔ <span>' + (BLOCKED.has(pid) ? '차단 해제하기' : '이 제공자 차단하기') + '</span></div>';
 
   body.querySelectorAll('.pf-svc').forEach(card => {
     card.querySelectorAll('.chip').forEach(ch => ch.onclick = () => {
@@ -2405,6 +2405,7 @@ const DICT = {
   '둘 다 하시면 마사지사·홈뷰티 모두 선택하세요. 각각으로 등록됩니다.': ['Làm cả hai thì chọn cả Massage và Làm đẹp — sẽ đăng ký riêng từng loại.','If you do both, select Masseur and Home Beauty — each is registered separately.','两者都做请都选，将分别登记。','両方する場合は両方選択してください。別々に登録されます。'],
   '예약을 완료하시면 담당 테라피스트와 채팅할 수 있습니다.\n서비스·시간·장소를 선택해 예약을 먼저 진행해 주세요.': ['Sau khi hoàn tất đặt lịch, bạn có thể nhắn tin với chuyên viên phụ trách.\nHãy chọn dịch vụ, thời gian và địa điểm để đặt lịch trước.', 'You can chat with your therapist once your booking is complete.\nPlease choose a service, time and place to book first.', '完成预约后即可与负责的理疗师聊天。\n请先选择服务、时间和地点完成预约。', 'ご予約が完了すると担当セラピストとチャットできます。\nサービス・時間・場所を選んで先にご予約ください。'],
   '예약을 완료하시면 담당 테라피스트와 채팅할 수 있습니다.\n서비스·시간·장소를 선택해 예약을 먼저 진행해 주세요.': ['Sau khi hoàn tất đặt lịch, bạn có thể nhắn tin với chuyên viên phụ trách.\nHãy chọn dịch vụ, thời gian và địa điểm để đặt lịch trước.', 'You can chat with your therapist once your booking is complete.\nPlease choose a service, time and place to book first.', '完成预约后即可与负责的理疗师聊天。\n请先选择服务、时间和地点完成预约。', 'ご予約が完了すると担当セラピストとチャットできます。\nサービス・時間・場所を選んで先にご予約ください。'],
+  '예약을 완료하시면 담당 테라피스트와 채팅할 수 있습니다.\n서비스·시간·장소를 선택해 예약을 먼저 진행해 주세요.': ['Sau khi hoàn tất đặt lịch, bạn có thể nhắn tin với chuyên viên phụ trách.\nHãy chọn dịch vụ, thời gian và địa điểm để đặt lịch trước.', 'You can chat with your therapist once your booking is complete.\nPlease choose a service, time and place to book first.', '完成预约后即可与负责的理疗师聊天。\n请先选择服务、时间和地点完成预约。', 'ご予約が完了すると担当セラピストとチャットできます。\nサービス・時間・場所を選んで先にご予約ください。'],
   '60분': ['60 phút', '60 min', '60分钟', '60分'],
   '90분': ['90 phút', '90 min', '90分钟', '90分'],
   '120분': ['120 phút', '120 min', '120分钟', '120分'],
@@ -2664,6 +2665,48 @@ const DICT = {
   '됩니다.': ['.', '.', '。', '。'],
   '시간 전까지는 자유롭게 취소할 수 있습니다.': ['giờ trước giờ hẹn, bạn có thể hủy thoải mái.', 'hours before the appointment, you can cancel freely.', '小时前可自由取消。', '時間前までは自由にキャンセルできます。'],
   '임박 취소·노쇼가 누적되어': ['Do hủy sát giờ và không đến bị tích lũy,', 'Due to repeated last-minute cancellations and no-shows,', '因临近取消与爽约累计，', '直前キャンセル・無断不参加が累積したため'],
+  '✓ 인증': ['✓ Đã xác minh', '✓ Verified', '✓ 已认证', '✓ 認証済み'],
+  '💬 예약 후 채팅하기': ['💬 Nhắn tin sau khi đặt lịch', '💬 Chat after booking', '💬 预约后聊天', '💬 予約後にチャット'],
+  '✅ 팁 없음, 이동비 없음': ['✅ Không tip, không phí di chuyển', '✅ No tips, no travel fee', '✅ 无小费，无交通费', '✅ チップなし・出張費なし'],
+  '소개가 아직 없습니다.': ['Chưa có phần giới thiệu.', 'No introduction yet.', '暂无介绍。', '紹介文はまだありません。'],
+  '이용 정보': ['Thông tin dịch vụ', 'Service info', '使用信息', 'ご利用案内'],
+  '🕒 영업시간': ['🕒 Giờ làm việc', '🕒 Hours', '🕒 营业时间', '🕒 営業時間'],
+  '📍 주소': ['📍 Địa chỉ', '📍 Address', '📍 地址', '📍 住所'],
+  '📞 전화': ['📞 Điện thoại', '📞 Phone', '📞 电话', '📞 電話'],
+  '🗨️ 카카오톡': ['🗨️ KakaoTalk', '🗨️ KakaoTalk', '🗨️ KakaoTalk', '🗨️ カカオトーク'],
+  '시설 소개': ['Giới thiệu cơ sở', 'Facilities', '设施介绍', '施設のご紹介'],
+  '개인 룸 · 위생 키트 · 샤워 시설': ['Phòng riêng · Bộ vệ sinh · Phòng tắm', 'Private room · Hygiene kit · Shower', '独立房间·卫生套装·淋浴设施', '個室・衛生キット・シャワー設備'],
+  '개인 룸 · 샤워 시설 · 1회용 위생 키트': ['Phòng riêng · Phòng tắm · Bộ vệ sinh dùng một lần', 'Private room · Shower · Single-use hygiene kit', '独立房间·淋浴·一次性卫生套装', '個室・シャワー・使い捨て衛生キット'],
+  '내 서비스': ['Dịch vụ của tôi', 'My services', '我的服务', '提供サービス'],
+  '모두 보기': ['Xem tất cả', 'See all', '查看全部', 'すべて見る'],
+  '아직 리뷰가 없습니다.': ['Chưa có đánh giá nào.', 'No reviews yet.', '暂无评价。', 'まだレビューがありません。'],
+  '🚩 이 제공자 신고하기': ['🚩 Báo cáo người này', '🚩 Report this provider', '🚩 举报该服务者', '🚩 この提供者を通報する'],
+  '이 제공자 차단하기': ['Chặn người này', 'Block this provider', '屏蔽该服务者', 'この提供者をブロックする'],
+  '차단 해제하기': ['Bỏ chặn', 'Unblock', '解除屏蔽', 'ブロックを解除'],
+  '프로필 보기 ›': ['Xem hồ sơ ›', 'View profile ›', '查看档案 ›', 'プロフィールを見る ›'],
+  '불러오는 중…': ['Đang tải…', 'Loading…', '加载中…', '読み込み中…'],
+  '등록된 서비스가 없습니다.': ['Chưa có dịch vụ nào.', 'No services registered.', '暂无登记的服务。', '登録されたサービスがありません。'],
+  '오일 마사지 + 부항 요법': ['Massage dầu + giác hơi', 'Oil massage + cupping', '精油按摩＋拔罐', 'オイルマッサージ＋カッピング'],
+  '핫 스톤마사지': ['Massage đá nóng', 'Hot stone massage', '热石按摩', 'ホットストーンマッサージ'],
+  '태국식 마사지': ['Massage Thái', 'Thai massage', '泰式按摩', 'タイ式マッサージ'],
+  '아로마 마사지': ['Massage tinh dầu', 'Aroma massage', '芳香按摩', 'アロママッサージ'],
+  '다리 마사지': ['Massage chân', 'Leg massage', '腿部按摩', '脚のマッサージ'],
+  '어깨·목 마사지': ['Massage vai · cổ', 'Shoulder & neck massage', '肩颈按摩', '肩・首のマッサージ'],
+  '머리 마사지': ['Massage đầu', 'Head massage', '头部按摩', 'ヘッドマッサージ'],
+  '오일 없는 마사지': ['Massage không dầu', 'Massage without oil', '无油按摩', 'オイルなしマッサージ'],
+  '스포츠 테라피': ['Trị liệu thể thao', 'Sports therapy', '运动理疗', 'スポーツセラピー'],
+  '풋 테라피': ['Trị liệu bàn chân', 'Foot therapy', '足部理疗', 'フットセラピー'],
+  '등 테라피': ['Trị liệu lưng', 'Back therapy', '背部理疗', 'バックセラピー'],
+  '목·어깨 테라피': ['Trị liệu cổ · vai', 'Neck & shoulder therapy', '颈肩理疗', '首・肩セラピー'],
+  '헤드 테라피': ['Trị liệu đầu', 'Head therapy', '头部理疗', 'ヘッドセラピー'],
+  '강한 압': ['Lực mạnh', 'Firm pressure', '力度较强', '強めの圧'],
+  '분 전': ['phút trước', 'min ago', '分钟前', '分前'],
+  '시간 전': ['giờ trước', 'hours ago', '小时前', '時間前'],
+  '일 전': ['ngày trước', 'days ago', '天前', '日前'],
+  '테라피스트 Linh N.는 서비스 예약을 간절히 기다리고 있습니다.': ['Chuyên viên Linh N. đang mong chờ lịch đặt của bạn.', 'Therapist Linh N. is looking forward to your booking.', '理疗师 Linh N. 正期待您的预约。', 'セラピストのLinh N.があなたのご予約をお待ちしています。'],
+  '서비스가 완료되었습니다. 평가를 남겨주세요': ['Dịch vụ đã hoàn tất. Hãy để lại đánh giá nhé.', 'Your service is complete. Please leave a review.', '服务已完成，请留下评价。', 'サービスが完了しました。レビューをお願いします。'],
+  '연결됨': ['Đã kết nối', 'Connected', '已连接', '接続済み'],
+  '테라피스트와 연결되었습니다': ['Đã kết nối với chuyên viên', 'You are connected with a therapist', '已与理疗师建立联系', 'セラピストとつながりました'],
 };
 function trOne(ko, lang) {
   if (lang === 'ko') return ko;
@@ -2955,7 +2998,7 @@ window.openBot = function () {
   ov.style.display = 'flex';
   const msgs = ov.querySelector('#botMsgs'), quick = ov.querySelector('#botQuick');
   const add = (who, txt) => { const d = document.createElement('div'); d.className = 'bmsg ' + who; d.textContent = txt; msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight; };
-  const addCard = (p) => { const d = document.createElement('div'); d.className = 'bmsg bot'; d.style.cursor = 'pointer'; d.innerHTML = '<b>' + p.display_name + '</b> ★' + Number(p.rating).toFixed(1) + ' (' + p.review_count + ' 리뷰)<br><span style="font-size:12px;color:#7A8C94">' + (p.tags || []).join(' · ') + (p.base_district ? ' · ' + p.base_district : '') + '</span><br><span style="font-size:12px;color:#2E8B8B;font-weight:bold">프로필 보기 ›</span>'; d.onclick = () => { ov.style.display = 'none'; openProfile(p.id); }; msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight; };
+  const addCard = (p) => { const d = document.createElement('div'); d.className = 'bmsg bot'; d.style.cursor = 'pointer'; d.innerHTML = '<b>' + p.display_name + '</b> ★' + Number(p.rating).toFixed(1) + ' (' + p.review_count + ' <span>리뷰</span>)<br><span style="font-size:12px;color:#7A8C94">' + (p.tags || []).join(' · ') + (p.base_district ? ' · <span>' + p.base_district + '</span>' : '') + '</span><br><span style="font-size:12px;color:#2E8B8B;font-weight:bold">프로필 보기 ›</span>'; d.onclick = () => { ov.style.display = 'none'; openProfile(p.id); }; msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight; };
   const respond = (v) => {
     if (isSearch(v)) {
       const { conds, f } = parseSearch(v);
@@ -3017,7 +3060,7 @@ window.setMapRadius = function (el) {
 window.openMap = function () { window.go('map'); setTimeout(() => renderMap(window._mapR || 5), 60); };
 
 // 알림
-function notiAgo(iso) { const d = (Date.now() - new Date(iso).getTime()) / 1000; if (d < 3600) return Math.max(1, Math.floor(d / 60)) + ' 분 전'; if (d < 86400) return Math.floor(d / 3600) + ' 시간 전'; return Math.floor(d / 86400) + ' 일 전'; }
+function notiAgo(iso) { const d = (Date.now() - new Date(iso).getTime()) / 1000; if (d < 3600) return Math.max(1, Math.floor(d / 60)) + ' <span>분 전</span>'; if (d < 86400) return Math.floor(d / 3600) + ' <span>시간 전</span>'; return Math.floor(d / 86400) + ' <span>일 전</span>'; }
 async function renderNotifications() {
   const wrap = document.getElementById('notiList');
   if (!wrap) return;
@@ -3025,9 +3068,9 @@ async function renderNotifications() {
   if (SESSION) { try { const { data } = await sb.from('notifications').select('*').eq('user_id', SESSION.user.id).order('created_at', { ascending: false }).limit(30); real = data || []; } catch (e) {} }
   const realHtml = real.map(n => '<div class="noti-row"><div class="noti-ico">' + (n.kind === 'warning' ? '⚠️' : '📢') + '</div><div class="noti-body"><div class="noti-title">' + (n.title || '알림') + '</div><div class="noti-desc">' + (n.body || '') + '</div><div class="noti-time">' + notiAgo(n.created_at) + '</div></div></div>').join('');
   const items = [
-    ['알림', '테라피스트 Linh N.는 서비스 예약을 간절히 기다리고 있습니다.', '15 시간 전'],
-    ['완료', '서비스가 완료되었습니다. 평가를 남겨주세요', '3 일 전'],
-    ['연결됨', '테라피스트와 연결되었습니다', '3 일 전']
+    ['알림', '테라피스트 Linh N.는 서비스 예약을 간절히 기다리고 있습니다.', '15 <span>시간 전</span>'],
+    ['완료', '서비스가 완료되었습니다. 평가를 남겨주세요', '3 <span>일 전</span>'],
+    ['연결됨', '테라피스트와 연결되었습니다', '3 <span>일 전</span>']
   ];
   const demoHtml = items.map(n => '<div class="noti-row"><div class="noti-ico">📢</div><div class="noti-body"><div class="noti-title">' + n[0] + '</div><div class="noti-desc">' + n[1] + '</div><div class="noti-time">' + n[2] + '</div></div></div>').join('');
   wrap.innerHTML = realHtml + demoHtml;
