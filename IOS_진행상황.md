@@ -61,6 +61,16 @@ Apple이 8/26 iPad Air(M3)/iPadOS 26.6에서 심사, 세 건 지적.
 - 사전 주문(한국·베트남, 2026-10-01) 해제: 가격 및 사용 가능 여부 → 사전 주문 편집 → "App Store에서 사전 주문 삭제". **주의: 해제하면 두 지역이 곧바로 "사용 불가"로 바뀌므로 "사용 가능 여부 관리"에서 한국·베트남을 다시 켜야 한다**
 - "이 버전 출시" 실행 → **1.0 (build 8) READY_FOR_SALE**. 대한민국·베트남 App Store 게시 (반영까지 최대 24시간)
 
+## 4-4. 1.0.1 업데이트 (2026-08-29)
+
+- 실기기에서 홈 아래에 빈 화면이 보인다는 제보 → 원인은 CSS `#chat { display:flex }`가 `.screen{display:none}`을 덮어써 **채팅 화면이 홈 밑에 항상 렌더링**된 것(스크롤 높이가 정확히 2배). `#chat.on`으로 수정
+- 홈 배너 3개에 `flex:1 1 150px; max-height:240px` 적용 — 남는 세로 공간을 나눠 가져 화면을 채운다 (150→189px)
+- **마케팅 버전 관리**: 출시된 1.0 트레인은 닫혀 새 빌드 업로드가 거부된다(`Invalid Pre-Release Train`). codemagic.yaml이 `capacitor/package.json`의 version을 읽어 `agvtool new-marketing-version`으로 설정하도록 변경. **다음 업데이트 시 package.json version만 올리면 된다**
+- build 10 → **1.0.1 심사 제출 완료**
+
+### GitHub 푸시 권한 메모
+저장소 소유자는 `karmadc070-droid`인데 PC·브라우저 자격증명은 `parkdongchun-77`이다(403). `parkdongchun-77`을 협업자로 초대·수락해 해결함. push가 응답 없이 멈추면 대기 중인 git 프로세스를 정리한 뒤 재시도할 것.
+
 ## 5. 다음 할 일
 
 1. 심사 결과 대기 (보통 1~7일)
