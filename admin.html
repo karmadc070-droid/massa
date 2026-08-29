@@ -4001,7 +4001,12 @@ async function load() {
 }
 // 권한 검사를 통과한 경우에만 콘솔을 로드한다.
 // load() 내부에 두면 try 블록 흐름에 좌우되므로 호출 자체를 감싼다.
-(async () => { if (await guardConsole()) load(); })();
+// 권한 검사를 통과한 경우에만 콘솔을 로드하고, 운영 메뉴를 곧바로 채운다.
+(async () => {
+  if (!(await guardConsole())) return;
+  await load();
+  if (window.loadAccount) await loadAccount();   // 역할별 운영 메뉴 표시
+})();
 </script>
 </body>
 </html>
