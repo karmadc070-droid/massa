@@ -1421,6 +1421,16 @@ function currentService() {
       || CACHE.services.find(s => s.massage_type === SEL.serviceType);
 }
 
+// 날짜 칩에서 '일(날짜)' 숫자만 읽는다.
+// 요일 라벨이 번역되면 숫자가 섞일 수 있다 (베트남어 수요일 = T4 → '410' 이 되는 사고가 있었다)
+function selectedDayNum() {
+  const el = document.querySelector('#time .day.sel');
+  if (!el) return '7';
+  const dow = el.querySelector('.dow');
+  const txt = [...el.childNodes].filter(nd => nd !== dow).map(nd => nd.textContent).join('');
+  return txt.replace(/\D/g, '') || '7';
+}
+
 // 예약 확인 화면의 요약을 실제 선택값으로 채운다.
 // 이전에는 마크업의 예시 값이 그대로 남아, 다른 제공자·시간·호텔을 골라도 화면이 바뀌지 않았다.
 // 번역이 필요한 조각은 <span> 으로 감싼다 (translateTree 가 알아서 바꾼다)
@@ -1431,7 +1441,7 @@ function fillConfirm() {
   const p = SEL.provider;
   const day = document.querySelector('#time .day.sel');
   const dow = day ? (day.querySelector('.dow')?.textContent || '').trim() : '';
-  const dayNum = day ? day.textContent.replace(/\D/g, '') : '';
+  const dayNum = day ? selectedDayNum() : '';
   const time = document.getElementById('timeView')?.textContent || '';
   const tx = document.querySelectorAll('#loc input.tx');
   const hotel = (tx[0]?.value || '').trim();
@@ -1589,7 +1599,7 @@ async function submitBooking() {
   const _hotelEl = document.querySelector('#loc input.tx');
   if (!(_hotelEl?.value || '').trim()) { alert('숙소·건물 이름을 입력해 주세요.'); window.go('loc'); _hotelEl?.focus(); return; }
   const svc = currentService();
-  const day = document.querySelector('#time .day.sel')?.textContent.replace(/\D/g, '') || '7';
+  const day = selectedDayNum();
   const time = document.getElementById('timeView')?.textContent || '20:00';
   const scheduled = new Date(`2026-06-${day.padStart(2,'0')}T${time}:00+07:00`).toISOString();
   const row = {
