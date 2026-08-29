@@ -4,15 +4,13 @@
 
 목표: 앱이 임시 도메인 대신 정식 도메인을 바라보게 하고, IPv6 미지원 문제를 없앤다.
 
-- [ ] A1. Cloudflare에 `api.moahagwon.com` 레코드 추가 → verify: dig A/AAAA 응답 확인
-  - A: `141.164.46.88`, AAAA: `2401:c080:1c02:7e6:5400:6ff:fe98:627f`
-  - **프록시 끄기(DNS only)** — Supabase Realtime WebSocket·Storage 업로드가 프록시 제약을 받지 않도록
-- [ ] A2. VPS Caddy에 `api.moahagwon.com` → `localhost:8002` 블록 추가 → verify: `curl -I https://api.moahagwon.com/rest/v1/` 200/401
-- [ ] A3. IPv6 접근 확인 → verify: `curl -6 -I https://api.moahagwon.com/auth/v1/settings`
-- [ ] A4. index.html의 SUPABASE_URL 교체 → verify: 브라우저에서 로그인·목록 로드 성공
-- [ ] A5. Storage 파일 URL 치환 (DB 안 21곳, 이전에 sslip.io로 바꾼 것) → verify: 제공자 사진 표시
-- [ ] A6. 심사 정보(App Review Notes)의 서버 URL 갱신
-- [ ] A7. 빌드·제출 → verify: TestFlight 실기기에서 로그인·예약 동작
+- [x] A1. Cloudflare에 `api.moahagwon.com` A+AAAA 추가 (DNS only) — 2026-08-29 완료
+- [x] A2. Caddy `/root/Caddyfile`에 `api.moahagwon.com → localhost:8002` 추가, 무중단 reload — 완료
+- [x] A3. IPv4/IPv6 모두 401 응답 확인 (인증서 자동 발급됨), 기존 sslip.io도 정상 — 완료
+- [x] A4. index.html SUPABASE_URL 교체 → 로그인 255ms·목록 조회 정상 확인 — 완료
+- [x] A5. DB URL 치환: providers.photo_url 25건 + providers.photo_urls(배열) 25건 = 50건 — 완료
+- [x] A6. 심사 정보에는 서버 URL이 없어 갱신 불필요 — 확인함
+- [x] A7. build 14로 1.0.1 심사 제출 완료 (2026-08-29) → 남은 verify: TestFlight 실기기에서 로그인·예약 동작
 
 ## B. 관리자·파트너 기능 웹 이전 (23개 화면)
 
