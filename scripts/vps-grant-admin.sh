@@ -3,11 +3,8 @@
 # 사용법: sh vps-grant-admin.sh someone@example.com
 set -e
 
-EMAIL="$1"
-if [ -z "$EMAIL" ]; then
-  echo "사용법: sh vps-grant-admin.sh <이메일>"
-  exit 1
-fi
+# noVNC 콘솔에서는 Shift 조합이 깨져 @ 를 입력할 수 없다. 기본값을 넣어 인자 없이 쓴다.
+EMAIL="${1:-karmadc070@gmail.com}"
 
 DB=$(docker ps --format '{{.Names}}' | grep massa | grep -i db | head -1)
 echo "=== DB: $DB / 대상: $EMAIL ==="
