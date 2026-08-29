@@ -16,9 +16,11 @@
 
 목표: 앱은 고객 전용으로 남기고, 운영 기능은 `admin.moahagwon.com`에서 관리자 로그인 후 사용한다.
 
-### B0. 준비
-- [ ] B0-1. `admin.html` 스캐폴드 (Supabase 클라이언트·로그인·역할 검사) → verify: 관리자 아닌 계정은 접근 거부
-- [ ] B0-2. 배포 경로 결정 (Vercel 별도 프로젝트 vs VPS Caddy 정적 서빙)
+### B0. 준비 — 완료 (2026-08-29)
+- [x] B0-1. `admin.html` 생성 (index.html 복사본 + `guardConsole` 권한 검사) → 미로그인 시 차단 화면 확인함
+- [x] B0-2. 배포: VPS Caddy 정적 서빙. `admin.moahagwon.com` → `/srv/massa-admin`
+  - DNS A 레코드 등록(DNS only), Caddy 블록 추가, noindex 헤더 포함
+  - 배포 스크립트: `scripts/vps-deploy-admin.sh` (codeload로 최신 커밋 취득 + 모듈 스코프 검증)
 
 ### B1. 관리자 화면 13개 이전
 adminApps(심사) · adminStats · adminReports · adminMembers · adminSettlement · adminAds · adminFraud · adminBookings · adminProviders · adminFee · adminCoupons · adminSales · adminCountry

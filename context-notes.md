@@ -42,6 +42,14 @@
 - 검증: IPv4/IPv6 모두 401(정상), 로그인 255ms(기존 737ms)
 - DB URL 치환 50건. **어느 컬럼인지 모른 채 UPDATE를 쓰지 않고** information_schema로 text·ARRAY 컬럼을 훑었더니 `providers.photo_urls`(배열) 25건이 추가로 나왔다. 추측했으면 절반을 놓쳤을 것
 
+## 2026-08-29 · B0 단계에서 겪은 함정 세 가지
+
+1. **스크립트 스코프**: `guardConsole`을 1136줄의 일반 `<script>`에 넣었더니 `refreshSession is not defined`. 앱 로직은 전부 1357줄의 `<script type="module">` 안에 있다. 모듈은 별도 스코프이므로 **관련 코드는 반드시 모듈 안에** 넣어야 한다.
+2. **raw.githubusercontent.com 캐시**: 푸시 직후 배포해도 최대 5분간 옛 파일이 내려온다. 배포 스크립트는 `codeload.github.com/.../tar.gz/refs/heads/main`으로 받는다(항상 최신).
+3. **try 블록 안의 가드**: `load()` 내부 try에 권한 검사를 넣었더니 실행되지 않았다. 앞선 await에서 흐름이 갈리면 건너뛴다. `(async () => { if (await guardConsole()) load(); })()` 처럼 **호출 자체를 감싸는** 편이 확실하다.
+
+또한 noVNC 콘솔은 Shift가 안 먹으므로 `&&`를 쓸 수 없다(`77`로 깨진다). 명령은 한 줄씩 따로 입력한다.
+
 ## 알려진 함정 (반복 확인됨)
 
 - **GitHub 푸시**: 저장소 소유자는 `karmadc070-droid`, PC 자격증명은 `parkdongchun-77`. 협업자로 초대·수락해 해결함. push가 멈추면 대기 중인 git 프로세스를 죽이고 재시도.
