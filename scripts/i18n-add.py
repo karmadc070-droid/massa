@@ -284,6 +284,9 @@ ADD.update({
 '비밀번호 변경': ['Đổi mật khẩu', 'Change password', '修改密码', 'パスワード変更'],
 '계정 삭제': ['Xóa tài khoản', 'Delete account', '删除账户', 'アカウント削除'],
 '알림': ['Thông báo', 'Notifications', '通知', 'お知らせ'],
+'후불': ['Trả sau', 'Pay later', '后付', '後払い'],
+'QR': ['QR', 'QR', 'QR码', 'QR'],
+'현금': ['Tiền mặt', 'Cash', '现金', '現金'],
 })
 
 # 화면 제목

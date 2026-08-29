@@ -1580,7 +1580,7 @@ async function submitBooking() {
     if (done) done.innerHTML = `예약 저장 실패: ${error.message}`;
   } else if (done) {
     const won = Math.round(data.amount_vnd * 0.054).toLocaleString();
-    done.innerHTML = `예약번호 <b>${data.booking_no}</b><br>${svc?.name || ''} · ${data.amount_vnd.toLocaleString()}₫ <b>(후불 · ${({card_onsite:'현장 카드',qr_onsite:'QR',cash:'현금'})[data.payment_method]})</b><br>${row.hotel_name || '롯데호텔 하노이'} ${row.room_number} · ${time}`;
+    done.innerHTML = `<span>예약번호</span> <b>${data.booking_no}</b><br>${svc?.name || ''} · ${data.amount_vnd.toLocaleString()}₫ <b>(<span>후불</span> · <span>${({card_onsite:'현장 카드',qr_onsite:'QR',cash:'현금'})[data.payment_method]}</span>)</b><br>${row.hotel_name || '롯데호텔 하노이'} ${row.room_number} · ${time}`;
   }
   // 예약이 잡힌 뒤부터 담당 테라피스트와 채팅할 수 있다
   const chatBtn = document.getElementById('doneChatBtn');
@@ -2584,6 +2584,9 @@ const DICT = {
   '비밀번호 변경': ['Đổi mật khẩu', 'Change password', '修改密码', 'パスワード変更'],
   '계정 삭제': ['Xóa tài khoản', 'Delete account', '删除账户', 'アカウント削除'],
   '알림': ['Thông báo', 'Notifications', '通知', 'お知らせ'],
+  '후불': ['Trả sau', 'Pay later', '后付', '後払い'],
+  'QR': ['QR', 'QR', 'QR码', 'QR'],
+  '현금': ['Tiền mặt', 'Cash', '现金', '現金'],
 };
 function trOne(ko, lang) {
   if (lang === 'ko') return ko;
