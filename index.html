@@ -2392,22 +2392,62 @@ function trOne(ko, lang) {
   const idx = { vi: 0, en: 1, zh: 2, ja: 3 }[lang];
   return e[idx] || e[1] || ko;
 }
-const I18N_SEL = '.label, .cta, .chip, .fchip, .hint, .notice, .mp-name, .acl, .flt-title, .svc-title, .noti-title, .tag, #homeLoc, #locCurName';
-function applyLang(lang) {
-  LANG = lang;
-  document.querySelectorAll('.langsw').forEach(s => s.classList.toggle('on', s.dataset.lang === lang));
-  const _lb = document.getElementById('langBtn'); if (_lb) { const _m = { ko: '🇰🇷 KO', vi: '🇻🇳 VI', en: '🇺🇸 EN', zh: '🇨🇳 中', ja: '🇯🇵 日' }; _lb.textContent = _m[lang] || lang; }
-  document.querySelectorAll(I18N_SEL).forEach(el => {
-    if (el.querySelector('*')) return;
-    if (!el.dataset.ko) el.dataset.ko = el.textContent.trim();
-    const t = trOne(el.dataset.ko, lang);
-    if (t) el.textContent = t;
+// 현재 언어로 번역한다. 동적으로 만드는 문자열은 이 함수로 감싼다
+function T(ko) { return trOne(ko, LANG); }
+window.T = T;
+
+// alert·confirm·prompt 도 번역을 거치게 한다 (호출부를 일일이 고치지 않아도 된다)
+const _natAlert = window.alert.bind(window);
+const _natConfirm = window.confirm.bind(window);
+const _natPrompt = window.prompt.bind(window);
+window.alert = (m) => _natAlert(typeof m === 'string' ? T(m) : m);
+window.confirm = (m) => _natConfirm(typeof m === 'string' ? T(m) : m);
+window.prompt = (m, d) => _natPrompt(typeof m === 'string' ? T(m) : m, d);
+
+// 텍스트 노드를 전부 훑어 번역한다.
+// 이전에는 정해진 CSS 클래스만 봤기 때문에 <b> 같은 자식이 있으면 통째로 건너뛰었고,
+// innerHTML 로 나중에 그려지는 목록·오버레이는 아예 번역 대상이 아니었다.
+function translateTree(root, lang) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(n) {
+      const p = n.parentElement;
+      if (!p) return NodeFilter.FILTER_REJECT;
+      const tag = p.tagName;
+      if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'TEXTAREA') return NodeFilter.FILTER_REJECT;
+      // 아래 요소들은 applyLang 이 전용 사전으로 따로 채운다. 여기서 건드리면 서로 덮어쓴다
+      if (p.closest('.langsw, .tabbar, .banner, #appTitle, #mpLangVal, .c-partner, .c-invite')) return NodeFilter.FILTER_REJECT;
+      return n.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    }
   });
-  document.querySelectorAll('input[placeholder]:not(#apName), textarea[placeholder]').forEach(el => {
+  const nodes = [];
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) nodes.push(n);
+  nodes.forEach(n => {
+    if (n.__ko === undefined) n.__ko = n.nodeValue;   // 한국어 원문을 노드에 보관
+    const key = n.__ko.trim();
+    if (!key) return;
+    const t = trOne(key, lang);
+    n.nodeValue = (t === key) ? n.__ko : n.__ko.replace(key, t);
+  });
+  root.querySelectorAll('input[placeholder]:not(#apName), textarea[placeholder]').forEach(el => {
     if (!el.dataset.phko) el.dataset.phko = el.getAttribute('placeholder') || '';
     const t = trOne(el.dataset.phko, lang);
     if (t) el.setAttribute('placeholder', t);
   });
+}
+
+// 새로 그려진 DOM 도 자동으로 번역한다. 짧은 시간에 몰리는 변경은 한 번으로 묶는다
+let _i18nTimer = null;
+new MutationObserver(() => {
+  if (LANG === 'ko' || _i18nTimer) return;
+  _i18nTimer = setTimeout(() => { _i18nTimer = null; translateTree(document.body, LANG); }, 60);
+}).observe(document.documentElement, { childList: true, subtree: true });
+
+function applyLang(lang) {
+  LANG = lang;
+  try { localStorage.setItem('massa_lang', lang); } catch (e) {}   // 다음 실행에도 유지
+  document.querySelectorAll('.langsw').forEach(s => s.classList.toggle('on', s.dataset.lang === lang));
+  const _lb = document.getElementById('langBtn'); if (_lb) { const _m = { ko: '🇰🇷 KO', vi: '🇻🇳 VI', en: '🇺🇸 EN', zh: '🇨🇳 中', ja: '🇯🇵 日' }; _lb.textContent = _m[lang] || lang; }
+  translateTree(document.body, lang);
   const _apt = document.querySelector('#apType .chip.sel'); if (_apt && window.applyApType) applyApType(_apt.dataset.t);
   document.querySelectorAll('.banner').forEach((b, i) => {
     if (!BANNER_I18N[i]) return;
@@ -2783,7 +2823,14 @@ async function load() {
     };
     const logoutRow = document.getElementById('acLogoutRow');
     if (logoutRow) logoutRow.onclick = async () => { await sb.auth.signOut(); await refreshSession(); window.go('home'); };
-    applyLang('ko');
+    // 지난번에 고른 언어를 그대로 이어 쓴다. 없으면 기기 언어를 따르고, 그것도 아니면 한국어
+    let _saved = null;
+    try { _saved = localStorage.getItem('massa_lang'); } catch (e) {}
+    if (!_saved) {
+      const _dev = (navigator.language || 'ko').slice(0, 2).toLowerCase();
+      _saved = ['ko', 'vi', 'en', 'zh', 'ja'].includes(_dev) ? _dev : 'ko';
+    }
+    applyLang(_saved);
     setStatus('● DB 연결됨 · 제공자 ' + providers.length + ' · 매장 ' + stores.length, true);
   } catch (err) {
     setStatus('● DB 연결 실패 (샘플 표시)', false);
