@@ -1176,14 +1176,15 @@ function providerCard(p, idx) {
   const tag = p.hygiene_certified ? '<span class="tag q" style="background:#2E8B8B">위생 인증</span>'
             : p.review_count < 20 ? '<span class="tag new">신규 도착</span>'
             : p.review_count > 150 ? '<span class="tag q">품질</span>' : '';
-  const spec = (p.specialties || []).map(s => TYPE_KO[s] || s).join('·');
-  const langs = (p.languages || []).includes('ko') ? ' · 한국어 가능' : (p.languages || []).includes('en') ? ' · 영어 가능' : '';
+  // 문장을 통째로 사전에 넣을 수 없는 조합형이라, 조각마다 번역을 건다
+  const spec = (p.specialties || []).map(s => T(TYPE_KO[s] || s)).join('·');
+  const langs = (p.languages || []).includes('ko') ? ' · ' + T('한국어 가능') : (p.languages || []).includes('en') ? ' · ' + T('영어 가능') : '';
   const dist = (0.6 + idx * 0.6).toFixed(1);
   return `<div class="tcard"><div class="tphoto" data-prof="${p.id}" style="cursor:pointer">${avatarImg(photo)}${tag}<span class="card-fav" data-pid="${p.id}" onclick="event.stopPropagation();toggleFavorite('${p.id}',this)">${(CACHE.favorites && CACHE.favorites.has(p.id)) ? '♥' : '♡'}</span></div><div class="tinfo">
-    <div class="trow1"><span class="tname" data-prof="${p.id}" style="cursor:pointer">${p.display_name}${p.is_verified ? '<span class="badge">✓</span>' : ''}</span><span class="tstart">예약 가능</span></div>
-    <div class="tstars">★ ${Number(p.rating).toFixed(1)} <span>(${p.review_count} 리뷰)</span></div>
-    <div class="tdesc">${spec}${langs}${p.base_district ? ' · ' + p.base_district + ' 권역' : ''}</div>
-    <div class="trow2"><span class="tdist">📍 ${dist} km</span><button class="bookbtn" data-pid="${p.id}">예약</button></div>
+    <div class="trow1"><span class="tname" data-prof="${p.id}" style="cursor:pointer">${p.display_name}${p.is_verified ? '<span class="badge">✓</span>' : ''}</span><span class="tstart">${T('예약 가능')}</span></div>
+    <div class="tstars">★ ${Number(p.rating).toFixed(1)} <span>(${p.review_count} ${T('리뷰')})</span></div>
+    <div class="tdesc">${spec}${langs}${p.base_district ? ' · ' + p.base_district + ' ' + T('권역') : ''}</div>
+    <div class="trow2"><span class="tdist">📍 ${dist} km</span><button class="bookbtn" data-pid="${p.id}">${T('예약')}</button></div>
   </div></div>`;
 }
 
@@ -1240,14 +1241,14 @@ async function loadAiRecos() {
   }).sort((a, b) => b.sc - a.sc).slice(0, 3);
   const reason = (p) => {
     const r = [];
-    if ((p.specialties || []).some(s => mySpecs[s])) r.push('내가 자주 받은 ' + (TYPE_KO[(p.specialties || [])[0]] || '') + ' 전문');
-    if (myDistrict && p.base_district === myDistrict) r.push('자주 가는 ' + p.base_district + ' 권역');
-    if (Number(p.rating) >= 4.9) r.push('평점 ' + Number(p.rating).toFixed(1) + ' 상위');
-    if (p.review_count > 100) r.push('리뷰 ' + p.review_count + '건');
-    if (p.korean_popular) r.push('한국인 인기');
-    return r.slice(0, 2).join(' · ') || '평점·리뷰 기준 추천';
+    if ((p.specialties || []).some(s => mySpecs[s])) r.push(T('내가 자주 받은') + ' ' + T(TYPE_KO[(p.specialties || [])[0]] || '') + ' ' + T('전문'));
+    if (myDistrict && p.base_district === myDistrict) r.push(T('자주 가는') + ' ' + p.base_district + ' ' + T('권역'));
+    if (Number(p.rating) >= 4.9) r.push(T('평점') + ' ' + Number(p.rating).toFixed(1) + ' ' + T('상위'));
+    if (p.review_count > 100) r.push(T('리뷰') + ' ' + p.review_count + T('건'));
+    if (p.korean_popular) r.push(T('한국인 인기'));
+    return r.slice(0, 2).join(' · ') || T('평점·리뷰 기준 추천');
   };
-  wrap.innerHTML = scored.map(({ p }) => '<div class="card" onclick="openProfile(\'' + p.id + '\')"><div class="trow1"><span class="t">' + p.display_name + '</span><span style="font-size:12px;color:#2E8B8B;font-weight:bold">★ ' + Number(p.rating).toFixed(1) + '</span></div><div class="d">' + (p.specialties || []).map(s => TYPE_KO[s] || s).join('·') + (p.base_district ? ' · ' + p.base_district : '') + '</div><div class="d" style="color:#2E8B8B">✨ ' + reason(p) + '</div></div>').join('');
+  wrap.innerHTML = scored.map(({ p }) => '<div class="card" onclick="openProfile(\'' + p.id + '\')"><div class="trow1"><span class="t">' + p.display_name + '</span><span style="font-size:12px;color:#2E8B8B;font-weight:bold">★ ' + Number(p.rating).toFixed(1) + '</span></div><div class="d">' + (p.specialties || []).map(s => T(TYPE_KO[s] || s)).join('·') + (p.base_district ? ' · ' + p.base_district : '') + '</div><div class="d" style="color:#2E8B8B">✨ ' + reason(p) + '</div></div>').join('');
 }
 window.loadAiRecos = loadAiRecos;
 
@@ -1627,7 +1628,7 @@ async function loadMyBookings() {
     const stColor = b.status === 'cancelled' ? '#B23A5B' : b.status === 'completed' ? '#1E6B45' : '#2E8B8B';
     const payTxt = b.is_paid ? ' · <b style="color:#1E6B45">결제완료</b>' : ' (후불)';
     return `<div class="card" style="cursor:default">
-      <div class="trow1"><span class="t">${b.services?.name || '서비스'}</span><span style="color:${stColor};font-weight:bold;font-size:12px">${STATUS_KO[b.status] || b.status}</span></div>
+      <div class="trow1"><span class="t">${b.services?.name || '서비스'}</span><span style="color:${stColor};font-weight:bold;font-size:12px">${T(STATUS_KO[b.status] || b.status)}</span></div>
       <div class="d">${b.providers?.display_name || '미배정'} · ${new Date(b.scheduled_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
       <div class="d">${b.hotel_name || ''} ${b.room_number || ''} · ${b.amount_vnd.toLocaleString()}₫${payTxt}</div>
       <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
@@ -2330,7 +2331,6 @@ const DICT = {
   '관리자 통계': ['Thống kê','Statistics','统计','統計'], '신고 관리': ['Báo cáo','Reports','举报管理','通報管理'],
   '회원 관리': ['Thành viên','Members','会员管理','会員管理'], '정산 관리': ['Quyết toán','Settlement','结算管理','精算管理'],
   '광고 관리': ['Quảng cáo','Ads','广告管理','広告管理'],
-  '신규 도착': ['Mới đến','New','新到','新着'], '품질': ['Chất lượng','Top Rated','优质','高品質'],
   // 등록 신청 폼(라벨·형태·안내)
   '형태': ['Hình thức','Type','形式','形態'], '구분': ['Phân loại','Category','分类','区分'],
   '프리랜서 (개인)': ['Freelancer (cá nhân)','Freelancer (individual)','自由职业者（个人）','フリーランス（個人）'],
@@ -2349,7 +2349,6 @@ const DICT = {
   '프리랜서는 본인 사진·신분증·정산 계좌를 직접 등록해 1인으로 활동합니다.': ['Freelancer tự đăng ký ảnh · CMND · tài khoản và hoạt động một mình.','Freelancers register their own photos · ID · account and work solo.','自由职业者自行登记照片·身份证·账户，单人运营。','フリーランスは自分の写真·身分証·口座を登録し1人で活動します。'],
   '업체는 사업자등록증이 필요합니다. 승인 후 [계정 → 직원 관리]에서 소속 마사지사를 직접 등록합니다.': ['Cửa hàng cần giấy phép KD. Sau khi duyệt, thêm KTV tại [Tài khoản → Nhân viên].','Shops need a business license. After approval, add masseurs in [Account → Staff].','门店需营业执照。审核通过后在[账户→员工管理]添加按摩师。','店舗は事業者登録証が必要です。承認後[アカウント→スタッフ管理]で所属者を登録します。'],
   // 서비스 칩(누락분)
-  '아로마': ['Aroma','Aroma','芳香','アロマ'], '스웨디시': ['Thụy Điển','Swedish','瑞典式','スウェディッシュ'], '타이': ['Thái','Thai','泰式','タイ'],
   // placeholder
   '활동명 / 실명': ['Tên hoạt động / thật','Display / real name','艺名／实名','活動名／実名'], '예) 하노이 스파': ['VD) Hanoi Spa','e.g. Hanoi Spa','例）河内SPA','例）ハノイスパ'],
   '경력·강점을 한 줄로': ['Kinh nghiệm · thế mạnh (1 dòng)','Experience · strengths (1 line)','经历·优势一行','経歴·強みを一行で'],
@@ -2501,6 +2500,36 @@ const DICT = {
   '들어온 예약을 수락·거절하고, 완료 처리합니다.': ['Nhận hoặc từ chối lịch đặt và đánh dấu hoàn tất.', 'Accept or decline incoming bookings and mark them complete.', '接受或拒绝收到的预约，并标记完成。', '入った予約を受諾・拒否し、完了処理します。'],
   '신청을 검토해 승인·거절합니다.': ['Xem xét hồ sơ để duyệt hoặc từ chối.', 'Review applications to approve or reject.', '审核申请并批准或拒绝。', '申請を確認して承認・却下します。'],
   '아직 예약이 없습니다. 홈에서 서비스를 예약해 보세요.': ['Chưa có lịch đặt nào. Hãy đặt dịch vụ từ trang chủ.', 'No bookings yet. Book a service from the home screen.', '暂无预约。请从首页预约服务。', 'まだ予約がありません。ホームからサービスを予約してみてください。'],
+  '예약 가능': ['Có thể đặt', 'Available', '可预约', '予約可能'],
+  '리뷰': ['đánh giá', 'reviews', '条评价', '件のレビュー'],
+  '권역': ['khu vực', 'area', '区域', 'エリア'],
+  '한국어 가능': ['Nói tiếng Hàn', 'Korean spoken', '可用韩语', '韓国語対応'],
+  '영어 가능': ['Nói tiếng Anh', 'English spoken', '可用英语', '英語対応'],
+  '위생 인증': ['Chứng nhận vệ sinh', 'Hygiene certified', '卫生认证', '衛生認証'],
+  '신규 도착': ['Mới', 'New', '新加入', '新着'],
+  '품질': ['Chất lượng', 'Top quality', '优质', '高品質'],
+  '내가 자주 받은': ['Bạn hay chọn', 'You often book', '您常选的', 'よく受けている'],
+  '전문': ['chuyên', 'specialist', '专长', '専門'],
+  '자주 가는': ['Bạn hay đến', 'You often visit', '您常去的', 'よく行く'],
+  '평점': ['Đánh giá', 'Rating', '评分', '評価'],
+  '상위': ['top', 'top-rated', '前列', '上位'],
+  '건': ['', '', '', ''],
+  '한국인 인기': ['Được khách Hàn ưa chuộng', 'Popular with Korean guests', '韩国客人喜爱', '韓国人に人気'],
+  '평점·리뷰 기준 추천': ['Gợi ý theo đánh giá và nhận xét', 'Recommended by rating and reviews', '按评分与评价推荐', '評価・レビューに基づくおすすめ'],
+  '요청됨': ['Đã gửi yêu cầu', 'Requested', '已申请', 'リクエスト済み'],
+  '확정': ['Đã xác nhận', 'Confirmed', '已确认', '確定'],
+  '이동 중': ['Đang di chuyển', 'On the way', '在路上', '移動中'],
+  '진행 중': ['Đang thực hiện', 'In progress', '进行中', '進行中'],
+  '완료': ['Hoàn tất', 'Completed', '已完成', '完了'],
+  '취소됨': ['Đã hủy', 'Cancelled', '已取消', 'キャンセル済み'],
+  '노쇼': ['Không đến', 'No-show', '爽约', 'ノーショー'],
+  '아로마': ['Tinh dầu', 'Aroma', '芳香', 'アロマ'],
+  '스웨디시': ['Thụy Điển', 'Swedish', '瑞典式', 'スウェディッシュ'],
+  '타이': ['Thái', 'Thai', '泰式', 'タイ式'],
+  '딥티슈': ['Mô sâu', 'Deep tissue', '深层组织', 'ディープティシュー'],
+  '네일': ['Nail', 'Nail', '美甲', 'ネイル'],
+  '왁싱': ['Waxing', 'Waxing', '蜜蜡脱毛', 'ワックス脱毛'],
+  '각질 제거': ['Tẩy da chết', 'Exfoliation', '去角质', '角質ケア'],
 };
 function trOne(ko, lang) {
   if (lang === 'ko') return ko;
@@ -2532,7 +2561,9 @@ function translateTree(root, lang) {
       const tag = p.tagName;
       if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'TEXTAREA') return NodeFilter.FILTER_REJECT;
       // 아래 요소들은 applyLang 이 전용 사전으로 따로 채운다. 여기서 건드리면 서로 덮어쓴다
-      if (p.closest('.langsw, .tabbar, .banner, #appTitle, #mpLangVal, .c-partner, .c-invite')) return NodeFilter.FILTER_REJECT;
+      // .banner 전체가 아니라 전용 사전이 채우는 제목·부제만 제외한다 (그 안의 pill 은 번역 대상)
+      if (p.closest('.langsw, .tabbar, #appTitle, #mpLangVal, .c-partner .mp-card-t, .c-invite .mp-card-t')) return NodeFilter.FILTER_REJECT;
+      if (p.matches('.banner .bt, .banner .bd')) return NodeFilter.FILTER_REJECT;
       return n.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
     }
   });
@@ -2715,7 +2746,7 @@ function providerMatches(p, f) {
   if (f.korean && !p.korean_popular) return false;
   if (f.discount && !p.has_discount) return false;
   if (f.svc) {
-    const specKo = (p.specialties || []).map(s => TYPE_KO[s] || s);
+    const specKo = (p.specialties || []).map(s => T(TYPE_KO[s] || s));
     const hay = (p.tags || []).concat(specKo);
     if (!f.svc.some(s => hay.some(hn => hn.includes(s) || s.includes(hn)))) return false;
   }

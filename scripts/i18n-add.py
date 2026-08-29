@@ -152,6 +152,42 @@ ADD = {
 '아직 예약이 없습니다. 홈에서 서비스를 예약해 보세요.': ['Chưa có lịch đặt nào. Hãy đặt dịch vụ từ trang chủ.', 'No bookings yet. Book a service from the home screen.', '暂无预约。请从首页预约服务。', 'まだ予約がありません。ホームからサービスを予約してみてください。'],
 }
 
+# ── 카드·목록에서 조각으로 조립되는 문구 ──
+ADD.update({
+'예약 가능': ['Có thể đặt', 'Available', '可预约', '予約可能'],
+'리뷰': ['đánh giá', 'reviews', '条评价', '件のレビュー'],
+'권역': ['khu vực', 'area', '区域', 'エリア'],
+'한국어 가능': ['Nói tiếng Hàn', 'Korean spoken', '可用韩语', '韓国語対応'],
+'영어 가능': ['Nói tiếng Anh', 'English spoken', '可用英语', '英語対応'],
+'위생 인증': ['Chứng nhận vệ sinh', 'Hygiene certified', '卫生认证', '衛生認証'],
+'신규 도착': ['Mới', 'New', '新加入', '新着'],
+'품질': ['Chất lượng', 'Top quality', '优质', '高品質'],
+'내가 자주 받은': ['Bạn hay chọn', 'You often book', '您常选的', 'よく受けている'],
+'전문': ['chuyên', 'specialist', '专长', '専門'],
+'자주 가는': ['Bạn hay đến', 'You often visit', '您常去的', 'よく行く'],
+'평점': ['Đánh giá', 'Rating', '评分', '評価'],
+'상위': ['top', 'top-rated', '前列', '上位'],
+'건': ['', '', '', ''],
+'한국인 인기': ['Được khách Hàn ưa chuộng', 'Popular with Korean guests', '韩国客人喜爱', '韓国人に人気'],
+'평점·리뷰 기준 추천': ['Gợi ý theo đánh giá và nhận xét', 'Recommended by rating and reviews', '按评分与评价推荐', '評価・レビューに基づくおすすめ'],
+# 예약 상태
+'요청됨': ['Đã gửi yêu cầu', 'Requested', '已申请', 'リクエスト済み'],
+'확정': ['Đã xác nhận', 'Confirmed', '已确认', '確定'],
+'이동 중': ['Đang di chuyển', 'On the way', '在路上', '移動中'],
+'진행 중': ['Đang thực hiện', 'In progress', '进行中', '進行中'],
+'완료': ['Hoàn tất', 'Completed', '已完成', '完了'],
+'취소됨': ['Đã hủy', 'Cancelled', '已取消', 'キャンセル済み'],
+'노쇼': ['Không đến', 'No-show', '爽约', 'ノーショー'],
+# 서비스 종류
+'아로마': ['Tinh dầu', 'Aroma', '芳香', 'アロマ'],
+'스웨디시': ['Thụy Điển', 'Swedish', '瑞典式', 'スウェディッシュ'],
+'타이': ['Thái', 'Thai', '泰式', 'タイ式'],
+'딥티슈': ['Mô sâu', 'Deep tissue', '深层组织', 'ディープティシュー'],
+'네일': ['Nail', 'Nail', '美甲', 'ネイル'],
+'왁싱': ['Waxing', 'Waxing', '蜜蜡脱毛', 'ワックス脱毛'],
+'각질 제거': ['Tẩy da chết', 'Exfoliation', '去角质', '角質ケア'],
+})
+
 # 화면 제목
 TITLES = {
 '계정 정보': ['Thông tin tài khoản', 'Account', '账户信息', 'アカウント情報'],
