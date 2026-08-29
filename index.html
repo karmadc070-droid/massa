@@ -1501,9 +1501,9 @@ async function openProfile(pid) {
   const contactHtml = '<div class="pf-sec">이용 정보</div><div class="pf-info">'
     + irow('🕒 영업시간', p.business_hours || '-')
     + irow('📍 주소', p.base_district ? ('하노이 ' + p.base_district) : '-')
-    + (p.phone ? '<div class="pf-info-row"><span>📞 전화</span><a href="tel:' + p.phone + '">' + p.phone + '</a></div>' : '')
-    + (p.zalo ? irow('💬 Zalo', p.zalo) : '')
-    + (p.kakao ? irow('🗨️ 카카오톡', p.kakao) : '')
+    + (isAdminUser() && p.phone ? '<div class="pf-info-row"><span>📞 전화</span><a href="tel:' + p.phone + '">' + p.phone + '</a></div>' : '')
+    + (isAdminUser() && p.zalo ? irow('💬 Zalo', p.zalo) : '')
+    + (isAdminUser() && p.kakao ? irow('🗨️ 카카오톡', p.kakao) : '')
     + '</div>';
   const facilityHtml = '<div class="pf-sec">시설 소개</div><div class="pf-bio">' + (p.facility || '개인 룸 · 위생 키트 · 샤워 시설') + '</div>';
   const videoHtml = p.video_url ? '<div class="pf-sec">영상</div><a class="pf-video" href="' + p.video_url + '" target="_blank">▶ 소개 영상 보기</a>' : '';
@@ -1610,10 +1610,17 @@ let SESSION = null;
 async function refreshSession() {
   const { data } = await sb.auth.getSession();
   SESSION = data.session;
+  // 역할(관리자 여부)은 계정 탭을 열기 전에도 필요하다 — 제공자 연락처 노출 판단에 쓰인다
+  if (SESSION) {
+    const { data: prof } = await sb.from('profiles').select('*').eq('id', SESSION.user.id).single();
+    CUR_PROFILE = prof || {};
+  } else CUR_PROFILE = null;
   refreshNotiDot();
   subscribeNotifications();
   loadBlocks();
 }
+// 제공자 연락처는 앱을 거치지 않는 직거래를 막기 위해 관리자에게만 보인다
+function isAdminUser() { return !!(CUR_PROFILE && CUR_PROFILE.role === 'admin'); }
 // 알림 실시간 구독 — 새 알림이 오면 배지·목록 즉시 갱신
 let NOTI_CH = null;
 function subscribeNotifications() {
