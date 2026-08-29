@@ -65,6 +65,34 @@
 
 Resend 도메인 화면의 DKIM 값은 UI에서 `p=MIGfMA0GCSqG[…]SIb3...` 처럼 중간 생략 표시가 붙어 나온다. 실제로 생략된 문자가 없는데도 `[…]`가 보이므로, 눈으로 읽어 옮기면 틀릴 위험이 있다. Cloudflare를 쓰면 **Auto configure** 버튼이 DKIM·MX·SPF 3개를 직접 넣어주므로 그쪽을 쓴다. 버튼을 눌러도 화면이 바로 안 바뀌고 "Temporarily unavailable"이 뜰 수 있는데, Cloudflare DNS 목록을 열어보면 이미 들어가 있다.
 
+## 2026-08-29 · VPS 접속은 noVNC 말고 SSH를 쓸 것
+
+**결정**: 앞으로 VPS 작업은 Vultr noVNC 대신 SSH로 한다.
+
+```
+& "C:\Program Files\Git\usr\bin\ssh.exe" -i "$env:USERPROFILE/.ssh/erp_vultr" -o BatchMode=yes root@141.164.46.88 '명령'
+```
+
+**근거 — noVNC에서 실제로 겪은 사고**
+- Shift 조합이 깨진다(`+`→`=`, `_`→`-`). `dig +short`가 `dig =short`가 되고 `resend._domainkey`가 `resend.-domainkey`가 됐다.
+- 사이드바의 **Ctrl 토글은 눌린 채로 유지된다**. 이걸 모르고 이어서 타이핑했더니 `clear`가 Ctrl+C/L/E/A/R로 들어가 로그인 세션이 끊겼고, Ctrl+S가 걸려 화면 출력이 멈췄다(Ctrl+Q로 복구).
+- 그 뒤 키 입력 채널 자체가 죽어 사용자가 직접 타이핑해도 반응하지 않았다. 탭을 새로 열어도 마찬가지였다.
+
+**Windows의 `C:\WINDOWS\System32\OpenSSH\ssh.exe`는 이 PC에서 아무 출력 없이 exit 255로 끝난다.** `ssh -V`조차 안 된다. Git 번들 ssh(`C:\Program Files\Git\usr\bin\ssh.exe`)는 정상 동작한다. 키는 `~/.ssh/erp_vultr`.
+
+## 2026-08-29 · GoTrue 설정은 .env 변수명을 compose에서 확인하고 쓸 것
+
+`docker-compose.yml`이 `GOTRUE_SITE_URL: ${SITE_URL}` 처럼 **다른 이름으로 매핑**한다. `.env`에 `GOTRUE_SITE_URL=`을 써도 읽히지 않는다. 실제로 이 실수로 1차 적용 때 SMTP만 바뀌고 SITE_URL은 옛 Vercel 주소 그대로였다.
+
+| .env 에 쓸 이름 | 컨테이너 안 이름 |
+| --- | --- |
+| `SITE_URL` | `GOTRUE_SITE_URL` |
+| `ADDITIONAL_REDIRECT_URLS` | `GOTRUE_URI_ALLOW_LIST` |
+| `ENABLE_EMAIL_AUTOCONFIRM` | `GOTRUE_MAILER_AUTOCONFIRM` |
+| `SMTP_*` | `GOTRUE_SMTP_*` |
+
+검증은 `.env`가 아니라 `docker exec massa-auth env | grep GOTRUE_` 로 해야 한다.
+
 ## 알려진 함정 (반복 확인됨)
 
 - **GitHub 푸시**: 저장소 소유자는 `karmadc070-droid`, PC 자격증명은 `parkdongchun-77`. 협업자로 초대·수락해 해결함. push가 멈추면 대기 중인 git 프로세스를 죽이고 재시도.

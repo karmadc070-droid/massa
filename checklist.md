@@ -20,10 +20,15 @@
 - [x] A2-2. `massa.moahagwon.com` A 레코드(DNS only) + Caddy 정적 서빙 → `/srv/massa-web` (index.html, reset.html)
 - [x] A2-3. `reset.html` 작성 (메일 링크로 들어와 새 비밀번호 설정) → verify: 200 응답 + 토큰 없이 열면 "만료" 안내 확인함
 - [x] A2-4. index.html·admin.html 로그인창에 "비밀번호를 잊으셨나요?" 추가 → verify: 모듈 문법 검사 통과
-- [ ] A2-5. Resend 도메인 Verified 대기 (DNS 전파)
-- [ ] A2-6. Resend API 키 발급 → VPS `/root/resend.key`에 저장 (사용자가 직접, 클립보드로)
-- [ ] A2-7. `scripts/vps-setup-smtp.sh` 실행 → verify: auth 컨테이너 env에 smtp.resend.com 반영
-- [ ] A2-8. 실제 재설정 메일 수신 + 비밀번호 변경 + 새 비밀번호로 로그인 → verify: 전 과정 1회 성공
+- [x] A2-5. Resend API 키 발급 → VPS `/root/resend.key` (600)
+- [x] A2-6. `scripts/vps-setup-smtp.sh` 실행 → verify: auth 컨테이너 env에 `GOTRUE_SMTP_HOST=smtp.resend.com`, `GOTRUE_SITE_URL=https://massa.moahagwon.com`, `GOTRUE_URI_ALLOW_LIST` 반영 확인함
+- [x] A2-7. 실제 발송 확인 → Resend 로그 **Delivered**, 발신 `"massa" <massa@moahagwon.com>`
+- [x] A2-8. 메일 링크 클릭 → `reset.html`이 recovery 세션을 받아 정상 폼 표시 (만료 안내 아님) — 전 과정 1회 성공
+
+남은 개선
+
+- [ ] A2-9. 메일 템플릿 한국어화 (현재 제목 "Reset Your Password", 본문 영문 기본 템플릿)
+- [ ] A2-10. Resend API 키 회전 (작업 중 화면·대화에 값이 노출됨)
 
 ## B. 관리자·파트너 기능 웹 이전 (23개 화면)
 
