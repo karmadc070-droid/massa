@@ -40,21 +40,52 @@
   - DNS A 레코드 등록(DNS only), Caddy 블록 추가, noindex 헤더 포함
   - 배포 스크립트: `scripts/vps-deploy-admin.sh` (codeload로 최신 커밋 취득 + 모듈 스코프 검증)
 
-### B1. 관리자 화면 13개 이전
+### B1. 관리자 화면 13개 이전 — 완료 (2026-08-29)
 adminApps(심사) · adminStats · adminReports · adminMembers · adminSettlement · adminAds · adminFraud · adminBookings · adminProviders · adminFee · adminCoupons · adminSales · adminCountry
-- [ ] B1-1. 화면 마크업·핸들러를 admin.html로 이동 → verify: 각 화면 데이터 로드 확인
-- [ ] B1-2. 앱(index.html)에서 해당 화면·메뉴 행 제거 → verify: 앱 문법 검사 + 고객 플로우 정상
+- [x] B1-1. admin.html 에 13개 화면·로더 전부 존재함을 확인 (앱에서 지우기 전에 먼저 확인함)
+- [x] B1-2. 앱에서 638줄 삭제 → verify: 문법 통과, 화면 34개 남음, div 균형 408/408, 남은 admin 참조 0
 
-### B2. 파트너 화면 10개 이전
+### B2. 파트너 화면 10개 이전 — 완료 (2026-08-29)
 partnerBookings · partnerRevenue · partnerSchedule · partnerEvents · partnerStaff · partnerSettle · partnerChat · partnerGps · partnerAi · partnerAiBiz
-- [ ] B2-1. 화면 이전 → verify: 파트너 계정으로 로그인해 데이터 확인
-- [ ] B2-2. 앱에서 제거 → verify: 문법 검사 + 고객 플로우 정상
-- [ ] B2-3. `isPartner` 판정 로직 정리 (앱에 남을 필요가 없어짐)
+- [x] B2-1. 앱에서 534줄 삭제 → verify: 문법 통과, 고객 화면 24개만 남음, div 356/356
+- [x] B2-2. `isPartner`·`rowVis`·`canReview`·`FEE_RATE`/`DUE_DAYS` 등 고아 코드 정리
+- [x] B2-3. 실제 배포 후 브라우저 확인 → 홈·목록 정상, 콘솔 오류 0
+- index.html 334KB → 224KB
 
 ### B3. 마무리
 - [ ] B3-1. demo 계정 파트너 권한 정리 여부 결정 (심사용으로 필요한지)
 - [ ] B3-2. 앱 빌드·제출 → verify: 실기기에서 계정 화면에 운영 메뉴가 없음
 - [ ] B3-3. 인계서(IOS_진행상황.md) 갱신
+
+## D. 다국어 (한국어·베트남어·영어·중국어·일본어)
+
+방침: 고객 앱은 5개 언어 전부(알림창 포함), 운영 콘솔은 한국어·베트남어.
+
+### D1. 엔진 교체 — 완료 (2026-08-29)
+- [x] D1-1. 정해진 CSS 클래스 순회 → **텍스트 노드 전체 순회**(`translateTree`)로 교체. 자식 태그가 있으면 건너뛰던 문제 해소
+- [x] D1-2. `MutationObserver` 추가 → innerHTML 로 나중에 그려지는 목록·오버레이도 자동 번역
+- [x] D1-3. `alert`·`confirm`·`prompt` 래핑 → 호출부 61곳을 고치지 않고 한 번에 번역 경로에 태움
+- [x] D1-4. 선택한 언어를 localStorage 에 저장, 없으면 기기 언어를 따름 (이전에는 새로고침마다 한국어로 되돌아갔다)
+- [x] D1-5. `trOne` 의 빈 문자열 폴백 버그 수정 (`e[idx] || ...` → undefined/null 만 폴백)
+
+### D2. 사전 보강 — 완료
+- [x] D2-1. DICT 202개 → **332개**, 중국어·일본어 누락 **56개 → 0개**
+- [x] D2-2. TITLE_I18N 화면 제목 5개 추가 (계정 정보·제공자 등록 신청·지도 검색·지역 선택·채팅)
+- [x] D2-3. 하노이 지명 7곳을 현지 표기로 (미딩 → Mỹ Đình 등)
+- [x] D2-4. 재실행 가능한 스크립트로 관리 → `scripts/i18n-add.py`
+
+### D3. 조합형 문구 — 완료
+- [x] D3-1. 카드·목록의 조합 문구를 `<span>` 조각으로 분리 → 언어를 바꾸면 다시 그리지 않아도 그 자리에서 바뀜
+- verify: 미번역 한국어 텍스트 노드 **190개 → 6~9개** (남은 것은 confirm/done 의 와이어프레임 더미로, 실제 예약 시 데이터로 대체됨)
+- verify: 베트남어·일본어 실화면 확인 — 목록·계정 화면 전체 번역됨
+
+### D4. 운영 콘솔 — 완료
+- [x] D4-1. admin.html 에 같은 엔진·사전 이식, 언어 선택을 한국어·베트남어로 제한
+- [x] D4-2. `guardConsole` 차단 화면도 번역 (load 보다 먼저 실행되므로 언어 복원을 IIFE 시작부에도 넣음)
+
+### D5. 남은 확인
+- [ ] D5-1. 예약 플로우를 5개 언어로 끝까지 밟아 보기 (코스 → 시간 → 위치 → 확인 → 완료)
+- [ ] D5-2. alert/confirm 문구를 사전에 채우기 (래핑은 됐지만 사전에 없는 문장은 아직 한국어)
 
 ## C. 기타 남은 일
 - [ ] C1. build 12 실기기 로그인 확인 (2.1a 근본 원인 확정)
