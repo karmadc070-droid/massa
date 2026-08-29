@@ -3942,8 +3942,6 @@ async function load() {
     });
     if (window.STORES) Object.assign(window.STORES, grouped);
     await refreshSession();
-    // 운영 콘솔: 권한 없는 계정은 여기서 차단된다
-    if (!(await guardConsole())) return;
     CACHE.favorites = new Set();
     CACHE.coupons = []; CACHE.myCoupons = [];
     if (SESSION) {
@@ -3997,7 +3995,9 @@ async function load() {
     console.error(err);
   }
 }
-load();
+// 권한 검사를 통과한 경우에만 콘솔을 로드한다.
+// load() 내부에 두면 try 블록 흐름에 좌우되므로 호출 자체를 감싼다.
+(async () => { if (await guardConsole()) load(); })();
 </script>
 </body>
 </html>
