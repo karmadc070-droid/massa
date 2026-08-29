@@ -1614,14 +1614,18 @@ let SESSION = null;
 // 관리자·심사자·파트너가 아니면 화면을 열지 않는다. 고객 계정으로는 아무것도 볼 수 없다.
 async function guardConsole() {
   const shell = document.querySelector('.phone');
+  // 차단 화면에서도 다시 로그인할 수 있어야 한다 (권한 미달 시 자동 로그아웃되므로)
   const deny = (msg) => {
     if (shell) shell.innerHTML = '<div style="padding:40px 24px;text-align:center;font-family:sans-serif">'
       + '<div style="font-size:19px;font-weight:bold;color:#1F4E5F;margin-bottom:10px">mㅏssㅏ 운영 콘솔</div>'
       + '<div style="font-size:13px;color:#7A8C94;line-height:1.7;margin-bottom:18px">' + msg + '</div>'
-      + '<button onclick="location.reload()" style="background:#1F4E5F;color:#fff;border:none;border-radius:10px;padding:11px 20px;font-size:13px">다시 시도</button></div>';
+      + '<button id="denyLogin" style="background:#1F4E5F;color:#fff;border:none;border-radius:10px;padding:12px 22px;font-size:14px;font-weight:bold;margin-right:8px">로그인</button>'
+      + '<button onclick="location.reload()" style="background:#F4F6F7;color:#556;border:none;border-radius:10px;padding:12px 20px;font-size:13px">새로고침</button></div>';
+    const lb = document.getElementById('denyLogin');
+    if (lb) lb.onclick = () => openAuth();
   };
   await refreshSession();
-  if (!SESSION) { deny('운영 권한이 있는 계정으로 로그인해 주세요.'); openAuth(); return false; }
+  if (!SESSION) { deny('운영 권한이 있는 계정으로 로그인해 주세요.'); return false; }
   const role = CUR_PROFILE && CUR_PROFILE.role;
   if (role === 'admin' || role === 'reviewer') return true;
   // 파트너(제공자 등록자)도 자기 운영 화면은 볼 수 있어야 한다
@@ -1741,13 +1745,13 @@ function openAuth() {
       const { data: mine } = await sb.from('user_coupons').select('*, coupons(*)').eq('customer_id', SESSION.user.id); CACHE.myCoupons = mine || [];
     } catch (e) { console.warn('post-login load', e); }
     msg.style.color = '#1E6B45'; msg.textContent = '로그인 완료!';
-    // 로그인 직후에도 운영 권한을 확인한다 (고객 계정으로는 콘솔에 들어올 수 없다)
+    // 로그인 직후 운영 권한을 확인한다. 통과하면 새로 로드한다 —
+    // 차단 화면이 .phone 내용을 교체해 두므로 그 자리에서 복구하는 것보다 리로드가 확실하다.
     setTimeout(async () => {
       ov.style.display = 'none';
       if (!(await guardConsole())) return;
-      window.go('account');
-      if (window.loadAccount) loadAccount();
-    }, 500);
+      location.reload();
+    }, 400);
   };
 }
 window.openAuth = openAuth;
