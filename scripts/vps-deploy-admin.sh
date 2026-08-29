@@ -5,10 +5,21 @@ set -e
 DIR=/srv/massa-admin
 mkdir -p "$DIR"
 
-echo "=== admin.html 내려받기 ==="
-curl -s --location raw.githubusercontent.com/karmadc070-droid/massa/main/admin.html -o "$DIR/index.html"
+echo "=== admin.html 내려받기 (raw CDN 캐시 우회) ==="
+# raw.githubusercontent.com 은 최대 5분 캐시된다. codeload 는 항상 최신 커밋을 준다.
+TMP=$(mktemp -d)
+curl -s --location codeload.github.com/karmadc070-droid/massa/tar.gz/refs/heads/main -o "$TMP/m.tgz"
+tar -xzf "$TMP/m.tgz" -C "$TMP"
+cp "$TMP"/massa-main/admin.html "$DIR/index.html"
+rm -rf "$TMP"
 ls -la "$DIR/index.html"
-grep -c "guardConsole" "$DIR/index.html" || { echo "권한 검사 코드가 없다 — 중단"; exit 1; }
+
+# 권한 검사 코드가 모듈 스코프에 있는지까지 확인한다
+grep -q "window.guardConsole" "$DIR/index.html" || { echo "권한 검사 코드가 없다 — 중단"; exit 1; }
+GUARD_LINE=$(grep -n "async function guardConsole" "$DIR/index.html" | cut -d: -f1)
+MODULE_LINE=$(grep -n '<script type="module">' "$DIR/index.html" | cut -d: -f1)
+echo "guardConsole=$GUARD_LINE / module 시작=$MODULE_LINE"
+[ "$GUARD_LINE" -gt "$MODULE_LINE" ] || { echo "guardConsole 이 모듈 밖에 있다 — 중단"; exit 1; }
 
 echo "=== 이미지·아이콘 복사 (앱과 동일 자산) ==="
 for f in masaage1_b.png wag1_b.png banner1.png banner2.png banner3.png; do
