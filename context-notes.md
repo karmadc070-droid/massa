@@ -1,0 +1,36 @@
+# massa 작업 컨텍스트 노트
+
+작업 중 내린 결정과 그 근거를 기록한다. 다음 세션은 이 문서와 checklist.md부터 읽는다.
+
+## 2026-08-29 · API 도메인을 moahagwon.com 서브도메인으로
+
+**결정**: 새 도메인을 사지 않고 기존 `moahagwon.com`의 서브도메인(`api.moahagwon.com`)을 massa API에 쓴다.
+
+**근거**
+- 현재 API 주소 `massa.141-164-46-88.sslip.io`는 무료 와일드카드 DNS라 **AAAA 레코드가 없다**. Apple 심사는 IPv6 환경에서 이뤄지며, 2차 리젝의 2.1(a)(로그인 무한 대기)의 원인 후보로 남아 있었다.
+- `moahagwon.com`은 이미 Cloudflare DNS를 쓰고 있어 서브도메인 추가에 비용도 대기 시간도 없다.
+- 브랜드가 다르지만 API 주소는 실사용자에게 노출되지 않는다.
+
+**Cloudflare 프록시는 끈다(DNS only)**
+- Supabase Realtime은 WebSocket, Storage는 대용량 업로드를 쓴다. Cloudflare 프록시는 이 둘에 제약(타임아웃·업로드 상한)이 있어 오작동 위험이 있다.
+- 프록시를 끄면 A·AAAA를 직접 등록하게 되고, TLS는 Caddy가 Let's Encrypt로 자동 발급한다. IPv6 목적은 그대로 달성된다.
+
+## 2026-08-29 · 관리자·파트너 기능을 웹으로 분리
+
+**결정**: 앱은 고객 전용으로 두고, 관리자 13개 + 파트너 10개 화면을 `admin.moahagwon.com`으로 옮긴다.
+
+**근거**
+- 앱에 운영 기능이 섞여 있으면 심사관이 볼 수 없는 화면이 생겨 Guideline 2.3.1(숨겨진 기능) 소지가 있다. 지금은 demo 계정에 파트너 권한을 줘서 피하고 있는데, 이 방식은 데모 계정이 노출되면 일반 사용자도 운영 화면에 접근하게 된다(실제로 1.0에서 로그인 창에 데모 계정이 노출돼 있었다).
+- 앱 용량·복잡도가 줄고 고객 플로우 검증이 쉬워진다.
+- 운영자는 PC에서 쓰는 편이 실제로 편하다.
+
+**한 번에 옮기지 않는 이유**
+- index.html 3,950줄에서 23개 화면을 들어내는 작업이라 한 번에 하면 회귀를 잡기 어렵다. 관리자 → 파트너 순서로 나누고 각 단계마다 문법 검사와 고객 플로우 확인을 넣는다.
+
+## 알려진 함정 (반복 확인됨)
+
+- **GitHub 푸시**: 저장소 소유자는 `karmadc070-droid`, PC 자격증명은 `parkdongchun-77`. 협업자로 초대·수락해 해결함. push가 멈추면 대기 중인 git 프로세스를 죽이고 재시도.
+- **Codemagic 빌드 번호**: `app-store-connect get-latest-*`가 항상 0을 반환해 중복 실패. `$PROJECT_BUILD_NUMBER` 사용 중.
+- **마케팅 버전**: 출시된 버전 트레인은 닫힌다. `capacitor/package.json`의 version을 올려야 한다.
+- **ASC 웹 UI**: `/apps/<id>/distribution/...`로 직접 열면 렌더링 안 됨. `/apps`부터 SPA 내부 링크를 클릭할 것.
+- **CSS 우선순위**: `#id { display: ... }`가 `.screen { display:none }`을 덮어써 비활성 화면이 남는 사고가 있었다(#chat). 화면 전용 스타일은 반드시 `#id.on`으로 쓸 것.
