@@ -1176,15 +1176,16 @@ function providerCard(p, idx) {
   const tag = p.hygiene_certified ? '<span class="tag q" style="background:#2E8B8B">위생 인증</span>'
             : p.review_count < 20 ? '<span class="tag new">신규 도착</span>'
             : p.review_count > 150 ? '<span class="tag q">품질</span>' : '';
-  // 문장을 통째로 사전에 넣을 수 없는 조합형이라, 조각마다 번역을 건다
-  const spec = (p.specialties || []).map(s => T(TYPE_KO[s] || s)).join('·');
-  const langs = (p.languages || []).includes('ko') ? ' · ' + T('한국어 가능') : (p.languages || []).includes('en') ? ' · ' + T('영어 가능') : '';
+  // 조각을 각각 <span> 으로 감싼다. 그래야 텍스트 노드가 나뉘어 사전에 걸리고,
+  // 카드를 다시 그리지 않아도 언어를 바꾸면 그 자리에서 함께 바뀐다
+  const spec = (p.specialties || []).map(s => '<span>' + (TYPE_KO[s] || s) + '</span>').join('·');
+  const langs = (p.languages || []).includes('ko') ? ' · <span>한국어 가능</span>' : (p.languages || []).includes('en') ? ' · <span>영어 가능</span>' : '';
   const dist = (0.6 + idx * 0.6).toFixed(1);
   return `<div class="tcard"><div class="tphoto" data-prof="${p.id}" style="cursor:pointer">${avatarImg(photo)}${tag}<span class="card-fav" data-pid="${p.id}" onclick="event.stopPropagation();toggleFavorite('${p.id}',this)">${(CACHE.favorites && CACHE.favorites.has(p.id)) ? '♥' : '♡'}</span></div><div class="tinfo">
-    <div class="trow1"><span class="tname" data-prof="${p.id}" style="cursor:pointer">${p.display_name}${p.is_verified ? '<span class="badge">✓</span>' : ''}</span><span class="tstart">${T('예약 가능')}</span></div>
-    <div class="tstars">★ ${Number(p.rating).toFixed(1)} <span>(${p.review_count} ${T('리뷰')})</span></div>
-    <div class="tdesc">${spec}${langs}${p.base_district ? ' · ' + p.base_district + ' ' + T('권역') : ''}</div>
-    <div class="trow2"><span class="tdist">📍 ${dist} km</span><button class="bookbtn" data-pid="${p.id}">${T('예약')}</button></div>
+    <div class="trow1"><span class="tname" data-prof="${p.id}" style="cursor:pointer">${p.display_name}${p.is_verified ? '<span class="badge">✓</span>' : ''}</span><span class="tstart">예약 가능</span></div>
+    <div class="tstars">★ ${Number(p.rating).toFixed(1)} <span>(${p.review_count} <span>리뷰</span>)</span></div>
+    <div class="tdesc">${spec}${langs}${p.base_district ? ' · ' + p.base_district + ' <span>권역</span>' : ''}</div>
+    <div class="trow2"><span class="tdist">📍 ${dist} km</span><button class="bookbtn" data-pid="${p.id}">예약</button></div>
   </div></div>`;
 }
 
@@ -1241,14 +1242,14 @@ async function loadAiRecos() {
   }).sort((a, b) => b.sc - a.sc).slice(0, 3);
   const reason = (p) => {
     const r = [];
-    if ((p.specialties || []).some(s => mySpecs[s])) r.push(T('내가 자주 받은') + ' ' + T(TYPE_KO[(p.specialties || [])[0]] || '') + ' ' + T('전문'));
-    if (myDistrict && p.base_district === myDistrict) r.push(T('자주 가는') + ' ' + p.base_district + ' ' + T('권역'));
-    if (Number(p.rating) >= 4.9) r.push(T('평점') + ' ' + Number(p.rating).toFixed(1) + ' ' + T('상위'));
-    if (p.review_count > 100) r.push(T('리뷰') + ' ' + p.review_count + T('건'));
-    if (p.korean_popular) r.push(T('한국인 인기'));
-    return r.slice(0, 2).join(' · ') || T('평점·리뷰 기준 추천');
+    if ((p.specialties || []).some(s => mySpecs[s])) r.push('<span>내가 자주 받은</span> <span>' + (TYPE_KO[(p.specialties || [])[0]] || '') + '</span> <span>전문</span>');
+    if (myDistrict && p.base_district === myDistrict) r.push('<span>자주 가는</span> ' + p.base_district + ' <span>권역</span>');
+    if (Number(p.rating) >= 4.9) r.push('<span>평점</span> ' + Number(p.rating).toFixed(1) + ' <span>상위</span>');
+    if (p.review_count > 100) r.push('<span>리뷰</span> ' + p.review_count + '<span>건</span>');
+    if (p.korean_popular) r.push('<span>한국인 인기</span>');
+    return r.slice(0, 2).join(' · ') || '<span>평점·리뷰 기준 추천</span>';
   };
-  wrap.innerHTML = scored.map(({ p }) => '<div class="card" onclick="openProfile(\'' + p.id + '\')"><div class="trow1"><span class="t">' + p.display_name + '</span><span style="font-size:12px;color:#2E8B8B;font-weight:bold">★ ' + Number(p.rating).toFixed(1) + '</span></div><div class="d">' + (p.specialties || []).map(s => T(TYPE_KO[s] || s)).join('·') + (p.base_district ? ' · ' + p.base_district : '') + '</div><div class="d" style="color:#2E8B8B">✨ ' + reason(p) + '</div></div>').join('');
+  wrap.innerHTML = scored.map(({ p }) => '<div class="card" onclick="openProfile(\'' + p.id + '\')"><div class="trow1"><span class="t">' + p.display_name + '</span><span style="font-size:12px;color:#2E8B8B;font-weight:bold">★ ' + Number(p.rating).toFixed(1) + '</span></div><div class="d">' + (p.specialties || []).map(s => '<span>' + (TYPE_KO[s] || s) + '</span>').join('·') + (p.base_district ? ' · ' + p.base_district : '') + '</div><div class="d" style="color:#2E8B8B">✨ ' + reason(p) + '</div></div>').join('');
 }
 window.loadAiRecos = loadAiRecos;
 
@@ -1628,7 +1629,7 @@ async function loadMyBookings() {
     const stColor = b.status === 'cancelled' ? '#B23A5B' : b.status === 'completed' ? '#1E6B45' : '#2E8B8B';
     const payTxt = b.is_paid ? ' · <b style="color:#1E6B45">결제완료</b>' : ' (후불)';
     return `<div class="card" style="cursor:default">
-      <div class="trow1"><span class="t">${b.services?.name || '서비스'}</span><span style="color:${stColor};font-weight:bold;font-size:12px">${T(STATUS_KO[b.status] || b.status)}</span></div>
+      <div class="trow1"><span class="t">${b.services?.name || '서비스'}</span><span style="color:${stColor};font-weight:bold;font-size:12px"><span>${STATUS_KO[b.status] || b.status}</span></span></div>
       <div class="d">${b.providers?.display_name || '미배정'} · ${new Date(b.scheduled_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
       <div class="d">${b.hotel_name || ''} ${b.room_number || ''} · ${b.amount_vnd.toLocaleString()}₫${payTxt}</div>
       <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
@@ -2746,7 +2747,7 @@ function providerMatches(p, f) {
   if (f.korean && !p.korean_popular) return false;
   if (f.discount && !p.has_discount) return false;
   if (f.svc) {
-    const specKo = (p.specialties || []).map(s => T(TYPE_KO[s] || s));
+    const specKo = (p.specialties || []).map(s => TYPE_KO[s] || s);
     const hay = (p.tags || []).concat(specKo);
     if (!f.svc.some(s => hay.some(hn => hn.includes(s) || s.includes(hn)))) return false;
   }
