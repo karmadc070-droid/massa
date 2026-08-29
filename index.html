@@ -826,10 +826,6 @@
   </div>
 
   <!-- 파트너 예약 관리 -->
-  <div class="screen" id="partnerBookings" data-title="예약 관리 (파트너)">
-    <div class="notice">들어온 예약을 수락·거절하고, 완료 처리합니다.</div>
-    <div id="partnerList"></div>
-  </div>
 
   <!-- 관리자: 홈뷰티 신청 승인 -->
 
@@ -867,16 +863,6 @@
       <div class="mp-row" onclick="window.go('safety');loadSafety()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#E5484D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.4-3 8-7 10-4-2-7-5.6-7-10V6l7-3z"/><path d="M12 9v4M12 16h.01"/></svg></span><span class="mp-name">안전 센터</span><span class="mp-chev">›</span></div>
       <div class="mp-row" onclick="window.go('terms');loadAgreements()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h7"/></svg></span><span class="mp-name">약관 및 개인정보</span><span class="mp-chev">›</span></div>
       <div class="mp-row" id="mpAbout"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5"/><circle cx="12" cy="8" r=".7" fill="#4A5A61" stroke="none"/></svg></span><span class="mp-name">회사 소개</span><span class="mp-chev">›</span></div>
-      <div class="mp-row" id="mpPartnerBookings" style="display:none" onclick="window.go('partnerBookings');loadPartnerBookings()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round"><path d="M4 20v-1a4 4 0 014-4h1"/><circle cx="8.5" cy="8" r="3"/><path d="M14 13l2 2 4-4"/></svg></span><span class="mp-name">예약 관리 (파트너)</span><span class="mp-chev">›</span></div>
-      <div class="mp-row" id="mpMySettleRow" style="display:none" onclick="window.go('partnerSettle');loadMySettle()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#B23A5B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v10M9.5 9.5h4a1.5 1.5 0 010 3h-3a1.5 1.5 0 000 3h4"/></svg></span><span class="mp-name">내 입금 현황</span><span class="mp-chev">›</span></div>
-      <div class="mp-row" id="mpRevenueRow" style="display:none" onclick="window.go('partnerRevenue');loadPartnerRevenue()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><rect x="7" y="10" width="3" height="6"/><rect x="12" y="7" width="3" height="9"/><rect x="17" y="12" width="3" height="4"/></svg></span><span class="mp-name">매출 관리</span><span class="mp-chev">›</span></div>
-      <div class="mp-row" id="mpScheduleRow" style="display:none" onclick="window.go('partnerSchedule');loadPartnerSchedule()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg></span><span class="mp-name">스케줄 관리</span><span class="mp-chev">›</span></div>
-      <div class="mp-row" id="mpEventsRow" style="display:none" onclick="window.go('partnerEvents');loadEvents()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-5v12L3 15v-4z"/><path d="M11.6 16.8a3 3 0 01-5.8-1.6"/></svg></span><span class="mp-name">이벤트 관리</span><span class="mp-chev">›</span></div>
-      <div class="mp-row" id="mpStaffRow" style="display:none" onclick="window.go('partnerStaff');loadStaff()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0112 0"/><circle cx="17.5" cy="9" r="2.2"/><path d="M15 20a5 5 0 016.5-4.8"/></svg></span><span class="mp-name">직원 관리</span><span class="mp-chev">›</span></div>
-      <div class="mp-row" id="mpChatRow" style="display:none" onclick="window.go('partnerChat');loadPartnerChats()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 01-8 8H7l-4 3V12a8 8 0 018-8h2a8 8 0 018 8z"/></svg></span><span class="mp-name">고객 채팅</span><span class="mp-chev">›</span></div>
-      <div class="mp-row" id="mpGpsRow" style="display:none" onclick="window.go('partnerGps');loadMyGps()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.3 7-11a7 7 0 10-14 0c0 4.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span class="mp-name">근무 위치 (GPS)</span><span class="mp-chev">›</span></div>
-      <div class="mp-row" id="mpAiRow" style="display:none" onclick="window.go('partnerAi');loadAiPlan()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#2E8B8B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8L12 3z"/><path d="M18 15l.9 2.1L21 18l-2.1.9L18 21l-.9-2.1L15 18l2.1-.9L18 15z"/></svg></span><span class="mp-name">AI 일정 추천</span><span class="mp-chev">›</span></div>
-      <div class="mp-row" id="mpAiBizRow" style="display:none" onclick="window.go('partnerAiBiz');loadAiBiz()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#2E8B8B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M7 15l4-5 3 3 5-7"/></svg></span><span class="mp-name">AI 가격·매출 분석</span><span class="mp-chev">›</span></div>
       <div class="mp-row" id="acLogoutRow"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h4a1 1 0 011 1v14a1 1 0 01-1 1h-4"/><path d="M10 12H3M6 8l-4 4 4 4"/></svg></span><span class="mp-name">로그아웃</span><span class="mp-chev">›</span></div>
     </div>
     <div id="acMsg" class="hint" style="min-height:16px;margin:10px 2px 0"></div>
@@ -922,63 +908,6 @@
     </div>
     <div class="chat-msgs" id="chatMsgs"></div>
     <div class="chat-input"><input id="chatInput" placeholder="메시지를 입력하세요" onkeydown="if(event.key==='Enter')sendChat()"><button onclick="sendChat()">전송</button></div>
-  </div>
-  <div class="screen" id="partnerRevenue" data-title="매출 관리">
-    <div id="revenueList"></div>
-  </div>
-  <div class="screen" id="partnerSchedule" data-title="스케줄 관리">
-    <div id="scheduleList"></div>
-  </div>
-  <div class="screen" id="partnerEvents" data-title="이벤트 관리">
-    <div class="label">이벤트 제목</div>
-    <input class="tx" id="evTitle" type="text" placeholder="예: 오픈 기념 이벤트">
-    <div class="label">설명</div>
-    <input class="tx" id="evDesc" type="text" placeholder="이벤트 내용">
-    <div class="label">할인/혜택</div>
-    <input class="tx" id="evDiscount" type="text" placeholder="예: 20% 할인">
-    <div class="label">종료일</div>
-    <input class="tx" id="evUntil" type="date">
-    <button class="cta" style="position:static;margin-top:12px" onclick="createEvent()">이벤트 등록</button>
-    <div class="pf-sec">등록된 이벤트</div>
-    <div id="eventsList"></div>
-  </div>
-  <div class="screen" id="partnerStaff" data-title="직원 관리">
-    <div class="notice">프리랜서·마사지샵 사장님이 <b>본인 업체</b>에 소속된 직원(제공자)을 직접 추가·관리합니다. 관리자는 등록 서류만 확인·승인합니다.</div>
-    <div class="label">직원 이름</div>
-    <input class="tx" id="stName" type="text" placeholder="예: Linh N.">
-    <div class="label">대표 사진 (1장 · AI가 mㅏssㅏ 유니폼으로 자동 연출)</div>
-    <input class="tx" id="stPhoto" type="file" accept="image/*" onchange="onStaffPhoto(this)">
-    <div id="stPhotoPrev" style="margin-top:8px"></div>
-    <div class="label">분류</div>
-    <div class="chips" id="stKind">
-      <div class="chip sel" data-k="masseur" onclick="pick(this)">마사지사</div>
-      <div class="chip" data-k="therapist" onclick="pick(this)">홈 뷰티</div>
-    </div>
-    <div class="label">전문 (가능한 서비스 선택 · 복수 가능)</div>
-    <div class="chips"><div class="fchip" id="stSpecChip" onclick="openStaffSpecSheet()">전문 선택 ▾</div></div>
-    <button class="cta" style="position:static;margin-top:12px" onclick="createStaff()">직원 추가</button>
-    <div class="pf-sec">직원 목록</div>
-    <div id="staffList"></div>
-  </div>
-  <div class="screen" id="partnerSettle" data-title="내 입금 현황">
-    <div class="notice">고객에게 받은 금액 중 <b>플랫폼 수수료 10%</b>를 회사에 입금합니다. 완료일로부터 <b>3일 이내</b> 입금이 원칙입니다.</div>
-    <div id="mySettleList"></div>
-  </div>
-  <div class="screen" id="partnerChat" data-title="고객 채팅">
-    <div id="pchatList"></div>
-  </div>
-  <div class="screen" id="partnerGps" data-title="근무 위치 (GPS)">
-    <div class="notice">출근 중일 때 현재 위치를 갱신하면 <b>내 근처</b> 검색에 정확히 노출됩니다.</div>
-    <button class="cta" style="position:static;margin-bottom:12px" onclick="updateMyGps()">📍 현재 위치로 갱신</button>
-    <div id="gpsInfo"></div>
-  </div>
-  <div class="screen" id="partnerAi" data-title="AI 일정 추천">
-    <div class="notice">최근 예약 패턴을 분석해 잘 잡히는 시간대와 추천 근무 시간을 제안합니다.</div>
-    <div id="aiPlan"></div>
-  </div>
-  <div class="screen" id="partnerAiBiz" data-title="AI 가격·매출 분석">
-    <div class="notice">시장 시세와 내 예약·매출 데이터를 분석해 <b>적정 가격</b>과 <b>다음 주 예약·매출 예측</b>을 제안합니다.</div>
-    <div id="aiBiz"></div>
   </div>
   <div class="screen" id="terms" data-title="약관 및 개인정보">
     <div class="notice">서비스 이용을 위해 아래 약관에 동의해 주세요. 동의 기록은 안전하게 보관됩니다.</div>
@@ -1036,8 +965,8 @@ if (window.DEV_FORCED) document.body.classList.add('devmode');
 const MAIN_FLOW = ['home', 'thList', 'menu', 'time', 'loc', 'confirm', 'done'];
 const NAMES = { home: '홈', thList: '마사지 홈서비스', therapy: '홈 뷰티', spa: '스파 안내',
                 stores: '매장 리스트', storeDtl: '매장 상세', provDtl: '프로필', menu: '코스', time: '시간', loc: '위치', confirm: '확인(후불)', done: '완료',
-                myBookings: '내 예약', applyForm: '제공자 등록', partnerBookings: '예약 관리',
-                location: '지역 선택', account: '계정 정보', profileInfo: '개인 정보', notifications: '알림', map: '지도 검색', favorites: '즐겨찾기', coupons: '쿠폰함', partnerRevenue: '매출 관리', partnerSchedule: '스케줄 관리', chat: '채팅', partnerEvents: '이벤트 관리', partnerStaff: '직원 관리' };
+                myBookings: '내 예약', applyForm: '제공자 등록',
+                location: '지역 선택', account: '계정 정보', profileInfo: '개인 정보', notifications: '알림', map: '지도 검색', favorites: '즐겨찾기', coupons: '쿠폰함', chat: '채팅' };
 let stack = ['home'];
 
 const flowEl = document.getElementById('flow');
@@ -1949,15 +1878,7 @@ async function loadAccount() {
   const role = CUR_PROFILE.role;
   const isAdm = role === 'admin';           // 앱 관리자: 전체 관리
   document.body.classList.toggle('devmode', (isAdm || window.DEV_FORCED) && !window.IS_NATIVE_APP);
-  // 관리자 화면은 앱에서 걷어냈다. 운영은 admin.moahagwon.com 에서 한다
-  // 파트너(제공자 등록자) 여부 — 등록된 제공자가 있으면 파트너 메뉴 노출
-  let isPartner = isAdm;
-  if (!isPartner) { try { const { count } = await sb.from('providers').select('id', { count: 'exact', head: true }).eq('profile_id', SESSION.user.id); isPartner = (count || 0) > 0; } catch (e) {} }
-  const rowVis = {
-    mpPartnerBookings: isPartner, mpMySettleRow: isPartner, mpRevenueRow: isPartner, mpScheduleRow: isPartner, mpEventsRow: isPartner, mpStaffRow: isPartner,
-    mpChatRow: isPartner, mpGpsRow: isPartner, mpAiRow: isPartner, mpAiBizRow: isPartner
-  };
-  Object.keys(rowVis).forEach(id => { const el = document.getElementById(id); if (el) el.style.display = rowVis[id] ? 'flex' : 'none'; });
+  // 관리자·파트너 운영 화면은 앱에서 걷어냈다. 운영은 admin.moahagwon.com 에서 한다
   // 빌드 번호를 함께 보여 어떤 버전이 설치됐는지 바로 확인할 수 있게 한다
   const msg = document.getElementById('acMsg');
   if (msg) msg.textContent = SESSION.user.email + (window.__BUILD__ ? ' · build ' + window.__BUILD__ : '');
@@ -2190,203 +2111,6 @@ async function submitApplication() {
   AP_SVC_SEL = new Set(); syncApSvcChip();
 }
 
-// ── 파트너 예약 관리 ──
-async function loadPartnerBookings() {
-  if (!SESSION) { openAuth(); return; }
-  const wrap = document.getElementById('partnerList');
-  wrap.innerHTML = '<div class="hint">불러오는 중…</div>';
-  // 내 제재 상태 배너
-  let penaltyBanner = '';
-  try {
-    const mine = await myProviders();
-    const worst = mine.sort((a, b) => (b.penalty_level || 0) - (a.penalty_level || 0))[0];
-    if (worst) {
-      const sus = worst.suspended_until && new Date(worst.suspended_until) > new Date();
-      const lv = worst.penalty_level || 0;
-      if (sus) penaltyBanner = '<div class="notice" style="border-color:#E5484D;color:#B23A5B">🚫 예약 접수가 정지되었습니다 (~' + new Date(worst.suspended_until).toLocaleDateString() + '). 최근 거절 ' + (worst.reject_count || 0) + '회.</div>';
-      else if (lv >= 2) penaltyBanner = '<div class="notice" style="border-color:#E8A33D">⚠ 거절 누적 ' + (worst.reject_count || 0) + '회 — 목록 노출이 낮아진 상태입니다. 거절을 줄이면 회복됩니다.</div>';
-      else if (lv === 1) penaltyBanner = '<div class="notice">⚠ 거절 누적 ' + (worst.reject_count || 0) + '회 — 경고 단계입니다. 8회부터 노출이 낮아집니다.</div>';
-    }
-  } catch (e) {}
-  const { data, error } = await sb.from('bookings')
-    .select('*, services(name), profiles!bookings_customer_id_fkey(full_name)')
-    .order('created_at', { ascending: false }).limit(30);
-  if (error) { wrap.innerHTML = `<div class="notice">불러오기 실패: ${error.message}</div>`; return; }
-  wrap.innerHTML = data.map(b => {
-    const acts = [];
-    if (b.status === 'requested') { acts.push(['수락', 'confirmed', 'sel']); acts.push(['거절', '__reject__', '']); }
-    else if (b.status === 'confirmed') { acts.push(['완료 처리', 'completed', 'sel']); acts.push(['노쇼 처리', '__noshow__', '']); }
-    return `<div class="card" style="cursor:default">
-      <div class="trow1"><span class="t">${b.services?.name || '서비스'}</span><span style="color:#2E8B8B;font-weight:bold;font-size:12px">${STATUS_KO[b.status]}</span></div>
-      <div class="d">${b.hotel_name || ''} ${b.room_number || ''} · ${new Date(b.scheduled_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
-      <div style="margin-top:8px;display:flex;gap:8px">${acts.map(a => `<button class="chip ${a[2]}" onclick="${a[1] === '__reject__' ? `openReject('${b.id}','${b.provider_id || ''}')` : a[1] === '__noshow__' ? `markNoShow('${b.id}','${b.customer_id || ''}')` : `setBookingStatus('${b.id}','${a[1]}')`}">${a[0]}</button>`).join('')}</div>
-    </div>`;
-  }).join('') || '<div class="notice">예약이 없습니다.</div>';
-  wrap.innerHTML = penaltyBanner + wrap.innerHTML;
-}
-window.loadPartnerBookings = loadPartnerBookings;
-window.setBookingStatus = async (id, st) => {
-  await sb.from('bookings').update(Object.assign({ status: st }, st === 'completed' ? { completed_at: new Date().toISOString() } : st === 'accepted' ? { accepted_at: new Date().toISOString() } : {})).eq('id', id);
-  loadPartnerBookings();
-};
-// 파트너: 고객 노쇼 처리 (고객 페널티 누적)
-window.markNoShow = async function (bookingId, customerId) {
-  if (!confirm('고객이 나타나지 않았나요? 노쇼로 처리하면 고객에게 페널티가 누적됩니다.')) return;
-  await sb.from('bookings').update({ status: 'cancelled', no_show_at: new Date().toISOString(), cancelled_by: 'provider', cancel_reason: '고객 노쇼' }).eq('id', bookingId);
-  if (customerId) {
-    // 최근 30일 임박취소·노쇼 재계산
-    const since = new Date(Date.now() - 30 * 864e5).toISOString();
-    const { data: rows } = await sb.from('bookings').select('scheduled_at, cancelled_at, no_show_at').eq('customer_id', customerId).gte('created_at', since).limit(200);
-    let n = 0;
-    (rows || []).forEach(b => { if (b.no_show_at) { n++; return; } if (b.cancelled_at && b.scheduled_at && (new Date(b.scheduled_at) - new Date(b.cancelled_at)) < 36e5) n++; });
-    const patch = { no_show_count: (rows || []).filter(x => x.no_show_at).length, cancel_count: n };
-    let note = '';
-    if (n >= 5) { patch.booking_blocked_until = new Date(Date.now() + 7 * 864e5).toISOString(); note = '🚫 임박 취소·노쇼 ' + n + '회 — 7일간 새 예약이 제한됩니다.'; }
-    else if (n >= 3) note = '⚠ 임박 취소·노쇼 ' + n + '회 — 5회가 되면 7일간 예약이 제한됩니다.';
-    await sb.from('profiles').update(patch).eq('id', customerId);
-    if (note) await sb.from('notifications').insert({ user_id: customerId, title: '노쇼 처리 안내', body: '예약 시간에 방문이 확인되지 않아 노쇼로 처리되었습니다.\n' + note, kind: 'warning' });
-  }
-  alert('노쇼로 처리했습니다.');
-  loadPartnerBookings();
-};
-
-// ── 예약 거절: 사유 입력 + 누적 페널티 ──
-const REJECT_REASONS = ['이미 다른 예약이 있음','요청 시간에 근무 불가','거리가 너무 멂','요청 서비스 미제공','고객 요청 사항 수용 불가','기타'];
-const PENALTY_RULES = { warn: 5, lower: 8, suspend: 12, days: 3, window: 30 };  // 최근 30일 기준
-window.openReject = function (bookingId, providerId) {
-  let ov = document.getElementById('rejOv');
-  if (!ov) { ov = document.createElement('div'); ov.id = 'rejOv'; ov.style.cssText = 'position:fixed;inset:0;z-index:210;background:rgba(20,25,28,.5);display:flex;align-items:flex-end;justify-content:center'; document.body.appendChild(ov); }
-  ov.innerHTML = '<div class="svc-sheet"><div class="svc-grip"></div><div class="svc-title">거절 사유를 선택해 주세요</div>'
-    + '<div class="notice">최근 ' + PENALTY_RULES.window + '일 거절이 ' + PENALTY_RULES.warn + '회면 경고, ' + PENALTY_RULES.lower + '회면 노출 저하, ' + PENALTY_RULES.suspend + '회면 ' + PENALTY_RULES.days + '일 예약 정지됩니다.</div>'
-    + REJECT_REASONS.map(r => '<div class="svc-row" data-r="' + r + '">' + r + '</div>').join('')
-    + '<input class="tx" id="rejEtc" placeholder="기타 사유를 입력하세요" style="margin-top:8px">'
-    + '<button class="cta" style="position:static;margin-top:10px" onclick="submitReject(\'' + bookingId + '\',\'' + providerId + '\')">거절 확정</button></div>';
-  ov.style.display = 'flex';
-  ov.onclick = (e) => { if (e.target === ov) ov.style.display = 'none'; };
-  ov.querySelectorAll('.svc-row').forEach(r => r.onclick = () => { ov.querySelectorAll('.svc-row').forEach(x => x.classList.remove('on')); r.classList.add('on'); });
-};
-window.submitReject = async function (bookingId, providerId) {
-  const ov = document.getElementById('rejOv');
-  const sel = ov.querySelector('.svc-row.on');
-  const etc = (ov.querySelector('#rejEtc').value || '').trim();
-  const reason = sel ? (sel.dataset.r === '기타' ? (etc || '기타') : sel.dataset.r) : etc;
-  if (!reason) { alert('사유를 선택하거나 입력해 주세요.'); return; }
-  await sb.from('bookings').update({ status: 'cancelled', rejected_at: new Date().toISOString(), reject_reason: reason }).eq('id', bookingId);
-  ov.style.display = 'none';
-  const msg = await applyRejectPenalty(providerId);
-  alert('예약을 거절했습니다.' + (msg ? '\n\n' + msg : ''));
-  loadPartnerBookings();
-};
-// 최근 30일 거절 수를 세어 등급을 갱신하고 안내 문구를 반환
-async function applyRejectPenalty(providerId) {
-  if (!providerId) return '';
-  const since = new Date(Date.now() - PENALTY_RULES.window * 864e5).toISOString();
-  const { count } = await sb.from('bookings').select('id', { count: 'exact', head: true })
-    .eq('provider_id', providerId).not('rejected_at', 'is', null).gte('rejected_at', since);
-  const n = count || 0;
-  let level = 0, note = '';
-  if (n >= PENALTY_RULES.suspend) level = 3;
-  else if (n >= PENALTY_RULES.lower) level = 2;
-  else if (n >= PENALTY_RULES.warn) level = 1;
-  const patch = { reject_count: n, penalty_level: level };
-  if (level === 3) { patch.suspended_until = new Date(Date.now() + PENALTY_RULES.days * 864e5).toISOString(); patch.is_active = false; }
-  await sb.from('providers').update(patch).eq('id', providerId);
-  if (level === 1) note = '⚠ 최근 ' + PENALTY_RULES.window + '일 거절 ' + n + '회 — 경고 단계입니다. ' + PENALTY_RULES.lower + '회부터 목록 노출이 낮아집니다.';
-  if (level === 2) note = '⚠ 거절 ' + n + '회 — 목록 노출이 낮아집니다. ' + PENALTY_RULES.suspend + '회면 ' + PENALTY_RULES.days + '일 예약이 정지됩니다.';
-  if (level === 3) note = '🚫 거절 ' + n + '회 — ' + PENALTY_RULES.days + '일간 예약 접수가 정지되었습니다.';
-  // 파트너에게 알림도 남김
-  if (level > 0) {
-    const { data: pr } = await sb.from('providers').select('profile_id, owner_id').eq('id', providerId).single();
-    const uid = pr && (pr.profile_id || pr.owner_id);
-    if (uid) await sb.from('notifications').insert({ user_id: uid, title: '예약 거절 누적 안내', body: note, kind: 'warning' });
-  }
-  return note;
-}
-window.applyRejectPenalty = applyRejectPenalty;
-
-
-async function loadPartnerRevenue() {
-  if (!SESSION) { openAuth(); return; }
-  const wrap = document.getElementById('revenueList'); if (!wrap) return;
-  wrap.innerHTML = '<div class="hint">불러오는 중…</div>';
-  const mine = await myProviders();
-  const ids = mine.map(p => p.id);
-  if (!ids.length) { wrap.innerHTML = '<div class="notice">등록된 제공자 정보가 없습니다.</div>'; return; }
-  const { data, error } = await sb.from('bookings').select('*, services(name)').in('provider_id', ids).order('created_at', { ascending: false }).limit(500);
-  if (error) { wrap.innerHTML = '<div class="notice">불러오기 실패: ' + error.message + '</div>'; return; }
-  const rows = data || [], paid = rows.filter(b => b.is_paid);
-  const now = Date.now();
-  const sum = (arr) => arr.reduce((a, b) => a + (b.amount_vnd || 0), 0);
-  const total = sum(paid);
-  const inDays = (d) => paid.filter(b => (now - new Date(b.completed_at || b.created_at).getTime()) < d * 864e5);
-  const wk = sum(inDays(7)), mo = sum(inDays(30));
-  const fee = Math.round(total * FEE_RATE), net = total - fee;
-  const completed = rows.filter(b => b.status === 'completed').length;
-  const kpis = [
-    ['총 매출', total.toLocaleString() + '₫'],
-    ['내 수령(수수료 제외)', net.toLocaleString() + '₫'],
-    ['최근 7일', wk.toLocaleString() + '₫'],
-    ['최근 30일', mo.toLocaleString() + '₫'],
-    ['완료 건수', completed],
-    ['결제 건수', paid.length]
-  ];
-  // 월별 추이(최근 6개월)
-  const mKey = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-  const months = {};
-  paid.forEach(b => { const k = mKey(new Date(b.completed_at || b.created_at)); months[k] = (months[k] || 0) + (b.amount_vnd || 0); });
-  const mk = Object.keys(months).sort().slice(-6);
-  const maxV = Math.max(...mk.map(k => months[k]), 1);
-  const pmKo = { card: '카드', qr: 'QR', bank_transfer: '이체', card_onsite: '현장', cash: '현금', qr_onsite: 'QR' };
-  let html = '<div class="kpi-grid">' + kpis.map(k => '<div class="kpi"><div class="kpi-v" style="font-size:17px">' + k[1] + '</div><div class="kpi-l">' + k[0] + '</div></div>').join('') + '</div>';
-  html += '<div class="card" style="background:#FBF1DF;cursor:default"><div class="trow1"><span class="t">플랫폼 수수료 (' + (FEE_RATE * 100).toFixed(0) + '%)</span><span style="color:#B23A5B;font-weight:bold">' + fee.toLocaleString() + '₫</span></div><div class="d">완료일 + ' + DUE_DAYS + '일 이내 회사 계좌로 입금해 주세요. 상세는 [내 입금 현황]에서 확인할 수 있습니다.</div></div>';
-  if (mk.length) {
-    html += '<div class="card" style="cursor:default"><div class="trow1"><span class="t">월별 매출 (최근 6개월)</span></div>'
-      + mk.map(k => '<div class="d" style="display:flex;align-items:center;gap:8px"><span style="width:60px">' + k + '</span><span style="flex:1;height:9px;background:#EEF2F0;border-radius:5px;overflow:hidden"><span style="display:block;height:100%;width:' + Math.round(months[k] / maxV * 100) + '%;background:#3E7C4F"></span></span><span style="width:92px;text-align:right">' + months[k].toLocaleString() + '₫</span></div>').join('') + '</div>';
-  }
-  // 정산 사이클 요약
-  try {
-    const { data: cyc } = await sb.from('settlement_cycle').select('*').in('provider_id', ids).order('period_start', { ascending: false }).limit(3);
-    if (cyc && cyc.length) {
-      html += '<div class="pf-sec">최근 정산</div>' + cyc.map(c => '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + c.period_start + ' ~ ' + c.period_end + '</span><span style="font-size:12px;font-weight:bold;color:' + (c.status === 'paid' ? '#1E6B45' : '#E8A33D') + '">' + (c.status === 'paid' ? '입금 완료' : '입금 대기') + '</span></div><div class="d">' + c.booking_count + '건 · 매출 ' + Number(c.gross_vnd).toLocaleString() + '₫ · 수수료 ' + Number(c.fee_vnd).toLocaleString() + '₫</div></div>').join('')
-        + '<div style="margin-top:8px"><button class="chip" onclick="window.go(\'partnerSettle\');loadMySettle()">내 입금 현황 보기 ›</button></div>';
-    }
-  } catch (e) {}
-  html += '<div class="pf-sec">최근 결제</div>' + (paid.length ? paid.slice(0, 10).map(b => '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + (b.services ? b.services.name : '서비스') + '</span><span style="font-weight:bold">' + b.amount_vnd.toLocaleString() + '₫</span></div><div class="d">' + new Date(b.completed_at || b.created_at).toLocaleDateString('ko-KR') + ' · ' + (pmKo[b.payment_method] || b.payment_method || '') + '</div></div>').join('') : '<div class="notice">결제 내역이 없습니다.</div>');
-  wrap.innerHTML = html;
-}
-window.loadPartnerRevenue = loadPartnerRevenue;
-async function loadPartnerSchedule() {
-  if (!SESSION) { openAuth(); return; }
-  const wrap = document.getElementById('scheduleList'); if (!wrap) return;
-  wrap.innerHTML = '<div class="hint">불러오는 중…</div>';
-  const { data: me } = await sb.from('profiles').select('role').eq('id', SESSION.user.id).single();
-  let q = sb.from('providers').select('*');
-  if (!me || me.role !== 'admin') q = q.eq('profile_id', SESSION.user.id);
-  const { data, error } = await q.order('display_name');
-  if (error) { wrap.innerHTML = '<div class="notice">불러오기 실패: ' + error.message + '</div>'; return; }
-  const list = data || [];
-  wrap.innerHTML = list.length ? '<div class="notice">출근/퇴근 상태와 영업시간을 관리합니다. 출근(ON)이어야 고객 목록에 노출됩니다.</div>' + list.map(p => '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + p.display_name + ' <span style="font-size:11px;color:' + (p.is_active ? '#1E6B45' : 'var(--muted)') + '">' + (p.is_active ? '● 출근 중' : '○ 퇴근') + '</span></span><label class="sw"><input type="checkbox" ' + (p.is_active ? 'checked' : '') + ' onchange="toggleActive(\'' + p.id + '\',this.checked)"><span class="sw-track"></span></label></div><div class="d">영업시간: ' + (p.business_hours || '-') + '</div><button class="chip" onclick="editHours(\'' + p.id + '\')">영업시간 수정</button></div>').join('') : '<div class="notice">관리할 제공자가 없습니다. (파트너 계정 또는 관리자만 사용)</div>';
-}
-window.loadPartnerSchedule = loadPartnerSchedule;
-window.toggleActive = async (id, on) => { await sb.from('providers').update({ is_active: on }).eq('id', id); };
-window.editHours = async (id) => { const v = prompt('영업시간 (예: 10:00 ~ 24:00)'); if (v === null) return; await sb.from('providers').update({ business_hours: v }).eq('id', id); loadPartnerSchedule(); };
-async function loadEvents() {
-  const wrap = document.getElementById('eventsList'); if (!wrap) return;
-  wrap.innerHTML = '<div class="hint">불러오는 중…</div>';
-  const { data } = await sb.from('events').select('*').eq('is_active', true).order('created_at', { ascending: false });
-  wrap.innerHTML = (data && data.length) ? data.map(e => '<div class="coupon"><div><div class="coupon-t">' + e.title + '</div><div class="coupon-d">' + (e.discount ? e.discount + ' · ' : '') + (e.description || '') + (e.valid_until ? ' · ~' + e.valid_until : '') + '</div></div></div>').join('') : '<div class="notice">등록된 이벤트가 없습니다.</div>';
-}
-window.loadEvents = loadEvents;
-window.createEvent = async () => {
-  if (!SESSION) { openAuth(); return; }
-  const title = document.getElementById('evTitle').value.trim();
-  if (!title) { alert('제목을 입력하세요.'); return; }
-  const row = { creator_id: SESSION.user.id, title, description: document.getElementById('evDesc').value || null, discount: document.getElementById('evDiscount').value || null, valid_until: document.getElementById('evUntil').value || null };
-  const { error } = await sb.from('events').insert(row);
-  if (error) { alert('실패: ' + error.message); return; }
-  document.getElementById('evTitle').value = ''; document.getElementById('evDesc').value = ''; document.getElementById('evDiscount').value = ''; document.getElementById('evUntil').value = '';
-  alert('이벤트가 등록되었습니다.'); loadEvents();
-};
 window.openReport = (name, pid) => {
   if (!SESSION) { openAuth(); return; }
   const reason = prompt('신고 사유를 입력하세요 (' + name + ')');
@@ -2418,214 +2142,11 @@ window.reportChat = () => {
   openReport(p ? p.display_name : '제공자', CHAT_PID);
 };
 window.blockChat = () => { if (CHAT_PID) toggleBlock(CHAT_PID); };
-let FEE_RATE = 0.10;          // 플랫폼 수수료(설정에서 변경 가능)
-let DUE_DAYS = 3;             // 완료 후 입금 기한(일)
-function fmtDate(d) { const x = new Date(d); return (x.getMonth() + 1) + '/' + x.getDate(); }
 
-async function loadMySettle() {
-  if (!SESSION) { openAuth(); return; }
-  const wrap = document.getElementById('mySettleList'); if (!wrap) return;
-  wrap.innerHTML = '<div class="hint">불러오는 중…</div>';
-  const uid = SESSION.user.id;
-  const { data: mine } = await sb.from('providers').select('id, display_name').or('profile_id.eq.' + uid + ',owner_id.eq.' + uid);
-  const ids = (mine || []).map(p => p.id);
-  if (!ids.length) { wrap.innerHTML = '<div class="notice">등록된 제공자 정보가 없습니다. 먼저 제공자 등록을 완료하세요.</div>'; return; }
-  const nameMap = {}; (mine || []).forEach(p => nameMap[p.id] = p.display_name);
-  const { data: bks } = await sb.from('bookings').select('provider_id, amount_vnd, created_at, completed_at, is_paid').in('provider_id', ids).eq('is_paid', true);
-  const { data: setts } = await sb.from('settlement').select('*').in('provider_id', ids);
-  const smap = {}; (setts || []).forEach(s => smap[s.provider_id] = s);
-  const g = {};
-  (bks || []).forEach(b => { const t = b.completed_at || b.created_at; const k = b.provider_id; if (!g[k]) g[k] = { id: k, name: nameMap[k] || '', sum: 0, cnt: 0, first: t }; g[k].sum += b.amount_vnd; g[k].cnt++; if (t < g[k].first) g[k].first = t; });
-  const rows = Object.values(g);
-  if (!rows.length) { wrap.innerHTML = '<div class="notice">아직 정산할 완료 예약이 없습니다.</div>'; return; }
-  const now = Date.now(); let totalOwe = 0;
-  const cards = rows.map(r => {
-    const fee = Math.round(r.sum * FEE_RATE); totalOwe += fee;
-    const dueMs = new Date(r.first).getTime() + DUE_DAYS * 864e5;
-    const s = smap[r.id]; const paid = s && s.status === 'paid'; const overdue = !paid && now > dueMs;
-    const badge = paid ? '<span style="color:#1E6B45;font-weight:bold;font-size:12px">입금 완료</span>'
-      : overdue ? '<span style="color:#E5484D;font-weight:bold;font-size:12px">⚠ 입금 지연</span>'
-      : '<span style="color:#E8A33D;font-weight:bold;font-size:12px">입금 대기</span>';
-    return '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + r.name + '</span>' + badge + '</div>'
-      + '<div class="d">' + r.cnt + '건 · 고객 결제 ' + r.sum.toLocaleString() + '₫</div>'
-      + '<div class="d" style="color:#B23A5B;font-weight:bold">회사에 입금할 금액 ' + fee.toLocaleString() + '₫</div>'
-      + '<div class="d">입금기한 ' + fmtDate(dueMs) + '까지' + (overdue ? ' · 기한 초과' : '') + '</div></div>';
-  }).join('');
-  const head = '<div class="card" style="background:#FBF1DF;cursor:default"><div class="trow1"><span class="t">회사 입금 합계</span><span style="color:#B23A5B;font-weight:bold">' + totalOwe.toLocaleString() + '₫</span></div><div class="d">완료일 + 3일 이내 입금 원칙 · 입금 계좌는 관리자 안내를 따라주세요.</div></div>';
-  const cyc = await loadMyCycles(ids);
-  wrap.innerHTML = head + cards + cyc;
-}
-window.loadMySettle = loadMySettle;
 
-// 파트너: 마감된 정산 사이클 + 입금 증빙 업로드
-async function loadMyCycles(ids) {
-  const { data } = await sb.from('settlement_cycle').select('*').in('provider_id', ids).order('period_start', { ascending: false }).limit(20);
-  const list = data || [];
-  if (!list.length) return '';
-  const ST = { closed: ['입금 대기', '#E8A33D'], paid: ['입금 완료', '#1E6B45'], open: ['진행중', '#7A8C94'] };
-  return '<div class="pf-sec">마감된 정산</div>' + list.map(c => {
-    const s = ST[c.status] || [c.status, '#7A8C94'];
-    const overdue = c.status !== 'paid' && c.due_date && new Date(c.due_date) < new Date();
-    return '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + c.period_start + ' ~ ' + c.period_end + '</span><span style="color:' + (overdue ? '#E5484D' : s[1]) + ';font-weight:bold;font-size:12px">' + (overdue ? '⚠ 기한 초과' : s[0]) + '</span></div>'
-      + '<div class="d">' + c.booking_count + '건 · 고객 결제 ' + Number(c.gross_vnd).toLocaleString() + '₫</div>'
-      + '<div class="d" style="color:#B23A5B;font-weight:bold">회사에 입금할 금액 ' + Number(c.fee_vnd).toLocaleString() + '₫ · 기한 ' + (c.due_date || '-') + '</div>'
-      + (c.proof_url ? '<div class="d"><a href="' + c.proof_url + '" target="_blank">📎 첨부한 증빙 보기</a></div>' : '')
-      + (c.status !== 'paid' ? '<div class="label" style="margin-top:8px">입금 증빙 첨부 (이체 캡처)</div><input class="tx" type="file" accept="image/*" onchange="uploadProof(this,\'' + c.id + '\')">' : '')
-      + '</div>';
-  }).join('');
-}
-window.uploadProof = async function (el, cycleId) {
-  const f = el.files && el.files[0]; if (!f) return;
-  if (!SESSION) { openAuth(); return; }
-  const ext = (f.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
-  const p = 'proof/' + SESSION.user.id + '/' + Date.now() + '.' + ext;
-  el.disabled = true;
-  const { error } = await sb.storage.from('provider-photos').upload(p, f, { contentType: f.type || undefined });
-  if (error) { el.disabled = false; alert('업로드 실패: ' + error.message); return; }
-  const url = sb.storage.from('provider-photos').getPublicUrl(p).data.publicUrl;
-  const { error: e2 } = await sb.from('settlement_cycle').update({ proof_url: url }).eq('id', cycleId);
-  el.disabled = false;
-  if (e2) { alert('증빙 저장 실패: ' + e2.message); return; }
-  alert('입금 증빙이 첨부되었습니다. 관리자 확인 후 입금 완료로 처리됩니다.');
-  loadMySettle();
-};
 
-// ── 파트너: 내 제공자 목록 헬퍼 ──
-async function myProviders() {
-  const uid = SESSION.user.id;
-  const { data } = await sb.from('providers').select('*').or('profile_id.eq.' + uid + ',owner_id.eq.' + uid);
-  return data || [];
-}
 
-// ── 파트너: 고객 채팅 ──
-async function loadPartnerChats() {
-  if (!SESSION) { openAuth(); return; }
-  const wrap = document.getElementById('pchatList'); if (!wrap) return;
-  wrap.innerHTML = '<div class="hint">불러오는 중…</div>';
-  const mine = await myProviders();
-  const ids = mine.map(p => p.id);
-  if (!ids.length) { wrap.innerHTML = '<div class="notice">등록된 제공자 정보가 없습니다.</div>'; return; }
-  const { data: msgs } = await sb.from('messages').select('*').in('provider_id', ids).order('created_at', { ascending: false }).limit(200);
-  const rooms = {};
-  (msgs || []).forEach(m => { const k = m.provider_id + '|' + m.customer_id; if (!rooms[k]) rooms[k] = { pid: m.provider_id, cid: m.customer_id, last: m.body, at: m.created_at, cnt: 0 }; rooms[k].cnt++; });
-  const list = Object.values(rooms);
-  if (!list.length) { wrap.innerHTML = '<div class="notice">아직 고객 문의가 없습니다.</div>'; return; }
-  const nameMap = {}; mine.forEach(p => nameMap[p.id] = p.display_name);
-  wrap.innerHTML = list.map(r => '<div class="card" onclick="openPartnerRoom(\'' + r.pid + '\',\'' + r.cid + '\')"><div class="trow1"><span class="t">고객 ' + r.cid.slice(0, 6) + '···</span><span style="font-size:12px;color:var(--muted)">' + notiAgo(r.at) + '</span></div><div class="d">' + nameMap[r.pid] + ' · ' + (r.last || '') + '</div></div>').join('');
-}
-window.loadPartnerChats = loadPartnerChats;
-window.openPartnerRoom = async function (pid, cid) {
-  const wrap = document.getElementById('pchatList');
-  const { data: msgs } = await sb.from('messages').select('*').eq('provider_id', pid).eq('customer_id', cid).order('created_at');
-  const bubbles = (msgs || []).map(m => '<div style="text-align:' + (m.sender_role === 'provider' ? 'right' : 'left') + ';margin:6px 0"><span style="display:inline-block;max-width:78%;padding:9px 12px;border-radius:14px;font-size:13.5px;background:' + (m.sender_role === 'provider' ? '#3E7C4F;color:#fff' : '#EEF2F0;color:#24303A') + '">' + m.body + '</span></div>').join('');
-  wrap.innerHTML = '<button class="chip" onclick="loadPartnerChats()">‹ 목록</button>'
-    + '<div style="margin:10px 0;max-height:46vh;overflow:auto">' + (bubbles || '<div class="hint">메시지가 없습니다.</div>') + '</div>'
-    + '<div style="display:flex;gap:8px"><input class="tx" id="pchatInput" placeholder="답장을 입력하세요" style="flex:1"><button class="chip sel" onclick="sendPartnerMsg(\'' + pid + '\',\'' + cid + '\')">전송</button></div>';
-};
-window.sendPartnerMsg = async function (pid, cid) {
-  const el = document.getElementById('pchatInput'); const body = (el.value || '').trim();
-  if (!body) return;
-  await sb.from('messages').insert({ provider_id: pid, customer_id: cid, sender_role: 'provider', body });
-  el.value = ''; openPartnerRoom(pid, cid);
-};
 
-// ── 파트너: 근무 위치(GPS) ──
-async function loadMyGps() {
-  if (!SESSION) { openAuth(); return; }
-  const wrap = document.getElementById('gpsInfo'); if (!wrap) return;
-  const mine = await myProviders();
-  if (!mine.length) { wrap.innerHTML = '<div class="notice">등록된 제공자 정보가 없습니다.</div>'; return; }
-  wrap.innerHTML = mine.map(p => '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + p.display_name + '</span><span style="font-size:12px;color:' + (p.is_active ? '#1E6B45' : 'var(--muted)') + '">' + (p.is_active ? '출근 중' : '퇴근') + '</span></div>'
-    + '<div class="d">위치: ' + (p.last_lat ? p.last_lat.toFixed(5) + ', ' + p.last_lng.toFixed(5) : '미설정') + '</div>'
-    + '<div class="d">갱신: ' + (p.last_seen_at ? notiAgo(p.last_seen_at) : '-') + '</div></div>').join('');
-}
-window.loadMyGps = loadMyGps;
-window.updateMyGps = function () {
-  if (!navigator.geolocation) { alert('이 기기에서 위치를 사용할 수 없습니다.'); return; }
-  navigator.geolocation.getCurrentPosition(async (pos) => {
-    const { latitude: lat, longitude: lng } = pos.coords;
-    const mine = await myProviders();
-    for (const p of mine) await sb.from('providers').update({ lat, lng, last_lat: lat, last_lng: lng, last_seen_at: new Date().toISOString() }).eq('id', p.id);
-    alert('현재 위치로 갱신했습니다.');
-    loadMyGps();
-  }, () => alert('위치 권한이 거부되었습니다. 브라우저 설정에서 허용해 주세요.'));
-};
-
-// ── 파트너: AI 일정 추천 ──
-async function loadAiPlan() {
-  if (!SESSION) { openAuth(); return; }
-  const wrap = document.getElementById('aiPlan'); if (!wrap) return;
-  wrap.innerHTML = '<div class="hint">분석 중…</div>';
-  const mine = await myProviders();
-  const ids = mine.map(p => p.id);
-  if (!ids.length) { wrap.innerHTML = '<div class="notice">등록된 제공자 정보가 없습니다.</div>'; return; }
-  const { data: bks } = await sb.from('bookings').select('scheduled_at, created_at, amount_vnd').in('provider_id', ids).limit(500);
-  const hours = new Array(24).fill(0), dows = new Array(7).fill(0);
-  (bks || []).forEach(b => { const d = new Date(b.scheduled_at || b.created_at); hours[d.getHours()]++; dows[d.getDay()]++; });
-  const total = (bks || []).length;
-  const topHours = hours.map((c, i) => [i, c]).sort((a, b) => b[1] - a[1]).slice(0, 3).filter(x => x[1] > 0);
-  const DOW = ['일','월','화','수','목','금','토'];
-  const topDows = dows.map((c, i) => [i, c]).sort((a, b) => b[1] - a[1]).slice(0, 2).filter(x => x[1] > 0);
-  let html = '<div class="card" style="background:#E7F2E7;cursor:default"><div class="trow1"><span class="t">추천 근무 시간</span><span style="font-size:12px;color:var(--muted)">분석 ' + total + '건</span></div>';
-  if (topHours.length) {
-    html += '<div class="d">가장 예약이 많은 시간대: <b>' + topHours.map(x => x[0] + '시').join(', ') + '</b></div>';
-    const s = Math.max(0, topHours[0][0] - 1), e = Math.min(23, topHours[0][0] + 3);
-    html += '<div class="d" style="color:#1E6B45;font-weight:bold">이 시간대에 출근 상태를 켜두세요: ' + s + ':00 ~ ' + e + ':00</div>';
-  } else { html += '<div class="d">아직 예약 데이터가 부족합니다. 우선 19:00~23:00에 출근 상태를 유지해 보세요(일반적 성수 시간대).</div>'; }
-  if (topDows.length) html += '<div class="d">잘 잡히는 요일: <b>' + topDows.map(x => DOW[x[0]] + '요일').join(', ') + '</b></div>';
-  html += '</div>';
-  const slow = hours.map((c, i) => [i, c]).filter(x => x[0] >= 8 && x[0] <= 22).sort((a, b) => a[1] - b[1]).slice(0, 2);
-  if (total > 0 && slow.length) html += '<div class="card" style="cursor:default"><div class="trow1"><span class="t">비는 시간 활용</span></div><div class="d">' + slow.map(x => x[0] + '시').join(', ') + '는 예약이 적습니다. 이 시간대 할인 이벤트를 등록하면 예약률을 올릴 수 있어요.</div><button class="chip" onclick="window.go(\'partnerEvents\');loadEvents()">이벤트 등록하러 가기</button></div>';
-  wrap.innerHTML = html;
-}
-window.loadAiPlan = loadAiPlan;
-
-// ── AI 가격 추천 + 예약/매출 예측 ──
-async function loadAiBiz() {
-  if (!SESSION) { openAuth(); return; }
-  const wrap = document.getElementById('aiBiz'); if (!wrap) return;
-  wrap.innerHTML = '<div class="hint">분석 중…</div>';
-  const mine = await myProviders();
-  const ids = mine.map(p => p.id);
-  if (!ids.length) { wrap.innerHTML = '<div class="notice">등록된 제공자 정보가 없습니다.</div>'; return; }
-  const { data: bks } = await sb.from('bookings').select('amount_vnd, created_at, scheduled_at, status, is_paid').in('provider_id', ids).limit(500);
-  const list = bks || [];
-  // 시장 시세(동일 카테고리 서비스 평균)
-  const kind = mine[0].kind === 'masseur' ? 'massage' : 'therapist_care';
-  const { data: svcs } = await sb.from('services').select('price_vnd, duration_min, category').eq('category', kind);
-  const mkt = (svcs || []).map(s => s.price_vnd).filter(Boolean).sort((a, b) => a - b);
-  const med = mkt.length ? mkt[Math.floor(mkt.length / 2)] : 0;
-  const myAvg = list.length ? Math.round(list.reduce((a, b) => a + (b.amount_vnd || 0), 0) / list.length) : 0;
-  // 최근 4주 주간 예약수
-  const now = Date.now(), wk = [0, 0, 0, 0];
-  list.forEach(b => { const d = (now - new Date(b.created_at).getTime()) / 6048e5; if (d < 4) wk[Math.floor(d)]++; });
-  const recent = wk[0], prev = wk[1] || 0;
-  const trend = prev ? Math.round((recent - prev) / prev * 100) : 0;
-  const nextBook = Math.max(0, Math.round(recent * (1 + (trend / 100) * 0.5)));
-  const nextRev = nextBook * (myAvg || med);
-  let html = '';
-  // 가격 추천
-  html += '<div class="card" style="background:#E7F2E7;cursor:default"><div class="trow1"><span class="t">💰 AI 가격 추천</span></div>';
-  if (med) {
-    html += '<div class="d">시장 중앙값 ' + med.toLocaleString() + '₫ · 내 평균 단가 ' + (myAvg ? myAvg.toLocaleString() + '₫' : '데이터 부족') + '</div>';
-    if (myAvg && myAvg < med * 0.85) html += '<div class="d" style="color:#1E6B45;font-weight:bold">시세보다 낮습니다. ' + Math.round(med * 0.95).toLocaleString() + '₫ 수준까지 인상 여력이 있어요.</div>';
-    else if (myAvg && myAvg > med * 1.2) html += '<div class="d" style="color:#B23A5B;font-weight:bold">시세보다 높습니다. 평점·리뷰가 충분하지 않다면 ' + Math.round(med * 1.05).toLocaleString() + '₫ 부근을 권장해요.</div>';
-    else html += '<div class="d">현재 가격은 시세와 적절히 맞습니다. 유지 권장.</div>';
-  } else html += '<div class="d">시세 데이터가 부족합니다.</div>';
-  html += '</div>';
-  // 예약 예측
-  html += '<div class="card" style="cursor:default"><div class="trow1"><span class="t">📈 AI 예약 예측 (다음 주)</span></div>'
-    + '<div class="d">최근 1주 ' + recent + '건 · 직전 주 ' + prev + '건 (' + (trend >= 0 ? '+' : '') + trend + '%)</div>'
-    + '<div class="d" style="color:#1E6B45;font-weight:bold">예상 예약 ' + nextBook + '건</div>'
-    + '<div class="d">' + (trend < 0 ? '하락 추세입니다. 비는 시간대 할인 이벤트를 권장해요.' : '상승 추세입니다. 성수 시간대 출근을 늘려보세요.') + '</div></div>';
-  // 매출 예측
-  html += '<div class="card" style="cursor:default"><div class="trow1"><span class="t">💵 AI 매출 예측 (다음 주)</span></div>'
-    + '<div class="d" style="color:#1E6B45;font-weight:bold">예상 매출 ' + nextRev.toLocaleString() + '₫</div>'
-    + '<div class="d">회사 입금 예상(10%) ' + Math.round(nextRev * FEE_RATE).toLocaleString() + '₫ · 내 수령 예상 ' + Math.round(nextRev * (1 - FEE_RATE)).toLocaleString() + '₫</div>'
-    + '<div class="d">' + (list.length < 10 ? '데이터가 적어 오차가 큽니다. 예약이 쌓일수록 정확해져요.' : '최근 4주 추세 기반 추정치입니다.') + '</div></div>';
-  wrap.innerHTML = html;
-}
-window.loadAiBiz = loadAiBiz;
 
 
 
@@ -2702,54 +2223,6 @@ async function createSafetyAlert(kind, note) {
 }
 window.sendSos = () => { if (confirm('긴급 도움을 요청할까요? 현재 위치와 함께 관리자에게 즉시 전달됩니다.')) createSafetyAlert('sos'); };
 window.shareMyLocation = () => createSafetyAlert('share_location');
-async function loadStaff() {
-  if (!SESSION) { openAuth(); return; }
-  const wrap = document.getElementById('staffList'); if (!wrap) return;
-  wrap.innerHTML = '<div class="hint">불러오는 중…</div>';
-  const { data: me } = await sb.from('profiles').select('role').eq('id', SESSION.user.id).single();
-  let q = sb.from('providers').select('*');
-  if (!me || me.role !== 'admin') q = q.eq('owner_id', SESSION.user.id);
-  const { data, error } = await q.order('display_name');
-  if (error) { wrap.innerHTML = '<div class="notice">불러오기 실패: ' + error.message + '</div>'; return; }
-  const kindKo = { masseur: '마사지사', therapist: '홈 뷰티' };
-  wrap.innerHTML = (data && data.length) ? data.map(p => '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + p.display_name + ' <span style="font-size:11px;color:var(--muted)">' + (kindKo[p.kind] || p.kind) + '</span></span><label class="sw"><input type="checkbox" ' + (p.is_active ? 'checked' : '') + ' onchange="toggleActive(\'' + p.id + '\',this.checked)"><span class="sw-track"></span></label></div><div class="d">' + (p.specialties || []).map(s => TYPE_KO[s] || s).join('·') + ' · ★ ' + Number(p.rating).toFixed(1) + '</div></div>').join('') : '<div class="notice">직원이 없습니다. 위에서 추가하세요.</div>';
-}
-window.loadStaff = loadStaff;
-window.onStaffPhoto = async function (el) {
-  const f = el.files && el.files[0];
-  const prev = document.getElementById('stPhotoPrev');
-  if (!f) { el.dataset.url = ''; if (prev) prev.innerHTML = ''; return; }
-  if (!SESSION) { openAuth(); el.value = ''; return; }
-  const ext = (f.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
-  const p = SESSION.user.id + '/' + Date.now() + '_' + Math.random().toString(36).slice(2, 7) + '.' + ext;
-  el.disabled = true;
-  if (prev) prev.innerHTML = '<span class="hint">업로드·AI 변환 중…</span>';
-  const { error } = await sb.storage.from('provider-photos').upload(p, f, { upsert: false, contentType: f.type || undefined });
-  if (error) { el.disabled = false; if (prev) prev.innerHTML = '<span class="hint" style="color:#B23A5B">업로드 실패</span>'; el.value = ''; return; }
-  el.dataset.url = sb.storage.from('provider-photos').getPublicUrl(p).data.publicUrl;
-  try { await applyUniformToEl(el, f, p); } catch (e) { console.warn('직원 사진 변환 실패(원본 유지):', e); }
-  el.disabled = false;
-  if (prev) prev.innerHTML = el.dataset.url ? '<img src="' + el.dataset.url + '" style="width:96px;height:96px;object-fit:cover;border-radius:12px">' : '';
-};
-window.createStaff = async () => {
-  if (!SESSION) { openAuth(); return; }
-  const name = document.getElementById('stName').value.trim();
-  if (!name) { alert('이름을 입력하세요.'); return; }
-  const kind = (document.querySelector('#stKind .chip.sel') || {}).dataset ? document.querySelector('#stKind .chip.sel').dataset.k : 'masseur';
-  const spec = [...STAFF_SPEC_SEL];
-  const stPhotoUrl = (document.getElementById('stPhoto').dataset.url || null);
-  const row = { owner_id: SESSION.user.id, kind, display_name: name, photo_url: stPhotoUrl, photo_urls: stPhotoUrl ? [stPhotoUrl] : [], specialties: spec.length ? spec : (kind === 'masseur' ? ['aroma'] : ['nail']), languages: ['vi'], is_active: true, is_verified: true, application_status: 'approved', rating: 0, review_count: 0, base_district: '바딘' };
-  const { data: np, error } = await sb.from('providers').insert(row).select().single();
-  if (error) { alert('실패: ' + error.message); return; }
-  // 신규 직원에 서비스 자동 연결
-  if (np) {
-    const cat = kind === 'masseur' ? 'massage' : 'therapist_care';
-    const { data: svcs } = await sb.from('services').select('id').eq('category', cat);
-    if (svcs && svcs.length) await sb.from('provider_services').insert(svcs.map(s => ({ provider_id: np.id, service_id: s.id })));
-  }
-  document.getElementById('stName').value = ''; const _sp = document.getElementById('stPhoto'); if (_sp) { _sp.value = ''; _sp.dataset.url = ''; } const _spp = document.getElementById('stPhotoPrev'); if (_spp) _spp.innerHTML = ''; STAFF_SPEC_SEL = new Set(); syncStaffSpecChip();
-  alert('직원이 추가되었습니다.'); loadStaff();
-};
 
 // ── 계정 메뉴(역할별 이동) ──
 async function openMenu() {
@@ -2764,7 +2237,6 @@ async function openMenu() {
     SESSION ? ['로그아웃', 'logout'] : ['로그인 / 회원가입', 'login'],
     ['내 예약', 'myBookings'],
     ['홈 뷰티 등록 신청', 'applyForm'],
-    ['예약 관리 (파트너)', 'partnerBookings'],
   ];
   const ov = document.getElementById('menuOv') || (() => {
     const d = document.createElement('div'); d.id = 'menuOv';
@@ -2784,7 +2256,6 @@ async function openMenu() {
     if (a === 'logout') { await sb.auth.signOut(); await refreshSession(); return; }
     window.go(a);
     if (a === 'myBookings') loadMyBookings();
-    if (a === 'partnerBookings') loadPartnerBookings();
   });
 }
 window.openMenu = openMenu;
@@ -3013,20 +2484,6 @@ window.openServiceTypeSheet = function (screenId) {
   });
 };
 
-// 직원 전문 선택(한 줄 버튼 → 시트, 복수 선택)
-const STAFF_SPECS = [['aroma','아로마'],['swedish','스웨디시'],['thai','타이'],['deep_tissue','딥티슈'],['nail','네일'],['wax','왁싱'],['exfoliation','각질 제거']];
-let STAFF_SPEC_SEL = new Set();
-function syncStaffSpecChip() { const chip = document.getElementById('stSpecChip'); if (!chip) return; const names = STAFF_SPECS.filter(s => STAFF_SPEC_SEL.has(s[0])).map(s => s[1]); chip.textContent = (names.length ? names.join(', ') : '전문 선택') + ' ▾'; chip.classList.toggle('sel', names.length > 0); }
-window.openStaffSpecSheet = function () {
-  let ov = document.getElementById('stSpecSheet');
-  if (!ov) { ov = document.createElement('div'); ov.id = 'stSpecSheet'; ov.style.cssText = 'position:fixed;inset:0;z-index:210;background:rgba(20,25,28,.5);display:flex;align-items:flex-end;justify-content:center'; document.body.appendChild(ov); }
-  const rows = STAFF_SPECS.map(s => { const on = STAFF_SPEC_SEL.has(s[0]); return '<div class="svc-row' + (on ? ' on' : '') + '" data-v="' + s[0] + '">' + s[1] + (on ? '<span class="svc-check">✓</span>' : '') + '</div>'; }).join('');
-  ov.innerHTML = '<div class="svc-sheet"><div class="svc-grip"></div><div class="svc-title">전문 선택 (복수 가능)</div>' + rows + '<button class="cta" style="position:static;margin-top:10px" onclick="closeStaffSpecSheet()">완료</button></div>';
-  ov.style.display = 'flex';
-  ov.onclick = (e) => { if (e.target === ov) { ov.style.display = 'none'; syncStaffSpecChip(); } };
-  ov.querySelectorAll('.svc-row').forEach(r => r.onclick = () => { const v = r.dataset.v; if (STAFF_SPEC_SEL.has(v)) STAFF_SPEC_SEL.delete(v); else STAFF_SPEC_SEL.add(v); openStaffSpecSheet(); });
-};
-window.closeStaffSpecSheet = function () { const ov = document.getElementById('stSpecSheet'); if (ov) ov.style.display = 'none'; syncStaffSpecChip(); };
 
 window.openFilterSheet = function (screenId) {
   const f = FILTER_STATE[screenId];
@@ -3262,7 +2719,6 @@ async function load() {
     CACHE.providers = providers;
     fillList('thList', providers.filter(p => p.kind === 'masseur'));
     if (window.loadAiRecos) loadAiRecos();
-    try { const { data: fs } = await sb.from('app_settings').select('value').eq('key', 'fee').maybeSingle(); if (fs && fs.value) { FEE_RATE = fs.value.rate ?? FEE_RATE; DUE_DAYS = fs.value.due_days ?? DUE_DAYS; } } catch (e) {}
     fillList('therapy', providers.filter(p => p.kind === 'therapist'));
     const { data: services, error: e3 } = await sb.from('services').select('*');
     if (e3) throw e3; CACHE.services = services;
