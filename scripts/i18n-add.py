@@ -352,6 +352,12 @@ ADD.update({
 'AI 변환 실패 — 원본 사진을 유지합니다.': [
   'Chuyển đổi AI thất bại — giữ nguyên ảnh gốc.', 'AI conversion failed — keeping the original photo.',
   'AI转换失败 — 保留原图。', 'AI変換に失敗しました — 元の写真を維持します。'],
+'인증 테라피스트': ['Chuyên viên đã xác minh', 'Verified therapist', '认证理疗师', '認証セラピスト'],
+'예상 금액': ['Dự kiến', 'Estimated', '预计金额', 'お見積り'],
+'예) 롯데호텔 하노이': ['VD) Lotte Hotel Hanoi', 'e.g. Lotte Hotel Hanoi', '例) 河内乐天酒店', '例) ロッテホテルハノイ'],
+'숙소·건물 이름을 입력해 주세요.': [
+  'Vui lòng nhập tên khách sạn hoặc tòa nhà.', 'Please enter the hotel or building name.',
+  '请输入住宿或建筑名称。', '宿泊先・建物名を入力してください。'],
 '약': ['khoảng', 'approx.', '约', '約'],
 '원': ['₩', 'KRW', '韩元', '円'],
 '⚠ 예약': ['⚠ Đặt lịch', '⚠ Booking', '⚠ 预约', '⚠ 予約'],

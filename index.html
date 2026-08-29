@@ -711,7 +711,7 @@
       <div class="chip" onclick="pick(this)">자택·아파트</div>
     </div>
     <div class="label">호텔 검색 (Google Places)</div>
-    <input class="tx" type="text" value="롯데호텔 하노이 (Ba Dinh)">
+    <input class="tx" type="text" placeholder="예) 롯데호텔 하노이">
     <div class="hint">✓ 외부 방문자 등록 필요 호텔 — 프론트에 방문자 등록 후 입장 가능합니다.</div>
     <div class="label">객실 번호</div>
     <input class="tx" type="text" placeholder="예) 2104호">
@@ -722,18 +722,12 @@
       <option>테라피스트가 프론트에 문의 후 연락</option>
     </select>
     <div class="notice">🏨 호텔별 외부 방문자 정책이 다릅니다. 출입이 제한되는 호텔은 검색 단계에서 미리 안내됩니다.</div>
-    <button class="cta" onclick="go('confirm')">다음 — 예약 확인</button>
+    <button class="cta" onclick="fillConfirm();go('confirm')">다음 — 예약 확인</button>
   </div>
 
   <!-- 예약 확인 (후불) -->
   <div class="screen" id="confirm" data-title="예약 확인">
-    <div class="summary">
-      <b>아로마테라피 90분</b><br>
-      Linh N. ✓ 인증 테라피스트 · ★ 5.0<br>
-      6월 7일(일) 20:00<br>
-      롯데호텔 하노이 · 2104호 · 0.8 km<br>
-      <b>예상 금액 850,000₫</b> <span style="color:var(--muted)">(약 46,000원)</span>
-    </div>
+    <div class="summary" id="cfSummary"></div>
     <div class="label">결제 방식 — 후불 (서비스 완료 후 현장 결제)</div>
     <div class="card sel" onclick="pick(this)"><span class="t">현장 카드 결제</span><div class="d">테라피스트 휴대 단말로 Visa·Mastercard 결제</div></div>
     <div class="card" onclick="pick(this)"><span class="t">MoMo · ZaloPay QR</span><div class="d">서비스 완료 후 QR 스캔 결제</div></div>
@@ -1427,6 +1421,40 @@ function currentService() {
       || CACHE.services.find(s => s.massage_type === SEL.serviceType);
 }
 
+// 예약 확인 화면의 요약을 실제 선택값으로 채운다.
+// 이전에는 마크업의 예시 값이 그대로 남아, 다른 제공자·시간·호텔을 골라도 화면이 바뀌지 않았다.
+// 번역이 필요한 조각은 <span> 으로 감싼다 (translateTree 가 알아서 바꾼다)
+function fillConfirm() {
+  const box = document.getElementById('cfSummary');
+  if (!box) return;
+  const svc = currentService();
+  const p = SEL.provider;
+  const day = document.querySelector('#time .day.sel');
+  const dow = day ? (day.querySelector('.dow')?.textContent || '').trim() : '';
+  const dayNum = day ? day.textContent.replace(/\D/g, '') : '';
+  const time = document.getElementById('timeView')?.textContent || '';
+  const tx = document.querySelectorAll('#loc input.tx');
+  const hotel = (tx[0]?.value || '').trim();
+  const room = (tx[1]?.value || '').trim();
+  const price = svc?.price_vnd || 0;
+  const won = Math.round(price * 0.054).toLocaleString();
+
+  const rows = [];
+  rows.push('<b><span>' + (svc?.name || '') + '</span></b>');
+  if (p) {
+    rows.push(p.display_name
+      + (p.is_verified ? ' ✓ <span>인증 테라피스트</span>' : '')
+      + (p.rating ? ' · ★ ' + Number(p.rating).toFixed(1) : ''));
+  }
+  if (dayNum) rows.push('06/' + dayNum.padStart(2, '0') + ' (<span>' + dow + '</span>) ' + time);
+  const place = [hotel, room].filter(Boolean).join(' · ');
+  if (place) rows.push(place);
+  rows.push('<b><span>예상 금액</span> ' + price.toLocaleString() + '₫</b> '
+    + '<span style="color:var(--muted)">(<span>약</span> ' + won + '<span>원</span>)</span>');
+  box.innerHTML = rows.join('<br>');
+}
+window.fillConfirm = fillConfirm;
+
 // ── Auth ──
 let SESSION = null;
 async function refreshSession() {
@@ -1557,6 +1585,9 @@ window.openAuth = openAuth;
 // ── 예약 생성 ──
 async function submitBooking() {
   if (!SESSION) { openAuth(); return; }
+  // 호텔 입력란의 예시 기본값을 없앴으므로, 빈 채로 넘어가지 않도록 여기서 막는다
+  const _hotelEl = document.querySelector('#loc input.tx');
+  if (!(_hotelEl?.value || '').trim()) { alert('숙소·건물 이름을 입력해 주세요.'); window.go('loc'); _hotelEl?.focus(); return; }
   const svc = currentService();
   const day = document.querySelector('#time .day.sel')?.textContent.replace(/\D/g, '') || '7';
   const time = document.getElementById('timeView')?.textContent || '20:00';
@@ -2363,6 +2394,7 @@ const DICT = {
   '짜빈': ['Trà Vinh','Tra Vinh','茶荣','チャーヴィン'], '뚜옌꽝': ['Tuyên Quang','Tuyen Quang','宣光','トゥエンクアン'], '빈롱': ['Vĩnh Long','Vinh Long','永隆','ヴィンロン'], '옌바이': ['Yên Bái','Yen Bai','安沛','イエンバイ'],
   '둘 다 하시면 마사지사·홈뷰티 모두 선택하세요. 각각으로 등록됩니다.': ['Làm cả hai thì chọn cả Massage và Làm đẹp — sẽ đăng ký riêng từng loại.','If you do both, select Masseur and Home Beauty — each is registered separately.','两者都做请都选，将分别登记。','両方する場合は両方選択してください。別々に登録されます。'],
   '예약을 완료하시면 담당 테라피스트와 채팅할 수 있습니다.\n서비스·시간·장소를 선택해 예약을 먼저 진행해 주세요.': ['Sau khi hoàn tất đặt lịch, bạn có thể nhắn tin với chuyên viên phụ trách.\nHãy chọn dịch vụ, thời gian và địa điểm để đặt lịch trước.', 'You can chat with your therapist once your booking is complete.\nPlease choose a service, time and place to book first.', '完成预约后即可与负责的理疗师聊天。\n请先选择服务、时间和地点完成预约。', 'ご予約が完了すると担当セラピストとチャットできます。\nサービス・時間・場所を選んで先にご予約ください。'],
+  '예약을 완료하시면 담당 테라피스트와 채팅할 수 있습니다.\n서비스·시간·장소를 선택해 예약을 먼저 진행해 주세요.': ['Sau khi hoàn tất đặt lịch, bạn có thể nhắn tin với chuyên viên phụ trách.\nHãy chọn dịch vụ, thời gian và địa điểm để đặt lịch trước.', 'You can chat with your therapist once your booking is complete.\nPlease choose a service, time and place to book first.', '完成预约后即可与负责的理疗师聊天。\n请先选择服务、时间和地点完成预约。', 'ご予約が完了すると担当セラピストとチャットできます。\nサービス・時間・場所を選んで先にご予約ください。'],
   '60분': ['60 phút', '60 min', '60分钟', '60分'],
   '90분': ['90 phút', '90 min', '90分钟', '90分'],
   '120분': ['120 phút', '120 min', '120分钟', '120分'],
@@ -2610,6 +2642,10 @@ const DICT = {
   '결제 처리 실패:': ['Xử lý thanh toán thất bại:', 'Payment failed:', '支付处理失败：', '決済処理に失敗しました:'],
   '신고 사유를 입력하세요': ['Nhập lý do báo cáo', 'Enter a reason for the report', '请输入举报理由', '通報理由を入力してください'],
   'AI 변환 실패 — 원본 사진을 유지합니다.': ['Chuyển đổi AI thất bại — giữ nguyên ảnh gốc.', 'AI conversion failed — keeping the original photo.', 'AI转换失败 — 保留原图。', 'AI変換に失敗しました — 元の写真を維持します。'],
+  '인증 테라피스트': ['Chuyên viên đã xác minh', 'Verified therapist', '认证理疗师', '認証セラピスト'],
+  '예상 금액': ['Dự kiến', 'Estimated', '预计金额', 'お見積り'],
+  '예) 롯데호텔 하노이': ['VD) Lotte Hotel Hanoi', 'e.g. Lotte Hotel Hanoi', '例) 河内乐天酒店', '例) ロッテホテルハノイ'],
+  '숙소·건물 이름을 입력해 주세요.': ['Vui lòng nhập tên khách sạn hoặc tòa nhà.', 'Please enter the hotel or building name.', '请输入住宿或建筑名称。', '宿泊先・建物名を入力してください。'],
   '약': ['khoảng', 'approx.', '约', '約'],
   '원': ['₩', 'KRW', '韩元', '円'],
   '⚠ 예약': ['⚠ Đặt lịch', '⚠ Booking', '⚠ 预约', '⚠ 予約'],
