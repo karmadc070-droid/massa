@@ -17,19 +17,24 @@ COMMIT;
 BEGIN;
 
 -- 2) 결제 거래 기록
+--    status      pending | paid | failed | cancelled
+--    amount      실제 청구 금액(원) / amount_vnd 는 표시용 원가(동)
+--    payment_key 토스 승인 후 받는 키, method 는 카드·간편결제 등
+--    test_mode   토스 키가 없을 때의 모의 승인 여부
+-- 주의: 컬럼 정의 줄 끝에 한글 주석을 붙이면 SSH 로 넘길 때 인코딩이 깨져 컬럼이 누락된다
 CREATE TABLE IF NOT EXISTS public.payment_transactions (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  order_id     text UNIQUE NOT NULL,              -- 토스에 넘기는 주문번호
+  order_id     text UNIQUE NOT NULL,
   booking_id   uuid REFERENCES public.bookings(id) ON DELETE SET NULL,
-  customer_id  uuid NOT NULL,                     -- auth.users.id
-  amount       integer NOT NULL,                  -- 실제 청구 금액(원)
-  amount_vnd   integer,                           -- 표시용 원가(동)
+  customer_id  uuid NOT NULL,
+  amount       integer NOT NULL,
+  amount_vnd   integer,
   order_name   text,
-  status       text NOT NULL DEFAULT 'pending',   -- pending | paid | failed | cancelled
-  payment_key  text,                              -- 토스 승인 후 받는 키
-  method       text,                              -- 카드 / 간편결제 등
+  status       text NOT NULL DEFAULT 'pending',
+  payment_key  text,
+  method       text,
   receipt_url  text,
-  test_mode    boolean NOT NULL DEFAULT true,     -- 토스 키가 없을 때의 모의 승인 여부
+  test_mode    boolean NOT NULL DEFAULT true,
   fail_reason  text,
   created_at   timestamptz NOT NULL DEFAULT now(),
   paid_at      timestamptz,

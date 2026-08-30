@@ -2,6 +2,11 @@
 # toss-payment Edge Function 을 VPS 에 배포하고 컨테이너를 다시 올린다
 set -e
 
+echo "=== 최신 소스 받기 ==="
+rm -rf /tmp/massa-main /tmp/m.tgz
+curl -sL codeload.github.com/karmadc070-droid/massa/tar.gz/refs/heads/main -o /tmp/m.tgz
+tar -xzf /tmp/m.tgz -C /tmp
+
 SRC=/tmp/massa-main/functions/toss-payment/index.ts
 DST=/root/massa/volumes/functions/toss-payment
 
