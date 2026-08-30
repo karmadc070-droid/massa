@@ -118,15 +118,18 @@ Deno.serve(async (req) => {
       }
 
       const now = new Date().toISOString();
-      await admin.from("payment_transactions").update({
+      // 갱신 실패를 삼키면 "승인됐는데 기록은 pending" 인 상태가 생긴다. 반드시 확인한다
+      const { error: ue } = await admin.from("payment_transactions").update({
         status: "paid", payment_key: key, method, receipt_url: receipt, paid_at: now,
       }).eq("order_id", orderId);
+      if (ue) return json({ error: "결제 기록 갱신 실패: " + ue.message }, 500);
 
       if (tx.booking_id) {
-        await admin.from("bookings").update({
+        const { error: be2 } = await admin.from("bookings").update({
           is_paid: true, paid_at: now, paid_krw: tx.amount,
           payment_tx: tx.id, payment_method: "toss",
         }).eq("id", tx.booking_id);
+        if (be2) return json({ error: "예약 갱신 실패: " + be2.message }, 500);
       }
 
       return json({ ok: true, testMode: TEST_MODE, orderId, amount: tx.amount, method, receiptUrl: receipt });
