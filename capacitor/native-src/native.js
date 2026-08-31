@@ -2,6 +2,8 @@
 import { Capacitor } from "@capacitor/core";
 import { PushNotifications } from "@capacitor/push-notifications";
 import { Geolocation } from "@capacitor/geolocation";
+import { Browser } from "@capacitor/browser";
+import { App } from "@capacitor/app";
 
 // iOS WKWebView는 navigator.geolocation 을 기본 제공하지 않는다.
 // index.html은 navigator.geolocation 만 쓰므로, 플러그인으로 같은 모양의 API를 덮어써서 코드 변경 없이 동작시킨다.
@@ -42,15 +44,44 @@ async function registerPush(onToken, onNotification) {
   return true;
 }
 
+// 소셜 로그인·결제창을 앱 안 브라우저(SFSafariViewController)로 연다.
+// 사파리로 나가버리면 앱으로 돌아올 수 없고 App Store 가이드라인 4 소지도 생긴다.
+async function openExternal(url) {
+  await Browser.open({ url, presentationStyle: "popover" });
+}
+
+// massa:// 로 되돌아왔을 때를 처리한다.
+// OAuth 는 토큰이 # 뒤에, 결제는 ? 뒤에 붙어 온다.
+function handleAppUrl(url) {
+  try {
+    Browser.close().catch(() => {});
+    const u = new URL(url);
+    if (u.hash && u.hash.includes("access_token")) {
+      // 로그인 — 해시를 그대로 웹앱에 넘기면 supabase-js 가 세션을 세운다
+      if (window.onNativeAuthReturn) window.onNativeAuthReturn(u.hash);
+      return;
+    }
+    if (u.searchParams.get("orderId") || u.searchParams.get("code")) {
+      if (window.onNativePayReturn) window.onNativePayReturn(u.search);
+      return;
+    }
+    if (window.onNativeAuthReturn && u.search.includes("code=")) window.onNativeAuthReturn(u.search);
+  } catch (e) { console.error("appUrlOpen 처리 실패", e); }
+}
+
 let geoShimmed = false;
 if (Capacitor.isNativePlatform()) {
   geoShimmed = shimGeolocation();
   if (!geoShimmed) console.error("navigator.geolocation 대체 실패 — 위치 기능이 동작하지 않을 수 있음");
+  App.addListener("appUrlOpen", (e) => handleAppUrl(e.url));
 }
 
+window.IS_NATIVE_APP = Capacitor.isNativePlatform();
+window.openExternal = openExternal;
 window.MassaNative = {
   platform: Capacitor.getPlatform(),
   isNative: Capacitor.isNativePlatform(),
   geoShimmed,
   registerPush,
+  openExternal,
 };

@@ -61,6 +61,19 @@ workflows:
           /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" "$PLIST" || true
           echo "----- Info.plist 확인 -----"
           /usr/libexec/PlistBuddy -c "Print :NSLocationWhenInUseUsageDescription" "$PLIST"
+      # 소셜 로그인·결제창이 앱으로 돌아올 때 쓰는 전용 주소(massa://).
+      # index.html 의 APP_SCHEME 과 반드시 같아야 한다.
+      - name: URL 스킴 등록 (massa://)
+        script: |
+          PLIST=ios/App/App/Info.plist
+          /usr/libexec/PlistBuddy -c "Delete :CFBundleURLTypes" "$PLIST" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes array" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0 dict" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0:CFBundleURLName string app.massa.hanoi" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0:CFBundleURLSchemes array" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0:CFBundleURLSchemes:0 string massa" "$PLIST"
+          echo "----- URL 스킴 확인 -----"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleURLTypes" "$PLIST"
       # 푸시(APNs)는 entitlements 가 있어야 동작한다. cap add ios 가 만들어주지 않으므로 직접 넣는다.
       - name: entitlements 추가 (푸시)
         script: |

@@ -1148,6 +1148,8 @@ const SUPABASE_KEY = 'eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJyb2xlIjogImFub
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 // 비밀번호 재설정 메일의 링크가 돌아올 주소. 앱(capacitor://)에서는 열 수 없으므로 웹 주소를 쓴다
 const RESET_REDIRECT = 'https://massa.moahagwon.com/reset.html';
+// 앱으로 되돌아올 때 쓰는 전용 주소. iOS·안드로이드에 같은 값으로 등록해야 한다
+const APP_SCHEME = 'massa';
 
 const TYPE_KO = { aroma: '아로마', swedish: '스웨디시', thai: '타이', deep_tissue: '딥티슈', nail: '네일', wax: '왁싱', exfoliation: '각질 제거' };
 const STATUS_KO = { requested: '요청됨', confirmed: '확정', on_the_way: '이동 중', in_progress: '진행 중', completed: '완료', cancelled: '취소됨', no_show: '노쇼' };
@@ -1526,8 +1528,87 @@ async function refreshNotiDot() {
 }
 window.refreshNotiDot = refreshNotiDot;
 
+// ── 소셜 로그인 ──
+// 서버(/auth/v1/settings)가 켜졌다고 알려준 provider 만 버튼을 만든다.
+// 키 없이 버튼만 띄우면 눌러도 동작하지 않아 Apple 4.0 리젝 사유가 된다 — 실제로 한 번 겪었다.
+let SOCIAL_ON = null;
+async function loadSocialProviders() {
+  if (SOCIAL_ON) return SOCIAL_ON;
+  try {
+    const r = await fetch(SUPABASE_URL + '/auth/v1/settings', { headers: { apikey: SUPABASE_KEY } });
+    const j = await r.json();
+    SOCIAL_ON = j.external || {};
+  } catch (e) { SOCIAL_ON = {}; }
+  return SOCIAL_ON;
+}
+
+const SOCIAL_META = {
+  google: { label: 'Google로 계속하기', bg: '#fff', fg: '#3c4043', bd: '#DADCE0',
+    icon: '<svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.6 2.4 30.1 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.2 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.4-.8-2.9-.8-4.7s.3-3.3.8-4.7l-7.9-6.1C1 16.3 0 20 0 24s1 7.7 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.1 0 11.3-2 15.1-5.4l-7.6-5.9c-2.1 1.4-4.8 2.3-7.5 2.3-6.3 0-11.6-3.7-13.5-9.3l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>' },
+  kakao: { label: '카카오로 계속하기', bg: '#FEE500', fg: '#191600', bd: '#FEE500',
+    icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="#191600"><path d="M12 3C6.9 3 2.8 6.2 2.8 10.2c0 2.6 1.7 4.8 4.3 6.1l-1.1 4 4.2-2.8c.6.1 1.2.1 1.8.1 5.1 0 9.2-3.2 9.2-7.4S17.1 3 12 3z"/></svg>' },
+  apple: { label: 'Apple로 계속하기', bg: '#000', fg: '#fff', bd: '#000',
+    icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M16.4 12.8c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9-.7 0-1.8-.9-3-.8-1.5 0-2.9.9-3.7 2.3-1.6 2.8-.4 6.9 1.1 9.2.8 1.1 1.7 2.3 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.2 0 2-1.1 2.8-2.2.9-1.3 1.2-2.5 1.3-2.6-.1 0-2.5-1-2.5-3.8zM14.2 5.5c.6-.8 1.1-1.9 1-3-.9 0-2.1.6-2.8 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2.1-.5 2.8-1.3z"/></svg>' },
+};
+
+async function renderSocialButtons() {
+  const box = document.getElementById('auSocial');
+  if (!box) return;
+  const on = await loadSocialProviders();
+  const list = ['google', 'kakao', 'apple'].filter(p => on[p]);
+  if (!list.length) { box.innerHTML = ''; return; }   // 켜진 게 없으면 아무것도 안 보인다
+  box.innerHTML = '<div style="display:flex;align-items:center;gap:8px;margin:12px 0 10px">'
+    + '<div style="flex:1;height:1px;background:#E2E8EA"></div>'
+    + '<span style="font-size:11px;color:#9AA8AE">또는</span>'
+    + '<div style="flex:1;height:1px;background:#E2E8EA"></div></div>'
+    + list.map(p => {
+        const m = SOCIAL_META[p];
+        return '<button data-prov="' + p + '" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;'
+          + 'background:' + m.bg + ';color:' + m.fg + ';border:1px solid ' + m.bd + ';border-radius:12px;'
+          + 'padding:12px;font-size:14px;font-weight:600;margin-bottom:8px;cursor:pointer">'
+          + m.icon + '<span>' + m.label + '</span></button>';
+      }).join('');
+  box.querySelectorAll('[data-prov]').forEach(b => b.onclick = () => socialLogin(b.dataset.prov));
+}
+
+// 네이티브에서 massa://auth 로 돌아왔을 때 세션을 세운다.
+// 앱은 https 주소가 없어 supabase-js 의 자동 감지가 동작하지 않으므로 직접 넘겨받는다
+window.onNativeAuthReturn = async (fragment) => {
+  try {
+    const p = new URLSearchParams(String(fragment).replace(/^[#?]/, ''));
+    const access_token = p.get('access_token'), refresh_token = p.get('refresh_token');
+    if (access_token && refresh_token) {
+      const { error } = await sb.auth.setSession({ access_token, refresh_token });
+      if (error) throw error;
+    } else if (p.get('code')) {
+      const { error } = await sb.auth.exchangeCodeForSession(p.get('code'));
+      if (error) throw error;
+    } else {
+      alert('로그인 정보를 받지 못했습니다.'); return;
+    }
+    await refreshSession();
+    const ov = document.getElementById('authOv'); if (ov) ov.style.display = 'none';
+    window.go('account'); if (window.loadAccount) loadAccount();
+  } catch (e) {
+    alert('로그인에 실패했습니다: ' + (e.message || e));
+  }
+};
+
+async function socialLogin(provider) {
+  const msg = document.getElementById('auMsg');
+  if (msg) { msg.style.color = '#B23A5B'; msg.textContent = T('로그인 창을 여는 중…'); }
+  // 네이티브 앱은 브라우저로 나갔다 앱 스킴으로 돌아온다. 웹은 그 자리에서 이동한다
+  const redirectTo = window.IS_NATIVE_APP ? (APP_SCHEME + '://auth') : (location.origin + location.pathname);
+  const { data, error } = await sb.auth.signInWithOAuth({
+    provider,
+    options: { redirectTo, skipBrowserRedirect: !!window.IS_NATIVE_APP },
+  });
+  if (error) { if (msg) msg.textContent = T('로그인에 실패했습니다: ') + error.message; return; }
+  if (window.IS_NATIVE_APP && data?.url && window.openExternal) window.openExternal(data.url);
+}
+
 function openAuth() {
-  if (document.getElementById('authOv')) { document.getElementById('authOv').style.display = 'flex'; return; }
+  if (document.getElementById('authOv')) { document.getElementById('authOv').style.display = 'flex'; renderSocialButtons(); return; }
   const ov = document.createElement('div');
   ov.id = 'authOv';
   ov.style.cssText = 'position:fixed;inset:0;z-index:200;background:rgba(20,25,28,.55);display:flex;align-items:center;justify-content:center';
@@ -1539,9 +1620,11 @@ function openAuth() {
     <div id="auMsg" style="font-size:12px;color:#B23A5B;min-height:18px;margin:8px 0"></div>
     <button id="auSignup" style="width:100%;background:#1F4E5F;color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:bold;margin-bottom:8px">회원가입 / 로그인</button>
     <button id="auReset" style="width:100%;background:none;color:#7A8C94;border:none;padding:6px;font-size:12px;text-decoration:underline;margin-bottom:4px">비밀번호를 잊으셨나요?</button>
+    <div id="auSocial"></div>
     <button id="auClose" style="width:100%;background:#F4F6F7;color:#556;border:none;border-radius:12px;padding:11px;font-size:13px">닫기</button>
   </div>`;
   document.body.appendChild(ov);
+  renderSocialButtons();
   document.getElementById('auClose').onclick = () => ov.style.display = 'none';
   document.getElementById('auReset').onclick = async () => {
     const email = document.getElementById('auEmail').value.trim();
