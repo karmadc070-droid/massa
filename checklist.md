@@ -139,14 +139,21 @@ partnerBookings · partnerRevenue · partnerSchedule · partnerEvents · partner
 - [x] G1-5. 키 발급 안내서 작성 → `소셜로그인_키발급_안내.md`
 - verify: 키 없는 지금 → 버튼 **0개**. settings 응답을 켜진 것으로 바꾸면 → **3개**(구글·카카오·애플) 정상 표시
 
-### G2. 키 발급 — 사장님
+### G2. 키 발급
 
-> ⚠️ **평소 Chrome 창에서는 두 콘솔이 모두 막힌다.** 확장 프로그램(DeepSeek AI, 1688-aibuy) 간섭이다.
-> 카카오는 카테고리를 고르는 순간 페이지가 오류 화면으로 날아가고(클릭·키보드 4회 재현),
-> 구글 클라우드는 자동화 클릭 자체가 거부된다. **Ctrl+Shift+N 시크릿 창**에서 진행할 것.
+> 확장 프로그램(DeepSeek AI, 1688-aibuy) 때문에 **실제 마우스 클릭이 카카오 모달을 죽인다.**
+> `javascript_tool` 로 pointer/mouse 이벤트를 직접 디스패치하면 통과한다. 구글 콘솔은 배율이 튀므로 ref 사용.
 
-- [ ] G2-1. 구글 — Cloud Console OAuth 클라이언트 ID + 시크릿
-- [ ] G2-2. 카카오 — REST API 키 + Client Secret (동의항목에 이메일 필수 포함)
+- [x] G2-1. 구글 — 프로젝트 `Massa`(massa-507208) 에 OAuth 구성 + 웹 클라이언트 `massa web` 생성 (2026-08-30)
+  - 대상 **외부**, 게시 상태 **프로덕션** (테스트 모드면 등록한 계정만 로그인된다)
+  - 리디렉션 `https://api.moahagwon.com/auth/v1/callback`
+  - 브랜딩: 홈페이지·개인정보처리방침·약관 URL 등록, 승인된 도메인 `moahagwon.com`
+  - ⚠️ 클라이언트 보안 비밀번호는 **생성 직후 1회만** 보인다. 사장님이 복사함
+- [x] G2-2. 카카오 — 앱 `massa` (ID 1562938) 생성 (2026-08-30)
+  - 카테고리 뷰티 / 회사명 massa / 대표 도메인 `https://massa.moahagwon.com`
+  - 카카오 로그인 **ON**, Redirect URI 등록, 클라이언트 시크릿 **ON**(기본값)
+  - 동의항목 닉네임 **필수 동의**
+  - ⚠️ **이메일은 `권한 없음`** — 비즈 앱 전환(사업자 정보 또는 본인인증 + 앱 아이콘 등록)이 있어야 열린다
 - [ ] G2-3. 애플 — Service ID + Key(.p8)
 - [x] G2-4. 애플 시크릿 JWT 생성 스크립트 `scripts/vps-apple-secret.sh` — .p8 을 VPS 안에서만 다루고 끝나면 삭제
   - verify: 테스트 EC 키로 서명 생성 → 공개키 검증 통과, 수명 182.6일(애플 상한 6개월 이내), sig 64바이트
