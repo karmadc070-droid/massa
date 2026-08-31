@@ -152,9 +152,11 @@ partnerBookings · partnerRevenue · partnerSchedule · partnerEvents · partner
 - [x] G2-2. 카카오 — 앱 `massa` (ID 1562938) 생성 (2026-08-30)
   - 카테고리 뷰티 / 회사명 massa / 대표 도메인 `https://massa.moahagwon.com`
   - 카카오 로그인 **ON**, Redirect URI 등록, 클라이언트 시크릿 **ON**(기본값)
-  - 동의항목 닉네임 **필수 동의**
-  - ⚠️ **이메일은 `권한 없음`** — 비즈 앱 전환(사업자 정보 또는 본인인증 + 앱 아이콘 등록)이 있어야 열린다
+  - 앱 아이콘 등록 (저장소 `icons/icon-192.png`) → **비즈 앱 전환의 선행 조건**이었다
+  - 사업자 정보 등록 → **비즈 앱 전환 완료** (사장님이 직접 입력)
+  - 동의항목 **닉네임 필수 동의**, **이메일 필수 동의 + 수집** (비즈 앱 전에는 `권한 없음`이라 못 켰다)
 - [ ] G2-3. 애플 — Service ID + Key(.p8)
+  - ⚠️ developer.apple.com 은 App Store Connect 와 **세션이 따로**다. 다시 로그인해야 한다
 - [x] G2-4. 애플 시크릿 JWT 생성 스크립트 `scripts/vps-apple-secret.sh` — .p8 을 VPS 안에서만 다루고 끝나면 삭제
   - verify: 테스트 EC 키로 서명 생성 → 공개키 검증 통과, 수명 182.6일(애플 상한 6개월 이내), sig 64바이트
 
