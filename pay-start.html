@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<!-- 토스 결제창을 띄우는 페이지. 앱은 이 주소를 앱 내 브라우저로 열고, 웹은 그냥 이동한다 -->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>mㅏssㅏ</title>
+<script src="https://js.tosspayments.com/v1/payment"></script>
+<style>
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+         background:#F4F6F7; display:flex; align-items:center; justify-content:center; min-height:100vh; padding:16px }
+  .card { width:100%; max-width:340px; background:#fff; border-radius:18px; padding:24px; text-align:center }
+  h1 { font-size:17px; color:#1F4E5F; margin:0 0 6px }
+  p { font-size:13px; color:#7A8C94; margin:0; word-break:break-word }
+  .err h1 { color:#B23A5B }
+</style>
+</head>
+<body>
+<div class="card" id="card"><h1 id="t">결제창을 여는 중…</h1><p id="d"></p></div>
+
+<script>
+const LANGS = ['ko', 'vi', 'en', 'zh', 'ja'];
+const OPENING = ['결제창을 여는 중…', 'Đang mở cổng thanh toán…', 'Opening the payment window…', '正在打开支付窗口…', '決済画面を開いています…'];
+const FAILED  = ['결제창을 열지 못했습니다', 'Không mở được cổng thanh toán', 'Could not open the payment window', '无法打开支付窗口', '決済画面を開けませんでした'];
+
+const q = new URLSearchParams(location.search);
+const li = Math.max(0, LANGS.indexOf(q.get('lang') || 'ko'));
+document.getElementById('t').textContent = OPENING[li];
+
+function fail(m) {
+  document.getElementById('card').className = 'card err';
+  document.getElementById('t').textContent = FAILED[li];
+  document.getElementById('d').textContent = m || '';
+}
+
+const clientKey = q.get('clientKey');
+const orderId   = q.get('orderId');
+const amount    = Number(q.get('amount'));
+const orderName = q.get('orderName') || 'massa';
+const native    = q.get('native') === '1';
+const lang      = LANGS[li];
+
+if (!clientKey || !orderId || !amount) {
+  fail('주문 정보가 없습니다.');
+} else {
+  // 승인 결과는 pay-return.html 이 받는다. 앱에서 시작했으면 native=1 을 달아
+  // 그 페이지가 massa:// 스킴으로 되던지도록 한다.
+  const back = location.origin + '/pay-return.html?lang=' + lang + (native ? '&native=1' : '');
+  TossPayments(clientKey)
+    .requestPayment('카드', {
+      amount, orderId, orderName,
+      successUrl: back,
+      failUrl: back,
+    })
+    .catch((e) => fail(e && e.message ? e.message : String(e)));
+}
+</script>
+</body>
+</html>

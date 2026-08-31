@@ -11,14 +11,19 @@ curl -s --location codeload.github.com/karmadc070-droid/massa/tar.gz/refs/heads/
 tar -xzf "$TMP/m.tgz" -C "$TMP"
 cp "$TMP"/massa-main/index.html "$DIR/index.html"
 cp "$TMP"/massa-main/reset.html "$DIR/reset.html"
+# 결제창을 여는 페이지와 돌아오는 중계 페이지. 앱은 이 두 주소를 앱 내 브라우저로 연다
+cp "$TMP"/massa-main/pay-start.html "$DIR/pay-start.html"
+cp "$TMP"/massa-main/pay-return.html "$DIR/pay-return.html"
 for f in masaage1_b.png wag1_b.png banner1.png banner2.png banner3.png; do
   cp "$TMP"/massa-main/"$f" "$DIR/$f" 2>/dev/null || true
 done
 rm -rf "$TMP"
 ls -la "$DIR"
 
-# 재설정 페이지가 제대로 받아졌는지 확인한다
-grep -q "updateUser" "$DIR/reset.html" || { echo "reset.html 내용이 이상하다 — 중단"; exit 1; }
+# 각 페이지가 제대로 받아졌는지 확인한다
+grep -q "updateUser" "$DIR/reset.html"        || { echo "reset.html 내용이 이상하다 — 중단"; exit 1; }
+grep -q "requestPayment" "$DIR/pay-start.html" || { echo "pay-start.html 내용이 이상하다 — 중단"; exit 1; }
+grep -q "toss-payment" "$DIR/pay-return.html"  || { echo "pay-return.html 내용이 이상하다 — 중단"; exit 1; }
 
 echo "=== Caddy 설정 ==="
 F=/root/Caddyfile
@@ -54,4 +59,6 @@ echo "=== 인증서 발급 대기 ==="
 sleep 25
 curl -s -o /dev/null -w "web   : %{http_code}\n" https://massa.moahagwon.com/ || echo "실패"
 curl -s -o /dev/null -w "reset : %{http_code}\n" https://massa.moahagwon.com/reset.html || echo "실패"
+curl -s -o /dev/null -w "pay-s : %{http_code}\n" https://massa.moahagwon.com/pay-start.html || echo "실패"
+curl -s -o /dev/null -w "pay-r : %{http_code}\n" https://massa.moahagwon.com/pay-return.html || echo "실패"
 echo "=== WEB DEPLOY DONE ==="

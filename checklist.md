@@ -140,15 +140,44 @@ partnerBookings · partnerRevenue · partnerSchedule · partnerEvents · partner
 - verify: 키 없는 지금 → 버튼 **0개**. settings 응답을 켜진 것으로 바꾸면 → **3개**(구글·카카오·애플) 정상 표시
 
 ### G2. 키 발급 — 사장님
+
+> ⚠️ **평소 Chrome 창에서는 두 콘솔이 모두 막힌다.** 확장 프로그램(DeepSeek AI, 1688-aibuy) 간섭이다.
+> 카카오는 카테고리를 고르는 순간 페이지가 오류 화면으로 날아가고(클릭·키보드 4회 재현),
+> 구글 클라우드는 자동화 클릭 자체가 거부된다. **Ctrl+Shift+N 시크릿 창**에서 진행할 것.
+
 - [ ] G2-1. 구글 — Cloud Console OAuth 클라이언트 ID + 시크릿
 - [ ] G2-2. 카카오 — REST API 키 + Client Secret (동의항목에 이메일 필수 포함)
-- [ ] G2-3. 애플 — Service ID + Key(.p8). **시크릿 JWT 생성은 내가 처리**. 6개월마다 갱신 필요
+- [ ] G2-3. 애플 — Service ID + Key(.p8)
+- [x] G2-4. 애플 시크릿 JWT 생성 스크립트 `scripts/vps-apple-secret.sh` — .p8 을 VPS 안에서만 다루고 끝나면 삭제
+  - verify: 테스트 EC 키로 서명 생성 → 공개키 검증 통과, 수명 182.6일(애플 상한 6개월 이내), sig 64바이트
 
 ### G3. 키 적용 후
 - [ ] G3-1. `.env` 채우고 auth 재기동 → settings 에 true 확인
 - [ ] G3-2. 웹에서 구글·카카오 실제 로그인 검증
 - [ ] G3-3. iOS 빌드 올려 실기기에서 `massa://` 복귀 검증
 - [ ] G3-4. 애플 로그인까지 켠 뒤 심사 제출 (**애플 없이 구글·카카오만 켜서 iOS 제출하면 4.8 리젝**)
+
+## H. 토스 선불 결제
+
+방침: 후불(현장 결제)은 그대로 두고 **선불 카드 결제를 선택지로 추가**한다. 상세는 `결제-연동-계획.md`.
+
+- [x] H1(P1). DB — `payment_transactions` 16컬럼, `payment_method` enum 에 `toss`, RLS 2개
+- [x] H2(P2). Edge Function `toss-payment` — create / confirm / cancel. 배포·8항목 검증 완료
+- [x] H3(P3). 웹 중계 페이지 2개 (2026-08-30)
+  - `pay-start.html` — 토스 SDK 로 결제창을 연다. 5개 언어 안내문
+  - `pay-return.html` — 앱발 결제(`native=1`)는 `massa://pay` 로 되던지고, 웹은 그 자리에서 승인
+  - `vps-deploy-web.sh` 에 두 파일 배포·내용검증·HTTP 확인 추가
+- [x] H4(P4). 앱 복귀 처리
+  - `startTossPayment()` / `onNativePayReturn()` 추가
+  - **native.js 라우팅 버그 수정** — OAuth 실패와 결제 실패가 둘 다 `code=` 를 달고 와서
+    파라미터로 갈라내던 기존 코드는 구글 PKCE 로그인을 결제 처리로 보냈다. 호스트(`auth`/`pay`)로 갈랐다
+  - verify: 5개 URL 케이스(결제 성공·결제 실패·PKCE 코드·토큰·OAuth 거부) 전부 올바른 쪽으로 라우팅
+- [x] H5(P5). 결제 시트에 `🔒 카드로 미리 결제` 추가. `TOSS_ENABLED=false` 로 **지금은 숨김**
+  - 쿠폰은 결제 전에 `discount_vnd` 로 예약에 먼저 반영한다. 서버가 `amount_vnd - discount_vnd` 로 다시 계산하므로 화면 금액과 일치한다
+- [ ] H6(P6). 토스 가입 → 테스트 키 입력 → `TOSS_ENABLED=true` → 전 구간 검증 → 라이브 키
+
+> 결제 시트의 기존 `카드`·`QR`·`은행 이체` 는 **PG 연결 없이 `is_paid=true` 로 찍는 자리표시자**다.
+> 이번 작업에서 건드리지 않았다. 토스가 살아나면 이것들을 어떻게 할지 따로 정해야 한다.
 
 ### 주의
 - Zalo 는 이번 범위에서 제외 (계정 본인인증 후 별도 진행)

@@ -1150,6 +1150,11 @@ const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 const RESET_REDIRECT = 'https://massa.moahagwon.com/reset.html';
 // 앱으로 되돌아올 때 쓰는 전용 주소. iOS·안드로이드에 같은 값으로 등록해야 한다
 const APP_SCHEME = 'massa';
+// 결제창을 여는 페이지. 앱(capacitor://)에서는 토스 SDK 를 직접 못 띄우므로 웹 주소를 앱 내 브라우저로 연다
+const PAY_START = 'https://massa.moahagwon.com/pay-start.html';
+// 토스 키가 VPS 에 들어가기 전까지는 결제 수단으로 노출하지 않는다.
+// 눌러도 안 되는 버튼을 두면 App Store 4.0 리젝 사유가 된다 (소셜 로그인에서 한 번 겪었다)
+const TOSS_ENABLED = false;
 
 const TYPE_KO = { aroma: '아로마', swedish: '스웨디시', thai: '타이', deep_tissue: '딥티슈', nail: '네일', wax: '왁싱', exfoliation: '각질 제거' };
 const STATUS_KO = { requested: '요청됨', confirmed: '확정', on_the_way: '이동 중', in_progress: '진행 중', completed: '완료', cancelled: '취소됨', no_show: '노쇼' };
@@ -1766,6 +1771,48 @@ async function loadMyBookings() {
   }).join('') || '';
 }
 window.loadMyBookings = loadMyBookings;
+
+// ── 토스 선불 결제 ────────────────────────────────────────────
+// 금액은 서버가 bookings 에서 직접 읽어 계산한다. 여기서 보내는 값은 표시용일 뿐이다.
+async function startTossPayment(bookingId, couponId, discountVnd) {
+  // 쿠폰을 먼저 예약에 반영해야 서버가 계산한 금액과 화면 금액이 같아진다
+  if (couponId) {
+    const { error } = await sb.from('bookings')
+      .update({ coupon_id: couponId, discount_vnd: discountVnd }).eq('id', bookingId);
+    if (error) { alert('쿠폰 적용에 실패했습니다: ' + error.message); return false; }
+  }
+  const { data, error } = await sb.functions.invoke('toss-payment', {
+    body: { action: 'create', booking_id: bookingId },
+  });
+  if (error || data?.error) { alert('결제 준비에 실패했습니다: ' + (data?.error || error.message)); return false; }
+
+  const url = PAY_START + '?' + new URLSearchParams({
+    clientKey: data.clientKey, orderId: data.orderId,
+    amount: String(data.amount), orderName: data.orderName,
+    lang: LANG, native: window.IS_NATIVE_APP ? '1' : '0',
+  });
+  if (window.IS_NATIVE_APP && window.openExternal) window.openExternal(url);
+  else location.href = url;
+  return true;
+}
+
+// 앱 내 브라우저에서 massa://pay 로 돌아왔을 때 승인을 끝낸다
+window.onNativePayReturn = async (search) => {
+  const p = new URLSearchParams(String(search).replace(/^\?/, ''));
+  const orderId = p.get('orderId');
+  if (p.get('code') || !orderId || !p.get('paymentKey')) {
+    alert('결제가 완료되지 않았습니다.' + (p.get('message') ? '\n' + p.get('message') : ''));
+    return;
+  }
+  const { data, error } = await sb.functions.invoke('toss-payment', {
+    body: { action: 'confirm', orderId, paymentKey: p.get('paymentKey'), amount: Number(p.get('amount')) },
+  });
+  if (error || data?.error) { alert('결제 승인에 실패했습니다: ' + (data?.error || error.message)); return; }
+  const ov = document.getElementById('payOv'); if (ov) ov.style.display = 'none';
+  alert('결제가 완료되었습니다.');
+  if (window.loadMyBookings) loadMyBookings();
+};
+
 window.openPayment = function (bookingId, amount) {
   if (!SESSION) { openAuth(); return; }
   const won = Math.round(amount * 0.054).toLocaleString();
@@ -1773,6 +1820,7 @@ window.openPayment = function (bookingId, amount) {
     ['qr', 'QR 결제 (MoMo·ZaloPay·VNPay)', '📱'],
     ['bank_transfer', '은행 이체', '🏦'],
     ['card', '신용/체크카드', '💳'],
+    ...(TOSS_ENABLED ? [['toss', '카드로 미리 결제 (안전결제)', '🔒']] : []),
     ['card_onsite', '현장 결제', '🤝']
   ];
   let sel = 'qr';
@@ -1786,6 +1834,7 @@ window.openPayment = function (bookingId, amount) {
     if (sel === 'qr') return '<div class="pay-panel"><div class="pay-qr">▦ QR</div><div class="hint">MoMo·ZaloPay·VNPay 앱으로 QR을 스캔하세요.</div></div>';
     if (sel === 'bank_transfer') return '<div class="pay-panel"><div class="pay-bank">은행: Vietcombank<br>계좌: 0123 456 789<br>예금주: MASSA CO.,LTD<br>금액: ' + amount.toLocaleString() + '₫</div><div class="hint">이체 후 아래 버튼을 눌러주세요.</div></div>';
     if (sel === 'card') return '<div class="pay-panel"><div class="hint">실서비스에서는 PG(Visa·Master) 결제창이 열립니다. 카드 정보는 앱이 저장하지 않습니다.</div></div>';
+    if (sel === 'toss') return '<div class="pay-panel"><div class="hint">카드 결제창이 열립니다. 원화로 청구되며, 예약 1시간 전까지 취소하면 전액 환불됩니다.</div></div>';
     return '<div class="pay-panel"><div class="hint">서비스 완료 시 현장에서 카드·현금으로 결제합니다.</div></div>';
   };
   const render = () => {
@@ -1802,6 +1851,12 @@ window.openPayment = function (bookingId, amount) {
       const paid = sel !== 'card_onsite';
       const final = finalAmt();
       const used = couponId ? applicable.find(x => x.coupon_id === couponId) : null;
+      // 토스는 결제창을 거쳐야 하므로 여기서 예약을 완료 처리하지 않는다. 승인은 돌아온 뒤에 이뤄진다
+      if (sel === 'toss') {
+        const ok = await startTossPayment(bookingId, couponId, amount - final);
+        if (!ok) btn.disabled = false;
+        return;
+      }
       // 실제 결제 금액을 예약에 반영(정산·매출 정확도)
       const patch = { payment_method: sel, is_paid: paid, amount_vnd: final };
       if (used) { patch.coupon_id = couponId; patch.discount_vnd = amount - final; }

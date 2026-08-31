@@ -51,21 +51,19 @@ async function openExternal(url) {
 }
 
 // massa:// 로 되돌아왔을 때를 처리한다.
-// OAuth 는 토큰이 # 뒤에, 결제는 ? 뒤에 붙어 온다.
+// 로그인은 massa://auth, 결제는 massa://pay 로 온다.
+// 둘 다 실패 시 code= 를 달고 오므로 파라미터가 아니라 호스트로 갈라야 한다.
 function handleAppUrl(url) {
   try {
     Browser.close().catch(() => {});
     const u = new URL(url);
-    if (u.hash && u.hash.includes("access_token")) {
-      // 로그인 — 해시를 그대로 웹앱에 넘기면 supabase-js 가 세션을 세운다
-      if (window.onNativeAuthReturn) window.onNativeAuthReturn(u.hash);
-      return;
-    }
-    if (u.searchParams.get("orderId") || u.searchParams.get("code")) {
+    const target = u.host || u.pathname.replace(/^\/+/, "");
+    if (target === "pay") {
       if (window.onNativePayReturn) window.onNativePayReturn(u.search);
       return;
     }
-    if (window.onNativeAuthReturn && u.search.includes("code=")) window.onNativeAuthReturn(u.search);
+    // 로그인 — 토큰은 # 뒤에, PKCE 코드는 ? 뒤에 붙는다. 그대로 넘기면 supabase-js 가 세션을 세운다
+    if (window.onNativeAuthReturn) window.onNativeAuthReturn(u.hash && u.hash.includes("access_token") ? u.hash : u.search);
   } catch (e) { console.error("appUrlOpen 처리 실패", e); }
 }
 

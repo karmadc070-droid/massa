@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<!-- 토스 결제창이 돌아오는 중계 페이지. 앱에서 시작한 결제는 massa:// 스킴으로 되던지고, 웹은 이 자리에서 승인한다 -->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>mㅏssㅏ</title>
+<style>
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+         background:#F4F6F7; display:flex; align-items:center; justify-content:center; min-height:100vh; padding:16px }
+  .card { width:100%; max-width:340px; background:#fff; border-radius:18px; padding:24px; text-align:center }
+  .ico { font-size:34px; line-height:1; margin-bottom:10px }
+  h1 { font-size:17px; color:#1F4E5F; margin:0 0 6px }
+  p { font-size:13px; color:#7A8C94; margin:0 0 4px; word-break:break-word }
+  .amt { font-size:22px; font-weight:bold; color:#1F4E5F; margin:10px 0 }
+  a.btn { display:block; margin-top:16px; background:#1F4E5F; color:#fff; border-radius:12px;
+          padding:13px; font-size:14px; font-weight:bold; text-decoration:none }
+  .err h1 { color:#B23A5B }
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="ico">⏳</div>
+  <h1 id="title">결제 확인 중…</h1>
+  <p id="desc"></p>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const SUPABASE_URL = 'https://api.moahagwon.com';
+const SUPABASE_KEY = 'eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJyb2xlIjogImFub24iLCAiaXNzIjogInN1cGFiYXNlIiwgImlhdCI6IDE3ODc0NTg4OTMsICJleHAiOiAyMTAyODE4ODkzfQ.7taJaAzxPRIkd0PeC5qnuacficFnazkBN54ttblUv-o';
+const APP_SCHEME = 'massa';
+
+// [ko, vi, en, zh, ja]
+const DICT = {
+  checking: ['결제 확인 중…', 'Đang xác nhận thanh toán…', 'Confirming payment…', '正在确认付款…', '決済を確認中…'],
+  done:     ['결제가 완료되었습니다', 'Thanh toán thành công', 'Payment complete', '支付完成', '決済が完了しました'],
+  failed:   ['결제가 완료되지 않았습니다', 'Thanh toán chưa hoàn tất', 'Payment was not completed', '支付未完成', '決済が完了しませんでした'],
+  back:     ['앱으로 돌아가기', 'Quay lại ứng dụng', 'Back to the app', '返回应用', 'アプリに戻る'],
+  toApp:    ['앱으로 돌아가는 중…', 'Đang quay lại ứng dụng…', 'Returning to the app…', '正在返回应用…', 'アプリに戻っています…'],
+  noLogin:  ['로그인이 풀렸습니다. 앱에서 예약 내역을 확인해 주세요.',
+             'Phiên đăng nhập đã hết. Vui lòng kiểm tra lịch đặt trong ứng dụng.',
+             'Your session expired. Please check your bookings in the app.',
+             '登录已失效，请在应用中查看预约记录。',
+             'ログインが切れました。アプリで予約履歴をご確認ください。'],
+};
+const LANGS = ['ko', 'vi', 'en', 'zh', 'ja'];
+const q = new URLSearchParams(location.search);
+const li = Math.max(0, LANGS.indexOf(q.get('lang') || 'ko'));
+const T = (k) => DICT[k][li];
+
+const card  = document.getElementById('card');
+const title = document.getElementById('title');
+const desc  = document.getElementById('desc');
+
+function show(icon, t, d, ok) {
+  card.querySelector('.ico').textContent = icon;
+  title.textContent = t;
+  desc.textContent = d || '';
+  card.classList.toggle('err', !ok);
+}
+function addBackButton() {
+  const a = document.createElement('a');
+  a.className = 'btn';
+  a.href = APP_SCHEME + '://pay';
+  a.textContent = T('back');
+  card.appendChild(a);
+}
+
+const orderId    = q.get('orderId');
+const paymentKey = q.get('paymentKey');
+const amount     = q.get('amount');
+const failCode   = q.get('code');
+
+// 앱에서 시작한 결제(successUrl 에 native=1 을 붙여 보낸다)는 승인하지 않고 스킴으로 넘긴다.
+// 승인은 앱이 자기 세션으로 직접 호출해야 하기 때문이다.
+if (q.get('native') === '1') {
+  show('↩️', T('toApp'), '', true);
+  location.href = APP_SCHEME + '://pay' + location.search;
+  addBackButton();
+} else if (failCode || !paymentKey || !orderId) {
+  show('⚠️', T('failed'), q.get('message') || failCode || '', false);
+  addBackButton();
+} else {
+  title.textContent = T('checking');
+  const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+  const { data } = await sb.auth.getSession();
+  if (!data.session) {
+    show('⚠️', T('failed'), T('noLogin'), false);
+    addBackButton();
+  } else {
+    const { data: r, error } = await sb.functions.invoke('toss-payment', {
+      body: { action: 'confirm', orderId, paymentKey, amount: Number(amount) },
+    });
+    if (error || r?.error) {
+      show('⚠️', T('failed'), r?.error || error.message, false);
+    } else {
+      show('✅', T('done'), '', true);
+      const el = document.createElement('div');
+      el.className = 'amt';
+      el.textContent = Number(r.amount).toLocaleString() + '원';
+      title.after(el);
+    }
+    addBackButton();
+  }
+}
+</script>
+</body>
+</html>
