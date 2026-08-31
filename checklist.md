@@ -125,3 +125,31 @@ partnerBookings · partnerRevenue · partnerSchedule · partnerEvents · partner
 - [x] F2. `capacitor/package.json` 1.0.2 로 올림
 - [x] F3. Codemagic **build 16** 업로드 성공 (build 15 는 프로필 다국어 수정 전이라 폐기)
 - [x] F4. 1.0.2 버전 생성 → build 16 첨부 → 변경사항 작성 → **심사 제출 완료** (상태: 1.0.2 심사 대기 중)
+
+## G. 소셜 로그인 (구글·카카오·애플)
+
+방침: **키가 설정된 provider 만 버튼이 나타난다.** 앱이 `/auth/v1/settings` 를 읽어 판단한다.
+예전에 "구글 버튼은 있는데 눌러도 안 됨"으로 Apple 4.0 리젝을 받았기 때문에, 키 없이 버튼이 노출되는 일이 없어야 한다.
+
+### G1. 뼈대 — 완료 (2026-08-29)
+- [x] G1-1. GoTrue 에 google·kakao·apple provider 매핑 추가 (docker-compose 12줄 + .env 자리 9개)
+- [x] G1-2. 앱에 `loadSocialProviders()` / `renderSocialButtons()` / `socialLogin()` 추가
+- [x] G1-3. 네이티브 복귀 처리 — `@capacitor/browser`(앱 내 브라우저) + `@capacitor/app`(appUrlOpen) + `onNativeAuthReturn()`
+- [x] G1-4. iOS URL 스킴 `massa://` 등록을 codemagic.yaml 에 추가
+- [x] G1-5. 키 발급 안내서 작성 → `소셜로그인_키발급_안내.md`
+- verify: 키 없는 지금 → 버튼 **0개**. settings 응답을 켜진 것으로 바꾸면 → **3개**(구글·카카오·애플) 정상 표시
+
+### G2. 키 발급 — 사장님
+- [ ] G2-1. 구글 — Cloud Console OAuth 클라이언트 ID + 시크릿
+- [ ] G2-2. 카카오 — REST API 키 + Client Secret (동의항목에 이메일 필수 포함)
+- [ ] G2-3. 애플 — Service ID + Key(.p8). **시크릿 JWT 생성은 내가 처리**. 6개월마다 갱신 필요
+
+### G3. 키 적용 후
+- [ ] G3-1. `.env` 채우고 auth 재기동 → settings 에 true 확인
+- [ ] G3-2. 웹에서 구글·카카오 실제 로그인 검증
+- [ ] G3-3. iOS 빌드 올려 실기기에서 `massa://` 복귀 검증
+- [ ] G3-4. 애플 로그인까지 켠 뒤 심사 제출 (**애플 없이 구글·카카오만 켜서 iOS 제출하면 4.8 리젝**)
+
+### 주의
+- Zalo 는 이번 범위에서 제외 (계정 본인인증 후 별도 진행)
+- `APP_SCHEME` (index.html) 과 codemagic.yaml 의 `CFBundleURLSchemes` 는 **항상 같은 값**이어야 한다
