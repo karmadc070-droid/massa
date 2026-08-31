@@ -14,6 +14,10 @@ cp "$TMP"/massa-main/reset.html "$DIR/reset.html"
 # 결제창을 여는 페이지와 돌아오는 중계 페이지. 앱은 이 두 주소를 앱 내 브라우저로 연다
 cp "$TMP"/massa-main/pay-start.html "$DIR/pay-start.html"
 cp "$TMP"/massa-main/pay-return.html "$DIR/pay-return.html"
+# 구글 OAuth 게시·앱스토어 심사에서 공개 URL 로 요구하는 문서들
+cp "$TMP"/massa-main/privacy.html "$DIR/privacy.html"
+cp "$TMP"/massa-main/terms.html "$DIR/terms.html"
+cp "$TMP"/massa-main/delete-account.html "$DIR/delete-account.html"
 for f in masaage1_b.png wag1_b.png banner1.png banner2.png banner3.png; do
   cp "$TMP"/massa-main/"$f" "$DIR/$f" 2>/dev/null || true
 done
