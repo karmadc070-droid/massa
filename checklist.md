@@ -155,7 +155,13 @@ partnerBookings · partnerRevenue · partnerSchedule · partnerEvents · partner
   - 앱 아이콘 등록 (저장소 `icons/icon-192.png`) → **비즈 앱 전환의 선행 조건**이었다
   - 사업자 정보 등록 → **비즈 앱 전환 완료** (사장님이 직접 입력)
   - 동의항목 **닉네임 필수 동의**, **이메일 필수 동의 + 수집** (비즈 앱 전에는 `권한 없음`이라 못 켰다)
-- [ ] G2-3. 애플 — Service ID + Key(.p8)
+- [x] G2-3. 애플 — 전부 완료 (2026-08-30)
+  - `app.massa.hanoi` 에 **Sign In with Apple 활성화** (프로파일 무효화 경고는 Codemagic 이 매 빌드 재생성하므로 무해)
+  - Services ID **`app.massa.hanoi.web`** — Primary `massa hanoi`, Domain `api.moahagwon.com`, Return URL `https://api.moahagwon.com/auth/v1/callback`
+  - Key **`massa Sign in with Apple`** (Key ID `884XVUF24R`) → .p8 을 VPS 로 scp → JWT 생성 → .p8·conf 삭제
+  - **적용 완료: `/auth/v1/settings` 에서 `apple: true`**
+  - Private Email Relay — `moahagwon.com` 등록, 상태 **SPF 통과** (Resend 가 세워둔 SPF 재사용, DNS 추가 작업 없었음)
+  - ⚠️ **애플 시크릿 만료 2027-03-01.** 만료 전 `.p8` 로 다시 만들어야 로그인이 끊기지 않는다
   - ⚠️ developer.apple.com 은 App Store Connect 와 **세션이 따로**다. 다시 로그인해야 한다
 - [x] G2-4. 애플 시크릿 JWT 생성 스크립트 `scripts/vps-apple-secret.sh` — .p8 을 VPS 안에서만 다루고 끝나면 삭제
   - verify: 테스트 EC 키로 서명 생성 → 공개키 검증 통과, 수명 182.6일(애플 상한 6개월 이내), sig 64바이트
