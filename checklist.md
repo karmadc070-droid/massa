@@ -186,9 +186,16 @@ partnerBookings · partnerRevenue · partnerSchedule · partnerEvents · partner
 - [x] I2. `capacitor/package.json` 1.0.3 으로 올림
 - [x] I3. 빌드 전 점검 — 소셜 코드 7곳 존재, `CFBundleURLSchemes` 등록 단계 존재,
   `TOSS_ENABLED=false`(토스 숨김 유지), native.js 호스트 라우팅 수정 반영
-- [ ] I4. Codemagic **build 17** 결과 확인 → TestFlight 업로드
-- [ ] I5. 실기기에서 소셜 로그인 3종 + `massa://` 복귀 검증
-- [ ] I6. 1.0.3 버전 생성 → 변경사항 작성 → 심사 제출
+- [x] I4. Codemagic **build 17 성공** — 16단계 전부 통과. TestFlight `1.0.3 / build 17 / 제출 준비 완료`
+- [x] I5. App Store Connect **1.0.3 버전 생성** → 변경사항 작성 → build 17 첨부 → 저장 완료
+  - `심사에 추가` 버튼 활성 상태. **제출은 아직 누르지 않았다**
+- [ ] I6. 실기기(TestFlight)에서 소셜 로그인 3종 + `massa://` 복귀 검증
+- [ ] I7. 검증 통과 후 심사 제출
+
+> **왜 제출을 멈췄나.** 설정 검증은 동의 화면까지만 가능했다.
+> 그 뒤 **토큰 교환**(구글·카카오 시크릿 실값, 애플 JWT 와 .p8/Key ID 짝)은 실계정 로그인으로만 확인된다.
+> 여기가 깨져 있으면 심사자가 로그인 실패를 만나 **2.1 리젝**이고 일주일을 잃는다.
+> build 17 은 이미 TestFlight 에 있으니 실기기 확인이 5분이면 끝난다. 그게 훨씬 싸다.
 
 > ⚠️ **구글 시크릿 함정.** 구글 콘솔은 생성 후 시크릿을 `****`로 가려서 보여준다.
 > 그 표시값(8자)을 그대로 복사해 넣으면 버튼은 뜨는데 로그인이 실패한다 — 4.0 리젝을 부르는 상태다.
