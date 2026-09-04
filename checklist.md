@@ -170,9 +170,25 @@ partnerBookings · partnerRevenue · partnerSchedule · partnerEvents · partner
 - [x] G3-1. `.env` 채우고 auth 재기동 → **`google: true` / `kakao: true` / `apple: true`** (2026-09-04)
   - verify: 앱에서 버튼 3개 렌더 확인 — `Google로 계속하기` · `카카오로 계속하기` · `Apple로 계속하기`
   - 키 파일은 VPS·로컬 양쪽에서 삭제함
-- [ ] G3-2. 웹에서 구글·카카오 실제 로그인 검증 (버튼 클릭 → 계정 생성까지)
-- [ ] G3-3. iOS 빌드 올려 실기기에서 `massa://` 복귀 검증
+- [x] G3-2. 설정 검증 — 로그인 없이 확인 가능한 부분은 전부 통과 (2026-09-04)
+  - 깨끗한 브라우저(세션 없음)로 `/auth/v1/authorize?provider=X` 를 직접 열어 각 provider 화면까지 도달 확인
+  - 구글 → 로그인 화면 정상, 등록한 개인정보처리방침·약관 인식됨. `redirect_uri_mismatch`·`invalid_client` 없음
+  - 카카오 → 로그인 화면 정상. `KOE006`(리디렉션 불일치)·`KOE101`(잘못된 앱 키) 없음
+  - 애플 → "Apple 계정을 사용하여 **massa**에 로그인하십시오". Services ID·Return URL·Primary App ID 연결 확인
+  - ⚠️ **남은 미검증 구간**: 실제 계정으로 동의한 뒤의 **토큰 교환**. 여기서만 검증되는 것 — 구글 시크릿 실값,
+    카카오 시크릿 실값, **애플 JWT 와 .p8/Key ID 짝**. 실계정 로그인 1회로 확인해야 한다
+- [ ] G3-3. iOS 빌드 올려 실기기에서 `massa://` 복귀 검증 — **build 17 진행 중 (1.0.3)**
 - [ ] G3-4. 세 개 다 켠 상태로 심사 제출 (**애플 없이 구글·카카오만 켜서 iOS 제출하면 4.8 리젝**)
+
+## I. 1.0.3 빌드·제출 (소셜 로그인)
+
+- [x] I1. 1.0.2 출시 확인 — App Store 조회 API 로 `version 1.0.2`, `2026-08-30` 출시 확인
+- [x] I2. `capacitor/package.json` 1.0.3 으로 올림
+- [x] I3. 빌드 전 점검 — 소셜 코드 7곳 존재, `CFBundleURLSchemes` 등록 단계 존재,
+  `TOSS_ENABLED=false`(토스 숨김 유지), native.js 호스트 라우팅 수정 반영
+- [ ] I4. Codemagic **build 17** 결과 확인 → TestFlight 업로드
+- [ ] I5. 실기기에서 소셜 로그인 3종 + `massa://` 복귀 검증
+- [ ] I6. 1.0.3 버전 생성 → 변경사항 작성 → 심사 제출
 
 > ⚠️ **구글 시크릿 함정.** 구글 콘솔은 생성 후 시크릿을 `****`로 가려서 보여준다.
 > 그 표시값(8자)을 그대로 복사해 넣으면 버튼은 뜨는데 로그인이 실패한다 — 4.0 리젝을 부르는 상태다.
