@@ -552,6 +552,37 @@ ADD.update({
 '웹사이트': ['Website', 'Website', '网站', 'ウェブサイト'],
 })
 
+# ── 로그인 오버레이 (2026-09-05) ──
+# openAuth() 문구가 통째로 사전에 없었다. 예약하려는 비한국어 사용자가 처음 만나는 화면인데 한국어로 떴다
+ADD.update({
+'mㅏssㅏ 로그인': ['Đăng nhập mㅏssㅏ', 'Sign in to mㅏssㅏ', '登录 mㅏssㅏ', 'mㅏssㅏ にログイン'],
+'예약하려면 로그인이 필요합니다': [
+  'Bạn cần đăng nhập để đặt lịch', 'You need to sign in to make a booking',
+  '预约需要先登录', '予約にはログインが必要です'],
+'이메일': ['Email', 'Email', '邮箱', 'メール'],
+'비밀번호 (6자 이상)': ['Mật khẩu (từ 6 ký tự)', 'Password (6+ characters)', '密码（6位以上）', 'パスワード（6文字以上）'],
+'회원가입 / 로그인': ['Đăng ký / Đăng nhập', 'Sign up / Sign in', '注册 / 登录', '新規登録 / ログイン'],
+'비밀번호를 잊으셨나요?': ['Quên mật khẩu?', 'Forgot your password?', '忘记密码？', 'パスワードをお忘れですか？'],
+'또는': ['hoặc', 'or', '或', 'または'],
+'Google로 계속하기': ['Tiếp tục với Google', 'Continue with Google', '使用 Google 继续', 'Google で続ける'],
+'카카오로 계속하기': ['Tiếp tục với Kakao', 'Continue with Kakao', '使用 Kakao 继续', 'カカオで続ける'],
+'Apple로 계속하기': ['Tiếp tục với Apple', 'Continue with Apple', '使用 Apple 继续', 'Apple で続ける'],
+'닫기': ['Đóng', 'Close', '关闭', '閉じる'],
+# 로그인창 안내·오류 문구
+'이메일을 먼저 입력해 주세요.': [
+  'Vui lòng nhập email trước.', 'Please enter your email first.', '请先输入邮箱。', '先にメールアドレスを入力してください。'],
+'재설정 메일을 보내는 중…': [
+  'Đang gửi email đặt lại…', 'Sending the reset email…', '正在发送重置邮件…', '再設定メールを送信中…'],
+'재설정 메일을 보냈습니다. 메일함을 확인해 주세요.': [
+  'Đã gửi email đặt lại. Hãy kiểm tra hộp thư của bạn.', 'Reset email sent. Please check your inbox.',
+  '重置邮件已发送，请查收邮箱。', '再設定メールを送信しました。メールボックスをご確認ください。'],
+'처리 중…': ['Đang xử lý…', 'Processing…', '处理中…', '処理中…'],
+'로그인 완료!': ['Đăng nhập thành công!', 'Signed in!', '登录成功！', 'ログインしました！'],
+'서버 응답이 없습니다. 네트워크 상태를 확인해 주세요.': [
+  'Máy chủ không phản hồi. Vui lòng kiểm tra kết nối mạng.', 'The server is not responding. Please check your connection.',
+  '服务器无响应，请检查网络连接。', 'サーバーから応答がありません。ネットワーク状態をご確認ください。'],
+})
+
 # 화면 제목
 TITLES = {
 '계정 정보': ['Thông tin tài khoản', 'Account', '账户信息', 'アカウント情報'],
