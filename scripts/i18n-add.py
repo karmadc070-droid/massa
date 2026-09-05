@@ -531,30 +531,25 @@ ADD.update({
   'It depends on the course and duration. Pick a service on Home to see the exact amount.',
   '价格因套餐与时长而异。在首页选择服务即可看到准确金额。',
   'コースと時間によって変わります。ホームでサービスを選ぶと正確な金額が表示されます。'],
-# 숫자·주소가 섞이는 문장의 조각들 (botPriceLine·botCancelLine·botContactLine 이 조립한다)
-'가장 저렴한 코스가': ['Gói rẻ nhất từ', 'The cheapest course starts at', '最便宜的套餐自', '一番安いコースは'],
-'부터예요. 코스와 시간에 따라 달라집니다.': [
-  'trở lên. Giá thay đổi theo gói và thời lượng.', 'and up. It varies by course and duration.',
-  '起。价格因套餐与时长而异。', 'からです。コースと時間によって変わります。'],
-'시간 전까지는 자유롭게 취소할 수 있어요.': [
-  'giờ trước giờ hẹn, bạn có thể hủy thoải mái.', 'hours before the appointment you can cancel freely.',
-  '小时前可自由取消。', '時間前までは自由にキャンセルできます。'],
-'그 이후 취소와 노쇼는 최근': ['Sau đó, hủy muộn và không đến sẽ tính trong', 'After that, late cancellations and no-shows count over the last',
-  '之后的取消与爽约将计入最近', 'それ以降のキャンセルとノーショーは直近'],
-'일 기준': ['ngày gần nhất:', 'days:', '天：', '日間で:'],
-'회 누적 시 경고,': ['lần sẽ bị cảnh báo,', 'times triggers a warning,', '次将收到警告，', '回で警告、'],
-'회 누적 시': ['lần thì', 'times means', '次则', '回で'],
-'일간 예약이 제한됩니다.': ['bị hạn chế đặt lịch trong ngày.', 'days of booking restriction.', '天内限制预约。', '日間予約が制限されます。'],
-'앱 내 채팅으로 마사지사와 직접 대화할 수 있어요. 그 외 문의는': [
-  'Bạn có thể nhắn trực tiếp với chuyên viên qua chat trong ứng dụng. Các thắc mắc khác xin gửi',
-  'You can chat directly with the therapist in the app. For anything else, email',
-  '您可以在应用内与理疗师直接聊天。其他咨询请发送邮件至',
-  'アプリ内チャットでセラピストと直接やり取りできます。その他のお問い合わせは'],
+# 숫자·주소가 섞이는 문장은 문장 전체를 넣고 {자리표시자}만 치환한다.
+# 조각을 이어붙이면 언어마다 어순이 달라 문장이 깨진다 — 베트남어에서 실제로 깨졌다.
+'가장 저렴한 코스가 {p}₫부터예요. 코스와 시간에 따라 달라집니다.': [
+  'Gói rẻ nhất từ {p}₫. Giá thay đổi theo gói và thời lượng.',
+  'The cheapest course starts at {p}₫. It varies by course and duration.',
+  '最便宜的套餐自 {p}₫ 起。价格因套餐与时长而异。',
+  '一番安いコースは {p}₫ からです。コースと時間によって変わります。'],
+'예약 {h}시간 전까지는 자유롭게 취소할 수 있어요. 그 이후 취소와 노쇼는 최근 {w}일 기준 {a}회 누적 시 경고, {b}회 누적 시 {d}일간 예약이 제한됩니다.': [
+  'Bạn có thể hủy thoải mái đến trước giờ hẹn {h} tiếng. Sau mốc đó, hủy muộn và không đến sẽ được tính trong {w} ngày gần nhất: {a} lần sẽ nhận cảnh báo, {b} lần sẽ bị hạn chế đặt lịch trong {d} ngày.',
+  'You can cancel freely up to {h} hour(s) before the appointment. After that, late cancellations and no-shows are counted over the last {w} days: {a} of them triggers a warning, and {b} means booking is restricted for {d} days.',
+  '预约开始前 {h} 小时之前可自由取消。此后的临时取消与爽约将计入最近 {w} 天：累计 {a} 次会收到警告，累计 {b} 次将限制预约 {d} 天。',
+  '予約の {h} 時間前までは自由にキャンセルできます。それ以降のキャンセルとノーショーは直近 {w} 日間で数え、{a} 回で警告、{b} 回で {d} 日間予約が制限されます。'],
+'앱 내 채팅으로 마사지사와 직접 대화할 수 있어요. 그 외 문의는 {m} 으로 메일 주시면 순서대로 답변드립니다.': [
+  'Bạn có thể nhắn trực tiếp với chuyên viên qua chat trong ứng dụng. Các thắc mắc khác xin gửi email tới {m}, chúng tôi sẽ trả lời theo thứ tự nhận được.',
+  'You can chat directly with the therapist in the app. For anything else, email {m} and we will reply in the order received.',
+  '您可以在应用内与理疗师直接聊天。其他咨询请发送邮件至 {m}，我们会按顺序回复。',
+  'アプリ内チャットでセラピストと直接やり取りできます。その他のお問い合わせは {m} までメールいただければ順にお返事します。'],
 '문의': ['Liên hệ', 'Contact', '咨询', 'お問い合わせ'],
 '웹사이트': ['Website', 'Website', '网站', 'ウェブサイト'],
-'으로 메일 주시면 순서대로 답변드립니다.': [
-  'chúng tôi sẽ trả lời theo thứ tự nhận được.', 'and we will reply in the order received.',
-  '，我们会按顺序回复。', 'までメールいただければ順にお返事します。'],
 })
 
 # 화면 제목
