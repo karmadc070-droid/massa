@@ -540,6 +540,40 @@ FAB `openBot()` + 규칙 FAQ 15개 + 자연어 검색(`parseSearch` 7종 조건 
   - ⚠️ Cloudflare Email Routing 은 **규칙당 액션 1개, 액션당 주소 1개**만 허용한다.
     한 주소를 두 곳으로 보내려면 같은 matcher 로 규칙을 하나 더 만들어야 하는데,
     수신 주소가 확인되기 전에는 생성 자체가 거부된다. 확인 후 다시 시도할 것
-- [ ] **P3. 관리자 알림 메일 경로가 아예 없다.** massa 에는 관리자에게 메일을 보내는 코드가 없다
-  (Resend 는 Supabase Auth 메일 전용). 입금 신고·기한 초과를 메일로 받으려면
-  Edge Function 을 새로 만들어야 한다. 지금은 앱 내 `notifications` 알림만 간다
+- [x] **P3. 관리자 알림 메일 — 만들었다** (2026-09-06)
+
+### P3. 알림 메일 구조
+`functions/notify-admin/index.ts` — Resend 로 두 관리자 주소에 동시 발송. action 3가지.
+- `deposit_reported` — 입금 신고가 들어오면 즉시. 마사지사·코드·금액·메모를 표로
+- `daily_digest` — 매일 00:00 UTC(하노이 07:00). 확인 대기 + 기한 초과 목록. **처리할 게 없으면 안 보낸다**
+- `test` — 설정 점검용
+
+**클라이언트가 아니라 DB 가 호출한다.** `scripts/notify_trigger.sql` 에서 `provider_deposit` insert 트리거가
+`pg_net` 으로 함수를 부른다. 앱이 죽거나 우회해도 알림이 빠지지 않는다.
+알림 실패가 입금 신고 저장을 막지 않도록 `exception when others` 로 감쌌다.
+
+**보안** — 함수는 공개 엔드포인트라 `x-notify-secret` 공유 시크릿으로 막았다.
+없으면 누구나 메일을 쏠 수 있는 중계기가 된다. verify: 시크릿 없이 호출 → **401**
+
+**함정 하나.** `.env` 에 키를 넣었는데 컨테이너가 못 읽었다.
+`docker-compose.yml` 의 `functions.environment:` 에 **명시된 변수만** 들어간다.
+SMTP 때 겪은 것과 똑같은 함정이라 `scripts/vps-fix-notify-env.sh` 로 4개 매핑을 추가했다.
+
+**검증**
+| 항목 | 결과 |
+|---|---|
+| `test` 발송 | Resend 200, `sent_to` 두 주소 |
+| 시크릿 없이 호출 | **401** |
+| 입금 신고 insert → 트리거 | `pg_net` 응답 **200**, 메일 발송 확인 |
+| 크론 등록 | `0 0 * * * /root/massa_digest.sh` |
+| 빈 상태 다이제스트 | `처리할 건이 없어 보내지 않음` |
+| 테스트 데이터 | 전부 삭제, 남은 행 0 |
+
+### P4. support@ 를 두 주소로 보내는 건 — Cloudflare 로는 안 된다
+두 주소 모두 **확인 완료**됐지만, 같은 matcher 로 규칙을 하나 더 만들면 `Duplicated Zone rule` 로 거부된다.
+Cloudflare Email Routing 은 **규칙당 액션 1개 · 액션당 주소 1개 · 주소당 규칙 1개**다.
+- 현재: `support@massaviet.com` → `karmadc070@gmail.com` 만
+- 우회 ①(권장) `karmadc070` Gmail 설정에서 `moahagwon` 으로 자동 전달 — 사장님이 Gmail 에서 몇 번 클릭
+- 우회 ② catch-all 을 `moahagwon` 으로 돌리면 support@ 외 주소만 그쪽으로 간다 (support@ 는 여전히 한 곳)
+- **시스템 알림 메일은 이 제약과 무관하다** — Resend 로 보내므로 이미 두 주소에 모두 간다
+
