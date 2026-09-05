@@ -271,3 +271,32 @@ partnerBookings · partnerRevenue · partnerSchedule · partnerEvents · partner
 ### 주의
 - Zalo 는 이번 범위에서 제외 (계정 본인인증 후 별도 진행)
 - `APP_SCHEME` (index.html) 과 codemagic.yaml 의 `CFBundleURLSchemes` 는 **항상 같은 값**이어야 한다
+
+## L. massaviet.com 소개 사이트 + 검색 등록 (2026-09-05)
+
+**왜 분리했나.** 모아학원은 학부모·아이 대상 학원 플랫폼이다. 마사지 서비스가 같은 도메인 아래 있으면
+검색이나 주소로 연결이 드러났을 때 학부모 신뢰에 직접 영향을 준다. 애드센스 이전에 이 이유만으로 분리할 값어치가 있다.
+
+- [x] L1. 도메인 `massaviet.com` 구매 (Cloudflare Registrar, 2027-09-05 만료, auto-renew ON)
+  - 브랜드가 앞에 오는 `massaviet` 를 골랐다. 앱 이름이 massa 라 자동완성과 각인에 유리하다
+- [x] L2. DNS 4개 레코드 — apex·www 각각 A(141.164.46.88) / AAAA. **DNS only**(Caddy 가 인증서를 직접 발급)
+  - ⚠️ Cloudflare DNS UI 가 좌표·React 양쪽으로 계속 어긋났다. **대시보드 세션으로 `/api/v4` 를 직접 호출**해 해결
+- [x] L3. 소개 사이트 10개 페이지 — 홈·서비스·이용안내·안전검증·FAQ·파트너·회사소개·문의·약관·개인정보
+  - 공용 `style.css`, 페이지마다 title·description·canonical·OG, 홈에 LocalBusiness / FAQ 에 FAQPage 구조화 데이터
+  - verify: 10개 전부 메타 6항목 통과, div 균형, 내부 링크 깨짐 0
+- [x] L4. VPS 배포 — `scripts/vps-deploy-massaviet.sh`, Caddy + Let's Encrypt
+  - verify: 12개 경로 전부 200, `www` → apex **301**
+- [x] L5. `robots.txt`(사이트맵 선언) · `sitemap.xml`(10 URL)
+- [x] L6. **구글 서치콘솔** — 도메인 속성으로 등록, TXT 를 Cloudflare API 로 넣어 **"소유권이 자동으로 확인됨"**
+- [x] L7. **빙 웹마스터** — `massaviet.com` 추가, `msvalidate.01` 메타 태그를 홈에 심어 확인 완료
+- [ ] L8. 네이버 서치어드바이저 등록 (네이버 로그인 필요)
+- [ ] L9. 다음(카카오) 검색 등록
+- [ ] L10. 애드센스 신청 — **콘텐츠가 더 쌓인 뒤에**
+
+> **취소 규정 불일치를 잡았다.** 소개 사이트 초안에 "2회 경고·3회 제한"으로 썼는데,
+> 앱의 실제 값(`CANCEL_RULES`)과 약관은 **3회 경고·5회 누적 7일 제한**이었다.
+> 추측으로 쓴 숫자였고, 실제 상수를 읽어 guide·faq 양쪽을 고쳤다.
+
+> **애드센스 관련 솔직한 판단.** 지금 10페이지는 "회사 소개형"이라 애드센스가 저품질로 볼 여지가 있다.
+> 하노이 마사지·홈뷰티 관련 실질 정보 글이 몇 편 더 쌓인 뒤 신청하는 편이 승인 확률이 높다.
+> 또한 massa 는 수수료 10% 로 버는 사업이라 광고 수익 자체는 크지 않다 — 기대치를 낮게 잡는 편이 낫다.
