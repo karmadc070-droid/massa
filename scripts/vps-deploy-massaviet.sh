@@ -10,7 +10,10 @@ echo "=== 최신 소스 내려받기 (raw CDN 캐시 우회) ==="
 TMP=$(mktemp -d)
 curl -s --location codeload.github.com/karmadc070-droid/massa/tar.gz/refs/heads/main -o "$TMP/m.tgz"
 tar -xzf "$TMP/m.tgz" -C "$TMP"
-cp "$TMP"/massa-main/site/* "$DIR"/
+# img/ · en/ · vi/ 같은 하위 폴더가 생겼으므로 통째로 복사한다.
+# 지워진 파일이 남지 않도록 먼저 비운다 (배포본 = 저장소 상태).
+rm -rf "$DIR"/*
+cp -R "$TMP"/massa-main/site/. "$DIR"/
 rm -rf "$TMP"
 ls -la "$DIR"
 
