@@ -218,7 +218,12 @@ footer.site .legal { border-top: 1px solid #453A34; padding-top: 22px; color: #8
 @media (max-width: 640px) {
   header.site .wrap { height: 62px; gap: 14px; }
   nav.main { gap: 14px; }
-  nav.main a:not(.navcta) { display: none; }   /* 좁은 화면에선 CTA 와 언어만 */
+  /* 좁은 화면에선 메뉴를 접고 언어 전환과 CTA 만 남긴다.
+     .langs a 를 빼지 않으면 언어 전환이 통째로 사라진다 — 모바일이 주 사용 환경이라 치명적이다.
+     접힌 메뉴는 푸터에 전부 있다. */
+  nav.main > a:not(.navcta) { display: none; }
+  .langs { margin-left: auto; }
+  .langs a { padding: 4px 6px; }
   footer.site .cols { grid-template-columns: 1fr; gap: 26px; }
   .smartbar { display: flex; }
   body { padding-bottom: 62px; }
