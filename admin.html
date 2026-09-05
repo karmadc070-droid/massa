@@ -2711,15 +2711,21 @@ let DUE_DAYS = 3;             // 완료 후 입금 기한(일)
 let SETT_AUTO = false;        // 자동 경고
 window.toggleAutoWarn = (on) => { SETT_AUTO = on; loadSettlement(); };
 function fmtDate(d) { const x = new Date(d); return (x.getMonth() + 1) + '/' + x.getDate(); }
+// 이체 메모는 마사지사가 직접 적는 값이라 그대로 innerHTML 에 넣으면 안 된다
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function won(n) { return Number(n || 0).toLocaleString(); }
 async function loadSettlement() {
   const wrap = document.getElementById('settlementList'); if (!wrap) return;
   wrap.innerHTML = '<div class="hint">불러오는 중…</div>';
-  const { data, error } = await sb.from('bookings').select('provider_id, amount_vnd, is_paid, created_at, completed_at, providers(display_name)').eq('is_paid', true);
+  const { data, error } = await sb.from('bookings').select('provider_id, amount_vnd, is_paid, created_at, completed_at, providers(display_name, deposit_code)').eq('is_paid', true);
   if (error) { wrap.innerHTML = '<div class="notice">불러오기 실패: ' + error.message + '</div>'; return; }
   const { data: setts } = await sb.from('settlement').select('*');
   const smap = {}; (setts || []).forEach(s => smap[s.provider_id] = s);
+  // 마사지사가 올린 입금 신고 중 아직 확인 안 된 것 — 관리자가 통장과 대조할 대상이다
+  const { data: reps } = await sb.from('provider_deposit').select('*').eq('status', 'reported').eq('kind', 'commission');
+  const rmap = {}; (reps || []).forEach(d => { (rmap[d.provider_id] = rmap[d.provider_id] || []).push(d); });
   const g = {};
-  (data || []).forEach(b => { const t = b.completed_at || b.created_at; const k = b.provider_id || 'none'; if (!g[k]) g[k] = { id: b.provider_id, name: b.providers ? b.providers.display_name : '미배정', sum: 0, cnt: 0, first: t }; g[k].sum += b.amount_vnd; g[k].cnt++; if (t < g[k].first) g[k].first = t; });
+  (data || []).forEach(b => { const t = b.completed_at || b.created_at; const k = b.provider_id || 'none'; if (!g[k]) g[k] = { id: b.provider_id, name: b.providers ? b.providers.display_name : '미배정', code: b.providers ? b.providers.deposit_code : null, sum: 0, cnt: 0, first: t }; g[k].sum += b.amount_vnd; g[k].cnt++; if (t < g[k].first) g[k].first = t; });
   const rows = Object.values(g).sort((a, b) => b.sum - a.sum);
   const now = Date.now();
   // 자동 경고: 지연·미입금·미경고 건 자동 기록
@@ -2743,16 +2749,27 @@ async function loadSettlement() {
       : overdue ? '<span style="color:#E5484D;font-weight:bold;font-size:12px">⚠ 입금 지연</span>'
       : '<span style="color:#E8A33D;font-weight:bold;font-size:12px">입금 대기</span>';
     const warned = s && s.warned_at ? '<div class="d" style="color:#E5484D">경고 발송됨 · ' + fmtDate(s.warned_at) + '</div>' : '';
+    // 입금자명이 동명이인이면 통장만 봐서는 구분이 안 된다. 코드로 대조한다
+    const code = r.code ? '<span style="font-family:monospace;font-weight:bold;background:#F4F6F7;padding:2px 7px;border-radius:5px;font-size:12px">' + r.code + '</span>' : '<span class="d" style="color:#E5484D">코드 없음</span>';
+    // 마사지사가 올린 신고 — 통장에서 이 금액·이 코드로 들어왔는지 확인하고 승인한다
+    const pend = (rmap[r.id] || []).map(d =>
+      '<div style="margin-top:8px;padding:9px 11px;background:#FFF8E8;border-left:2px solid #E8A33D;border-radius:0 8px 8px 0">'
+      + '<div class="d" style="color:#8A6A22"><b>입금했다고 신고함</b> · ' + Number(d.amount_vnd).toLocaleString() + '₫ · ' + fmtDate(d.reported_at) + '</div>'
+      + (d.memo ? '<div class="d">이체 메모: ' + esc(d.memo) + '</div>' : '')
+      + '<div style="margin-top:7px;display:flex;gap:7px">'
+      + '<button class="chip sel" onclick="confirmDeposit(\'' + d.id + '\')">통장 확인함 · 승인</button>'
+      + '<button class="chip" style="border-color:#E5484D;color:#E5484D" onclick="rejectDeposit(\'' + d.id + '\')">확인 안 됨</button>'
+      + '</div></div>').join('');
     const btns = paid ? '' : '<div style="margin-top:8px;display:flex;gap:8px">'
-      + (r.id ? '<button class="chip sel" onclick="markSettled(\'' + r.id + '\')">입금 완료 처리</button>' : '')
+      + (r.id ? '<button class="chip" onclick="markSettled(\'' + r.id + '\')">직접 입금 완료 처리</button>' : '')
       + (r.id ? '<button class="chip" style="border-color:#E5484D;color:#E5484D" onclick="sendWarning(\'' + r.id + '\')">경고 보내기</button>' : '')
       + '</div>';
     return '<div class="card" style="cursor:default">'
-      + '<div class="trow1"><span class="t">' + r.name + '</span>' + badge + '</div>'
+      + '<div class="trow1"><span class="t">' + r.name + ' ' + code + '</span>' + badge + '</div>'
       + '<div class="d">' + r.cnt + '건 · 고객 결제 ' + r.sum.toLocaleString() + '₫</div>'
-      + '<div class="d" style="color:#1E6B45;font-weight:bold">회사 수취(수수료 10%) ' + fee.toLocaleString() + '₫</div>'
+      + '<div class="d" style="color:#1E6B45;font-weight:bold">받을 수수료(' + Math.round(FEE_RATE * 100) + '%) ' + fee.toLocaleString() + '₫</div>'
       + '<div class="d">마사지사 수령 ' + keep.toLocaleString() + '₫ · 입금기한 ' + fmtDate(dueMs) + '까지</div>'
-      + warned + btns + '</div>';
+      + warned + pend + btns + '</div>';
   }).join('') : '<div class="notice">정산할 결제 내역이 없습니다.</div>';
 }
 window.loadSettlement = loadSettlement;
@@ -2860,10 +2877,13 @@ async function loadMySettle() {
   const wrap = document.getElementById('mySettleList'); if (!wrap) return;
   wrap.innerHTML = '<div class="hint">불러오는 중…</div>';
   const uid = SESSION.user.id;
-  const { data: mine } = await sb.from('providers').select('id, display_name').or('profile_id.eq.' + uid + ',owner_id.eq.' + uid);
+  const { data: mine } = await sb.from('providers').select('id, display_name, deposit_code').or('profile_id.eq.' + uid + ',owner_id.eq.' + uid);
   const ids = (mine || []).map(p => p.id);
   if (!ids.length) { wrap.innerHTML = '<div class="notice">등록된 제공자 정보가 없습니다. 먼저 제공자 등록을 완료하세요.</div>'; return; }
-  const nameMap = {}; (mine || []).forEach(p => nameMap[p.id] = p.display_name);
+  const nameMap = {}, codeMap = {}; (mine || []).forEach(p => { nameMap[p.id] = p.display_name; codeMap[p.id] = p.deposit_code; });
+  // 내가 올린 입금 신고 상태
+  const { data: myDeps } = await sb.from('provider_deposit').select('*').in('provider_id', ids).order('reported_at', { ascending: false }).limit(20);
+  const depMap = {}; (myDeps || []).forEach(d => { (depMap[d.provider_id] = depMap[d.provider_id] || []).push(d); });
   const { data: bks } = await sb.from('bookings').select('provider_id, amount_vnd, created_at, completed_at, is_paid').in('provider_id', ids).eq('is_paid', true);
   const { data: setts } = await sb.from('settlement').select('*').in('provider_id', ids);
   const smap = {}; (setts || []).forEach(s => smap[s.provider_id] = s);
@@ -2879,16 +2899,46 @@ async function loadMySettle() {
     const badge = paid ? '<span style="color:#1E6B45;font-weight:bold;font-size:12px">입금 완료</span>'
       : overdue ? '<span style="color:#E5484D;font-weight:bold;font-size:12px">⚠ 입금 지연</span>'
       : '<span style="color:#E8A33D;font-weight:bold;font-size:12px">입금 대기</span>';
+    const code = codeMap[r.id];
+    // 입금할 때 이 코드를 이체 메모에 적어야 관리자가 누가 냈는지 안다
+    const codeBox = code ? '<div style="margin-top:9px;padding:10px 12px;background:#F0F5F5;border-radius:9px">'
+      + '<div class="d" style="margin:0">이체할 때 <b>입금자명 또는 메모</b>에 아래 코드를 꼭 적어주세요</div>'
+      + '<div style="font-family:monospace;font-size:19px;font-weight:bold;letter-spacing:.06em;margin:5px 0 2px">' + code + '</div>'
+      + '<div class="d" style="margin:0;font-size:11.5px">동명이인이 있어 이름만으로는 확인이 어렵습니다.</div></div>' : '';
+    const deps = (depMap[r.id] || []).slice(0, 3).map(d => {
+      const st = d.status === 'confirmed' ? '<span style="color:#1E6B45;font-weight:bold">확인 완료</span>'
+        : d.status === 'rejected' ? '<span style="color:#E5484D;font-weight:bold">확인 안 됨</span>'
+        : '<span style="color:#E8A33D;font-weight:bold">확인 대기</span>';
+      return '<div class="d" style="margin-top:5px">' + fmtDate(d.reported_at) + ' · ' + won(d.amount_vnd) + '₫ · ' + st
+        + (d.reject_reason ? ' · ' + esc(d.reject_reason) : '') + '</div>';
+    }).join('');
+    const btn = paid ? '' : '<div style="margin-top:9px"><button class="chip sel" onclick="reportDeposit(\'' + r.id + '\',' + fee + ')">입금했습니다</button></div>';
     return '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + r.name + '</span>' + badge + '</div>'
       + '<div class="d">' + r.cnt + '건 · 고객 결제 ' + r.sum.toLocaleString() + '₫</div>'
       + '<div class="d" style="color:#B23A5B;font-weight:bold">회사에 입금할 금액 ' + fee.toLocaleString() + '₫</div>'
-      + '<div class="d">입금기한 ' + fmtDate(dueMs) + '까지' + (overdue ? ' · 기한 초과' : '') + '</div></div>';
+      + '<div class="d">입금기한 ' + fmtDate(dueMs) + '까지' + (overdue ? ' · 기한 초과' : '') + '</div>'
+      + codeBox + deps + btn + '</div>';
   }).join('');
-  const head = '<div class="card" style="background:#FBF1DF;cursor:default"><div class="trow1"><span class="t">회사 입금 합계</span><span style="color:#B23A5B;font-weight:bold">' + totalOwe.toLocaleString() + '₫</span></div><div class="d">완료일 + 3일 이내 입금 원칙 · 입금 계좌는 관리자 안내를 따라주세요.</div></div>';
+  const head = '<div class="card" style="background:#FBF1DF;cursor:default"><div class="trow1"><span class="t">회사 입금 합계</span><span style="color:#B23A5B;font-weight:bold">' + totalOwe.toLocaleString() + '₫</span></div><div class="d">완료일 + ' + DUE_DAYS + '일 이내 입금 원칙 · 입금 계좌는 관리자 안내를 따라주세요.</div></div>';
   const cyc = await loadMyCycles(ids);
   wrap.innerHTML = head + cards + cyc;
 }
 window.loadMySettle = loadMySettle;
+
+// 마사지사가 입금을 마쳤다고 알린다. 확인은 관리자가 통장을 보고 한다.
+window.reportDeposit = async (providerId, suggest) => {
+  const raw = prompt('입금하신 금액을 숫자로 입력해 주세요 (₫)', String(suggest || ''));
+  if (raw === null) return;
+  const amt = parseInt(String(raw).replace(/[^0-9]/g, ''), 10);
+  if (!amt || amt <= 0) { alert('금액을 정확히 입력해 주세요.'); return; }
+  const memo = prompt('이체할 때 적으신 입금자명 또는 메모를 그대로 입력해 주세요.') || null;
+  const { error } = await sb.from('provider_deposit').insert({
+    provider_id: providerId, kind: 'commission', amount_vnd: amt, memo: memo, status: 'reported'
+  });
+  if (error) { alert('신고 실패: ' + error.message); return; }
+  alert('접수되었습니다. 관리자가 통장을 확인한 뒤 처리됩니다.');
+  loadMySettle();
+};
 
 // 파트너: 마감된 정산 사이클 + 입금 증빙 업로드
 async function loadMyCycles(ids) {
@@ -3309,6 +3359,31 @@ async function createSafetyAlert(kind, note) {
 window.sendSos = () => { if (confirm('긴급 도움을 요청할까요? 현재 위치와 함께 관리자에게 즉시 전달됩니다.')) createSafetyAlert('sos'); };
 window.shareMyLocation = () => createSafetyAlert('share_location');
 window.markSettled = async (id) => { await sb.from('settlement').upsert({ provider_id: id, status: 'paid', settled_at: new Date().toISOString(), updated_at: new Date().toISOString() }); loadSettlement(); };
+
+// ── 입금 신고 확인 ──
+// 마사지사가 올린 신고를 통장과 대조한 뒤 승인한다. 선입금이면 보너스까지 잔고에 넣는 건 RPC 가 한다.
+window.confirmDeposit = async (id) => {
+  if (!confirm('통장에서 입금을 확인하셨습니까? 승인하면 되돌리기 어렵습니다.')) return;
+  const { error } = await sb.rpc('confirm_deposit', { p_id: id });
+  if (error) { alert('승인 실패: ' + error.message); return; }
+  loadSettlement();
+};
+window.rejectDeposit = async (id) => {
+  const why = prompt('확인되지 않은 사유를 적어주세요. 마사지사에게 그대로 전달됩니다.');
+  if (why === null) return;
+  const { data: d } = await sb.from('provider_deposit').select('provider_id, amount_vnd').eq('id', id).single();
+  const { error } = await sb.from('provider_deposit')
+    .update({ status: 'rejected', reject_reason: why, confirmed_at: new Date().toISOString(), confirmed_by: SESSION.user.id })
+    .eq('id', id);
+  if (error) { alert('처리 실패: ' + error.message); return; }
+  if (d) {
+    const { data: p } = await sb.from('providers').select('profile_id, owner_id').eq('id', d.provider_id).single();
+    const uid = p && (p.profile_id || p.owner_id);
+    if (uid) await sb.from('notifications').insert({ user_id: uid, title: '입금 확인 안 됨',
+      body: won(d.amount_vnd) + '₫ 입금이 통장에서 확인되지 않았습니다. ' + (why || '') , kind: 'warning' });
+  }
+  loadSettlement();
+};
 async function warnProvider(providerId) {
   const { data: p } = await sb.from('providers').select('profile_id, owner_id, display_name').eq('id', providerId).single();
   const uid = p && (p.profile_id || p.owner_id);
