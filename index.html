@@ -421,6 +421,18 @@
     border: 0; border-radius: 0; box-shadow: none;
   }
   body.nativeapp:not(.devmode) .statusbar { display: none; }
+  /* 안드로이드는 Capacitor 가 아니라 TWA 라 IS_NATIVE_APP 이 false 다 → 위 .nativeapp 이 안 붙는다.
+     그래서 가로 모드(폭 767 초과)나 태블릿에서 목업 테두리가 그대로 보였다 — iOS 1.0.4 에서 고친 것과 같은 증상.
+     TWA·PWA 는 standalone 으로 뜨므로 표시 모드로 판별하면 플래그 없이도 잡힌다. */
+  @media (display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui) {
+    body:not(.devmode) { padding: 0; align-items: stretch; }
+    body:not(.devmode) .phone {
+      width: 100%; height: 100vh; height: 100dvh;
+      max-width: none; max-height: none; min-height: 0; aspect-ratio: auto;
+      border: 0; border-radius: 0; box-shadow: none;
+    }
+    body:not(.devmode) .statusbar { display: none; }
+  }
 </style>
 </head>
 <body>
