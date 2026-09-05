@@ -108,7 +108,20 @@ partnerBookings · partnerRevenue · partnerSchedule · partnerEvents · partner
 
 ## C. 기타 남은 일
 - [ ] C1. build 12 실기기 로그인 확인 (2.1a 근본 원인 확정)
-- [ ] C2. Vercel 웹사이트 최신 배포 (현재 구버전, git 미연동)
+- [ ] C2. **안드로이드 TWA 가 낡은 Vercel 빌드를 본다 — C4 의 선행 조건** (2026-09-05 확인)
+  - `android-package/massa.aab`(2026-08-14 업로드) 안의 시작 URL = `https://massa-seven.vercel.app/?src=pwa`
+  - 그 Vercel 배포본(200 / 333KB)을 실제로 받아보니 **마이그레이션 이전 버전**이다
+    | 표식 | Vercel(안드로이드가 보는 것) | massa.moahagwon.com(최신) |
+    |---|---|---|
+    | `nativeapp` (1.0.4 전체화면) | 0 | 4 |
+    | `TOSS_ENABLED` | 0 | 2 |
+    | `delete-account` | 0 | 있음 |
+    | API 주소 | `massa.141-164-46-88.sslip.io` (구 주소) | `massa.moahagwon.com` |
+    | `관리자` 문자열 | 45 | 27 |
+  - `assetlinks.json` 은 **Vercel 도메인에만** 있다 (moahagwon·massaviet 는 404)
+  - 즉 안드로이드 테스터 12명은 지금 **구버전 앱**을 쓰고 있다. 프로덕션 신청 전에 정리해야 한다
+  - 선택지 — ①Vercel 에 최신 소스 재배포(aab 재빌드 불필요, 배포는 사용자 스니펫 필요)
+    ②TWA 를 VPS 도메인으로 재지정(aab 재빌드 + 해당 도메인에 assetlinks.json 배포 필요)
 - [x] C3. VPS DB 논리 백업 — **이미 돌고 있다** (2026-09-05 확인)
   - `crontab: 10 3 * * * /root/pg_backup.sh`, massa-db 포함 4개 DB 를 매일 03:10 덤프
   - `/root/backups` 에 10일치 보관, 디스크 26% 사용으로 여유 있음
