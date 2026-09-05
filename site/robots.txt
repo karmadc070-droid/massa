@@ -1,4 +1,4 @@
-# massaviet.com 크롤링 규칙 — 소개 사이트는 전부 열고, 사이트맵 위치를 알린다
+# massaviet.com — 소개 사이트는 전부 열고 사이트맵 위치를 알린다
 User-agent: *
 Allow: /
 
