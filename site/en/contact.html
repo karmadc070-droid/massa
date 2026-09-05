@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<!-- 자동 생성 파일이다. 고치려면 site-src/content_en.py 를 고치고 build.py 를 다시 돌린다 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact — massa</title>
+<meta name="description" content="For help, partnership proposals or bug reports, email support@massaviet.com.">
+<link rel="canonical" href="https://massaviet.com/en/contact.html">
+<link rel="alternate" hreflang="ko" href="https://massaviet.com/contact.html"><link rel="alternate" hreflang="en" href="https://massaviet.com/en/contact.html"><link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/contact.html"><link rel="alternate" hreflang="x-default" href="https://massaviet.com/contact.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="massa">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Contact — massa">
+<meta property="og:description" content="For help, partnership proposals or bug reports, email support@massaviet.com.">
+<meta property="og:url" content="https://massaviet.com/en/contact.html">
+<meta property="og:image" content="https://massaviet.com/img/hero.webp">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#FAF6F0">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/style.css?v=f514f0fc">
+
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="/en/">m<span>ㅏ</span>ss<span>ㅏ</span></a>
+    <nav class="main"><a href="/en/services.html">Services</a><a href="/en/guide.html">How it works</a><a href="/en/safety.html">Safety</a><a href="/en/partner.html">Partners</a><a href="/en/faq.html">FAQ</a>
+      <span class="langs"><a href="/contact.html" hreflang="ko" aria-current="false">KO</a><a href="/en/contact.html" hreflang="en" aria-current="true">EN</a><a href="/vi/contact.html" hreflang="vi" aria-current="false">VI</a></span>
+      <a class="navcta" href="/en/download.html">Get the app</a>
+    </nav>
+  </div>
+</header>
+
+<section class=""><div class="wrap"><div class="sec-head rv">
+      <span class="kicker">Contact</span>
+      <h2>Send us<br>anything</h2>
+      <p class="lead">We read and answer in the order received.</p>
+    </div><table class="tbl rv"><tr><th>Email</th><td><a href="mailto:support@massaviet.com">support@massaviet.com</a></td></tr><tr><th>Using the service</th><td>Booking, payment, cancellation and account issues</td></tr><tr><th>Partners</th><td>Therapist and venue registration. Please read the <a href="/en/partner.html">partner page</a> first.</td></tr><tr><th>Partnerships</th><td>Spa venues, hotels and other proposals</td></tr><tr><th>Bug reports</th><td>Tell us your device and what you were doing when it went wrong.</td></tr></table><p class="note rv">For anything urgent during a service, the in-app safety button (SOS) and report function are far faster than email. They reach our team with your location attached.</p></div></section>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <a class="brand" href="/en/">m<span>ㅏ</span>ss<span>ㅏ</span></a>
+        <p style="margin:0;max-width:30ch">Massage and home beauty, booked to your door in Hanoi.</p>
+      </div>
+      <div><h4>Service</h4><ul><li><a href="/en/services.html">Services</a></li><li><a href="/en/guide.html">How it works</a></li><li><a href="/en/faq.html">FAQ</a></li></ul></div>
+      <div><h4>massa</h4><ul><li><a href="/en/about.html">About</a></li><li><a href="/en/safety.html">Safety</a></li><li><a href="/en/partner.html">Partners</a></li></ul></div>
+      <div><h4>Support</h4><ul><li><a href="/en/download.html">Get the app</a></li><li><a href="/en/contact.html">Contact</a></li><li><a href="/en/terms.html">Terms</a></li><li><a href="/en/privacy.html">Privacy</a></li></ul></div>
+    </div>
+    <div class="legal">© 2026 massa. Home massage and beauty booking in Hanoi.<br>massa is a platform connecting customers with verified providers. The care offered is not a medical treatment.</div>
+  </div>
+</footer>
+
+<div class="smartbar" id="smartbar">
+  <button class="x" id="sbx" aria-label="close">×</button>
+  <span>Book faster in the app</span>
+  <a href="/en/download.html">Get it</a>
+</div>
+
+<script>
+// 스크롤 등장 — 움직임을 줄이도록 설정한 기기에서는 CSS 가 이미 무력화한다
+(function(){
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, {rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.rv').forEach(function(e){ io.observe(e); });
+  // 앱 설치 띠는 한 번 닫으면 다시 띄우지 않는다
+  var bar = document.getElementById('smartbar');
+  try { if (localStorage.getItem('massa_sb') === 'off') bar.style.display = 'none'; } catch(e) {}
+  document.getElementById('sbx').onclick = function(){
+    bar.style.display = 'none';
+    try { localStorage.setItem('massa_sb','off'); } catch(e) {}
+  };
+})();
+</script>
+</body>
+</html>

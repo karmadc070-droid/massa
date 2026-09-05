@@ -4,66 +4,264 @@
   <url>
     <loc>https://massaviet.com/</loc>
       <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/"/>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://massaviet.com/en/</loc>
+      <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/"/>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://massaviet.com/vi/</loc>
+      <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/"/>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://massaviet.com/services.html</loc>
       <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/services.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/services.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/services.html"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://massaviet.com/en/services.html</loc>
+      <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/services.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/services.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/services.html"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://massaviet.com/vi/services.html</loc>
+      <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/services.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/services.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/services.html"/>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://massaviet.com/guide.html</loc>
       <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/guide.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/guide.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/guide.html"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://massaviet.com/en/guide.html</loc>
+      <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/guide.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/guide.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/guide.html"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://massaviet.com/vi/guide.html</loc>
+      <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/guide.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/guide.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/guide.html"/>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://massaviet.com/safety.html</loc>
       <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/safety.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/safety.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/safety.html"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://massaviet.com/en/safety.html</loc>
+      <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/safety.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/safety.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/safety.html"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://massaviet.com/vi/safety.html</loc>
+      <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/safety.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/safety.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/safety.html"/>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://massaviet.com/partner.html</loc>
       <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/partner.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/partner.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/partner.html"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://massaviet.com/en/partner.html</loc>
+      <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/partner.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/partner.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/partner.html"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://massaviet.com/vi/partner.html</loc>
+      <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/partner.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/partner.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/partner.html"/>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://massaviet.com/faq.html</loc>
       <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/faq.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/faq.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/faq.html"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://massaviet.com/en/faq.html</loc>
+      <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/faq.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/faq.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/faq.html"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://massaviet.com/vi/faq.html</loc>
+      <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/faq.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/faq.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/faq.html"/>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://massaviet.com/about.html</loc>
       <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/about.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/about.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/about.html"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://massaviet.com/en/about.html</loc>
+      <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/about.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/about.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/about.html"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://massaviet.com/vi/about.html</loc>
+      <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/about.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/about.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/about.html"/>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://massaviet.com/download.html</loc>
       <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/download.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/download.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/download.html"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://massaviet.com/en/download.html</loc>
+      <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/download.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/download.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/download.html"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://massaviet.com/vi/download.html</loc>
+      <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/download.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/download.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/download.html"/>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://massaviet.com/contact.html</loc>
       <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/contact.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/contact.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/contact.html"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://massaviet.com/en/contact.html</loc>
+      <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/contact.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/contact.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/contact.html"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://massaviet.com/vi/contact.html</loc>
+      <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/contact.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/contact.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/contact.html"/>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://massaviet.com/terms.html</loc>
       <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/terms.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/terms.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/terms.html"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://massaviet.com/en/terms.html</loc>
+      <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/terms.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/terms.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/terms.html"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://massaviet.com/vi/terms.html</loc>
+      <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/terms.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/terms.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/terms.html"/>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://massaviet.com/privacy.html</loc>
       <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/privacy.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/privacy.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/privacy.html"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://massaviet.com/en/privacy.html</loc>
+      <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/privacy.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/privacy.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/privacy.html"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://massaviet.com/vi/privacy.html</loc>
+      <xhtml:link rel="alternate" hreflang="ko" href="https://massaviet.com/privacy.html"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://massaviet.com/en/privacy.html"/>
+      <xhtml:link rel="alternate" hreflang="vi" href="https://massaviet.com/vi/privacy.html"/>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

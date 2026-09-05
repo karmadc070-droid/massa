@@ -40,6 +40,9 @@ a { color: inherit; }
 /* keep-all 이 없으면 한글이 단어 중간에서 끊긴다. 제목에서 특히 티가 난다. */
 h1, h2, h3, p, .lead, li, td, th, summary { word-break: keep-all; overflow-wrap: break-word; }
 h1, h2, h3, .display { font-family: var(--serif); font-weight: 400; letter-spacing: -0.01em; }
+/* Cormorant 는 올드스타일 숫자가 기본이라 "3단계"의 3 이 아래첨자처럼 작게 깔린다.
+   제목에서는 라이닝 숫자로 강제한다. .num 의 01·02 는 오히려 올드스타일이 어울려 그대로 둔다. */
+h1, h2, h3, .pull, ol.steps b { font-variant-numeric: lining-nums; }
 h1 { font-size: clamp(38px, 7.2vw, 82px); line-height: 1.08; margin: 0 0 22px; }
 h2 { font-size: clamp(29px, 4.2vw, 48px); line-height: 1.18; margin: 0 0 16px; }
 h3 { font-size: clamp(19px, 2vw, 23px); line-height: 1.35; margin: 0 0 8px; }
