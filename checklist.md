@@ -120,8 +120,21 @@ partnerBookings · partnerRevenue · partnerSchedule · partnerEvents · partner
     | `관리자` 문자열 | 45 | 27 |
   - `assetlinks.json` 은 **Vercel 도메인에만** 있다 (moahagwon·massaviet 는 404)
   - 즉 안드로이드 테스터 12명은 지금 **구버전 앱**을 쓰고 있다. 프로덕션 신청 전에 정리해야 한다
-  - 선택지 — ①Vercel 에 최신 소스 재배포(aab 재빌드 불필요, 배포는 사용자 스니펫 필요)
-    ②TWA 를 VPS 도메인으로 재지정(aab 재빌드 + 해당 도메인에 assetlinks.json 배포 필요)
+  - **①로 해결(2026-09-05).** Vercel 수동 배포 API 를 커밋 `a8b0cb8` 로 호출 → `READY`, `massa-seven.vercel.app` 별칭 연결
+    - verify: 292,713 bytes 로 `massa.moahagwon.com` 과 **동일 크기**, `nativeapp` 4 / `TOSS_ENABLED` 2 / `CANCEL_RULES` 12
+    - API 주소가 `massa.moahagwon.com` 으로 교체됨 (구 `sslip.io` 0건)
+    - `delete-account`·`privacy`·`terms`·`pay-start`·`pay-return` 전부 200, `assetlinks.json` 200 (`app.massa.hanoi` 유지 → TWA 검증 안 깨짐)
+  - Vercel 은 git 자동배포가 없다. 배포 트리거는 `PLAY_STORE_진행상황.md` §4 의 `/api/v13/deployments` 스니펫
+
+### C2-2. TWA 를 자체 도메인으로 옮기는 건 (검토만, 2026-09-05)
+사용자 요청 — "도메인이 있으니 Vercel 말고 여기로 다 옮기자". 확인 결과 **가능하지만 지금은 아니다.**
+- **iOS 는 무관하다.** `capacitor.config.json` 이 `webDir: "www"` — 원격 URL 이 아니라 **번들 자산**을 쓴다
+- 안드로이드만 해당. 시작 URL 은 aab 안에 박혀 있어 **bubblewrap 재빌드 + versionCode 증가 + Play 재업로드**가 필요하다
+- 새 호스트에 `assetlinks.json`(지문 2개) 를 먼저 올려야 한다. 안 그러면 주소창이 뜨는 반쪽 TWA 가 된다
+- 후보는 `app.massaviet.com`. 현재 앱 주소 `massa.moahagwon.com` 은 **학원 브랜드가 드러난다** — 도메인을 분리한 이유와 어긋나므로 옮길 값어치가 있다
+- ⚠️ **API 호스트는 옮기면 안 된다.** 이미 출시된 iOS 1.0~1.0.3 에 `massa.moahagwon.com` 이 박혀 있어 끊으면 기존 사용자가 죽는다. 옮기는 건 **웹 호스트만**
+- ⚠️ 프로덕션 신청(9/7)까지 2일이다. 재업로드가 14일 요건 계산에 영향을 주는지 확인되지 않았다.
+  **콘텐츠 결함은 위에서 이미 해소됐으므로**, 신청을 먼저 하고 도메인 이전은 다음 릴리스로 미루는 편이 안전하다
 - [x] C3. VPS DB 논리 백업 — **이미 돌고 있다** (2026-09-05 확인)
   - `crontab: 10 3 * * * /root/pg_backup.sh`, massa-db 포함 4개 DB 를 매일 03:10 덤프
   - `/root/backups` 에 10일치 보관, 디스크 26% 사용으로 여유 있음
