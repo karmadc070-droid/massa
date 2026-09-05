@@ -574,6 +574,17 @@ SMTP 때 겪은 것과 똑같은 함정이라 `scripts/vps-fix-notify-env.sh` �
 Cloudflare Email Routing 은 **규칙당 액션 1개 · 액션당 주소 1개 · 주소당 규칙 1개**다.
 - 현재: `support@massaviet.com` → `karmadc070@gmail.com` 만
 - 우회 ①(권장) `karmadc070` Gmail 설정에서 `moahagwon` 으로 자동 전달 — 사장님이 Gmail 에서 몇 번 클릭
+- **우회 ② Email Worker — 시도했으나 안 됐다. 되돌렸다** (2026-09-06)
+  - Worker(`massa-mail-fanout`)를 올려 `support@` 규칙을 `worker` 액션으로 바꿨다. API 는 전부 200
+  - 그런데 메일이 도착하지 않았다. **고객 문의가 유실될 수 있어 즉시 직접 전달로 복구**하고,
+    `wtest@massaviet.com` 이라는 별도 주소로 옮겨 시험했다 (support@ 는 건드리지 않은 채로)
+  - Workers Analytics: 호출 **1회 · status success · errors 0**. 그런데 4분이 지나도 미도착
+  - 원인 미확정. 내 Worker 코드가 `try/catch` 로 `forward` 실패를 삼켜서 **"success" 가 배달을 증명하지 못한다**.
+    다시 한다면 예외를 삼키지 말고 그대로 던져 analytics 에 errors 로 잡히게 해야 한다
+  - 시험 규칙과 Worker 를 **모두 삭제**했다. 남은 규칙은 `support@ → karmadc070` 하나뿐이고 워커는 0개
+  - ⚠️ **support@ 수신 자체는 아직 한 번도 실증되지 않았다.** 내가 연결된 Gmail 은 `moahagwon@gmail.com`
+    (보낸편지함이 비어 있고, moahagwon 앞으로 온 메일만 보인다)이라 karmadc070 도착 여부를 볼 수 없다.
+    사장님이 아무 계정에서 `support@massaviet.com` 으로 한 통 보내 karmadc070 에 오는지 확인해 주셔야 한다
 - 우회 ② catch-all 을 `moahagwon` 으로 돌리면 support@ 외 주소만 그쪽으로 간다 (support@ 는 여전히 한 곳)
 - **시스템 알림 메일은 이 제약과 무관하다** — Resend 로 보내므로 이미 두 주소에 모두 간다
 
