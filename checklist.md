@@ -391,3 +391,43 @@ FAB `openBot()` + 규칙 FAQ 15개 + 자연어 검색(`parseSearch` 7종 조건 
 
 > **번역 품질 주의.** 5개 언어 번역은 내가 작성한 것이다. 특히 베트남어는 주 사용자층 언어이므로
 > 원어민이 한 번 훑어보는 편이 좋다. 문장 구조는 검증됐지만 어감까지 보장하지는 못한다.
+
+## N. 전체 점검 (2026-09-05)
+
+사장님 요청으로 인프라·앱·DB·메일을 실제로 돌려 확인했다.
+
+### 정상 확인
+- 웹 엔드포인트 **16개 전부 200** (앱·admin·massaviet·Vercel·법적 페이지·결제 릴레이·assetlinks)
+- 컨테이너 **12개 전부 healthy**, 디스크 26%, 인증서 전부 11~12월 만료(여유)
+- 백업 **4개 DB 매일 03:10**, massa-db 포함 33개 보관
+- 소셜 로그인 **apple·google·kakao 전부 `true`**
+- 익명 RLS — 공개 카탈로그만 읽히고(providers·services·stores·reviews),
+  개인 데이터(bookings·profiles·messages)는 `[]`, 쓰기는 4개 테이블 전부 **42501**
+- 취소 규정 **4개 면 일치** (앱 상수·앱 봇·사이트 guide/faq·약관 = 3회/5회/7일/30일)
+- 가격 하드코딩 **0건**
+- Cloudflare Email Routing **enabled / status=ready / DNS동기화됨**, support 규칙 활성
+
+### 찾아서 고친 것
+
+- [x] **N1. 로그인 오버레이가 통째로 미번역이었다** — 가장 큰 결함
+  - `openAuth()` 의 15개 문구(제목·안내·입력 placeholder·버튼·소셜 3종·오류 문구)가 전부 `DICT` 에 없었다
+  - **예약하려는 비한국어 사용자가 처음 만나는 화면**인데 한국어로 떴다. 하노이 = 베트남어가 주 사용자층이다
+  - 봇만 고쳤을 때 "다국어 됐다"고 넘어갈 뻔했다. 화면을 실제로 훑어보고서야 드러났다
+  - verify: 라이브에서 베트남어로 전환 후 확인 — 제목·부제·placeholder·버튼·소셜 전부 베트남어
+
+- [x] **N2. 안드로이드 TWA 에 1.0.4 전체화면 수정이 적용되지 않고 있었다**
+  - `body.nativeapp` 은 `IS_NATIVE_APP`(Capacitor)일 때만 붙는다. **안드로이드는 TWA 라 false** 다
+  - 남은 건 `@media (max-width: 767px)` 뿐이라 **가로 모드(폭 767 초과)·태블릿에서 폰 목업 테두리와
+    가짜 상태바가 그대로 노출**된다. iOS 1.0.4 에서 고친 것과 똑같은 증상이 안드로이드에만 남아 있었다
+  - 수정: `@media (display-mode: standalone/fullscreen/minimal-ui)` 추가. TWA·PWA 는 standalone 으로 뜨므로
+    플래그 없이 잡힌다. 일반 브라우저 탭은 `browser` 라 영향 없음
+  - verify: CSSOM 에 규칙 3개 파싱됨, 브라우저 탭에서는 `현재매치=false` 로 목업 유지(회귀 없음)
+  - VPS·Vercel 양쪽 재배포 완료 → 안드로이드에 반영됨
+
+### 확인 못 한 것 / 남은 것
+- [ ] N3. `support@massaviet.com` **실제 수신 테스트** — VPS 25번 포트가 막혀 서버에서 발송 불가.
+  사장님이 아무 계정에서 한 통 보내보시면 확정된다
+- [ ] N4. iOS 1.0.4 심사 상태 — App Store Connect 세션이 만료돼 확인 못 했다
+- `zalo-login` 이 500 을 낸다 — 버그가 아니라 `ZALO_APP_ID 미설정`(C5 미완료). 앱 UI 에서 도달 불가
+- 앱 전 화면 다국어 스윕은 완주하지 못했다. 사장님 크롬의 1688 번역 확장이 DOM 을 계속 주입해
+  MutationObserver(60ms 마다 `translateTree(body)`)와 겹치면서 렌더러가 멈췄다. 확장 없는 환경에서 다시 볼 것
