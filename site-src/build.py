@@ -140,6 +140,13 @@ def auto_faq_ld(page):
     }, ensure_ascii=False, indent=1)
 
 # ── 페이지 골격 ────────────────────────────────────────────
+def css_version():
+    """Caddy 가 style.css 를 10분 캐시한다. 내용 해시를 쿼리로 붙여 배포 즉시 반영되게 한다."""
+    import hashlib
+    return hashlib.md5(open(f"{SRC}/style.css", "rb").read()).hexdigest()[:8]
+
+CSSV = ""
+
 def chrome(lang, name, L, body, page):
     cur = ' aria-current="page"'
     nav = "".join(
@@ -180,7 +187,7 @@ def chrome(lang, name, L, body, page):
 {verify}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/style.css?v={CSSV}">
 {ld}
 </head>
 <body>
@@ -240,9 +247,11 @@ def chrome(lang, name, L, body, page):
 # ── 빌드 ───────────────────────────────────────────────────
 def build():
     import importlib, sys
+    global CSSV
     sys.path.insert(0, SRC)
     os.makedirs(OUT, exist_ok=True)
     shutil.copy(f"{SRC}/style.css", f"{OUT}/style.css")
+    CSSV = css_version()
 
     written = []
     for lang in LANGS:
