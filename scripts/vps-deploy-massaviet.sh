@@ -58,7 +58,7 @@ fi
 
 echo "=== 인증서 발급 대기 ==="
 sleep 30
-for p in "" services.html guide.html safety.html faq.html partner.html about.html contact.html terms.html privacy.html robots.txt sitemap.xml; do
+for p in "" download.html services.html guide.html safety.html faq.html partner.html about.html contact.html terms.html privacy.html robots.txt sitemap.xml; do
   printf '%-16s ' "${p:-/}"
   curl -s -o /dev/null -w "%{http_code}\n" "https://massaviet.com/$p" || echo "실패"
 done

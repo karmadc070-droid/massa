@@ -87,6 +87,20 @@ table.tbl th { background: var(--bg-soft); font-weight: 700; white-space: nowrap
 
 .note { background: var(--bg-soft); border-left: 3px solid var(--accent); padding: 14px 18px; border-radius: 0 10px 10px 0; color: var(--muted); font-size: 15px; }
 
+/* ── 앱 스토어 버튼 ─────────────────────── */
+.stores { display: flex; gap: 12px; flex-wrap: wrap; margin: 24px 0 0; }
+.store {
+  display: flex; align-items: center; gap: 12px; text-decoration: none;
+  background: #fff; color: var(--text); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 13px 22px; min-width: 232px;
+}
+.store:hover { border-color: var(--accent); }
+.store .ico { font-size: 25px; line-height: 1; }
+.store b { display: block; font-size: 16px; letter-spacing: -.01em; }
+.store small { display: block; color: var(--muted); font-size: 13px; line-height: 1.5; }
+/* 아직 공개되지 않은 스토어는 링크를 걸지 않고 상태만 보여준다 */
+.store.off { opacity: .62; cursor: default; }
+
 /* ── 푸터 ───────────────────────────────── */
 footer.site { background: var(--navy-dark); color: #A9C0C8; padding: 40px 0 48px; font-size: 14.5px; margin-top: 20px; }
 footer.site a { color: #D6E4E9; text-decoration: none; }
