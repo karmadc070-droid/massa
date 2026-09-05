@@ -439,6 +439,124 @@ ADD.update({
 '완료': ['Hoàn tất', 'Completed', '已完成', '完了'],
 })
 
+# ── massa bot (2026-09-05) ──
+# 봇 문구가 통째로 DICT 에 없어 비한국어 사용자에게 한국어로 나오던 것을 채운다
+ADD.update({
+# UI
+'AI 자연어 검색 · 보통 몇 초 내 응답': [
+  'Tìm kiếm bằng ngôn ngữ tự nhiên · thường trả lời trong vài giây',
+  'Natural-language search · usually replies in seconds',
+  '自然语言搜索 · 通常几秒内回复', '自然言語検索 · 通常数秒で返信'],
+'예: 커플 마사지 10만원 이하': [
+  'VD: massage cặp đôi dưới 2 triệu ₫', 'e.g. couple massage under 2,000,000₫',
+  '例：情侣按摩 200万₫以下', '例：カップルマッサージ 200万₫以下'],
+'전송': ['Gửi', 'Send', '发送', '送信'],
+# 퀵리플라이
+'예약 방법': ['Cách đặt lịch', 'How to book', '如何预约', '予約方法'],
+'가격 안내': ['Bảng giá', 'Pricing', '价格说明', '料金案内'],
+'커플 마사지 가능한 곳': ['Nơi có massage cặp đôi', 'Places with couple massage', '可做情侣按摩的店', 'カップルマッサージ可'],
+'한국인이 많이 가는 곳': ['Nơi người Hàn hay đến', 'Popular with Koreans', '韩国人常去的店', '韓国人に人気の店'],
+'발마사지 잘하는 곳': ['Nơi massage chân tốt', 'Good foot massage', '足疗做得好的店', '足マッサージが上手な店'],
+'10만원 이하': ['Dưới 2 triệu ₫', 'Under 2,000,000₫', '200万₫以下', '200万₫以下'],
+# 검색 결과 조각
+'AI가 이해한 조건': ['Điều kiện AI hiểu được', 'What the AI understood', 'AI 理解的条件', 'AIが理解した条件'],
+'곳을 찾았어요!': ['nơi phù hợp!', 'places found!', '家符合！', '件見つかりました！'],
+'조건에 맞는 곳을 못 찾았어요 🙏': [
+  'Không tìm thấy nơi nào phù hợp 🙏', 'No matching places found 🙏',
+  '没有找到符合条件的店 🙏', '条件に合う店が見つかりませんでした 🙏'],
+# 인사·기본
+'안녕하세요! mㅏssㅏ봇이에요 😊 원하는 조건을 자연어로 말해보세요. 예: "커플 마사지 10만원 이하", "여성전용 네일".': [
+  'Xin chào! Mình là mㅏssㅏ bot 😊 Hãy nói điều kiện bạn muốn bằng lời thường. VD: "massage cặp đôi dưới 2 triệu ₫", "làm nail chỉ dành cho nữ".',
+  'Hello! I am the mㅏssㅏ bot 😊 Just describe what you want. e.g. "couple massage under 2,000,000₫", "women-only nails".',
+  '您好！我是 mㅏssㅏ 机器人 😊 请用日常语言说出您的需求。例如"情侣按摩 200万₫以下"、"女性专用美甲"。',
+  'こんにちは！mㅏssㅏボットです 😊 ご希望を普通の言葉でどうぞ。例：「カップルマッサージ 200万₫以下」「女性専用ネイル」。'],
+'mㅏssㅏ봇이에요 😊 "커플 마사지 가능한 곳", "발마사지 10만원 이하"처럼 자연어로 물어보셔도 돼요.': [
+  'Mình là mㅏssㅏ bot 😊 Bạn có thể hỏi tự nhiên như "nơi có massage cặp đôi", "massage chân dưới 2 triệu ₫".',
+  'I am the mㅏssㅏ bot 😊 You can ask naturally, like "places with couple massage" or "foot massage under 2,000,000₫".',
+  '我是 mㅏssㅏ 机器人 😊 您可以像"可做情侣按摩的店""足疗 200万₫以下"这样自然提问。',
+  'mㅏssㅏボットです 😊「カップルマッサージ可の店」「足マッサージ 200万₫以下」のように自然に聞いてください。'],
+'원하시는 조건을 말씀해 주세요. 예: "여성전용 네일", "24시간 타이 마사지", "아이랑 갈 수 있는 곳".': [
+  'Hãy cho mình biết điều kiện bạn muốn. VD: "nail chỉ dành cho nữ", "massage Thái 24 giờ", "nơi đi cùng trẻ em được".',
+  'Tell me what you are looking for. e.g. "women-only nails", "24-hour Thai massage", "kid-friendly places".',
+  '请告诉我您的条件。例如"女性专用美甲""24小时泰式按摩""可带孩子的店"。',
+  'ご希望の条件をお知らせください。例：「女性専用ネイル」「24時間タイマッサージ」「子ども同伴可の店」。'],
+# FAQ 답변
+'예약은 홈에서 서비스 선택 → 마사지사·코스 → 시간·위치 입력 → 예약 확정 순이에요. 결제는 서비스 완료 후 현장 결제(후불)입니다.': [
+  'Đặt lịch theo thứ tự: chọn dịch vụ ở trang chủ → chọn chuyên viên và gói → nhập giờ và địa điểm → xác nhận. Thanh toán sau khi xong dịch vụ, trả trực tiếp.',
+  'Booking order: pick a service on Home → choose a therapist and course → enter time and place → confirm. You pay on the spot after the service is finished.',
+  '预约顺序：首页选择服务 → 选择理疗师与套餐 → 输入时间与地点 → 确认预约。服务结束后现场付款。',
+  '予約の流れ：ホームでサービス選択 → セラピストとコース選択 → 時間と場所を入力 → 予約確定。お支払いはサービス完了後の現地払いです。'],
+'1회용 위생 키트와 신원·자격 검증(인증 마크), 앱 내 안전 버튼으로 안전을 지켜요.': [
+  'Chúng tôi dùng bộ vệ sinh dùng một lần, xác minh nhân thân và chứng chỉ (dấu xác thực), cùng nút an toàn trong ứng dụng.',
+  'We use single-use hygiene kits, verify identity and credentials (verified badge), and provide an in-app safety button.',
+  '我们使用一次性卫生用品，核验身份与资质（认证标识），并在应用内提供安全按钮。',
+  '使い捨て衛生キット、本人・資格の確認（認証マーク）、アプリ内の安全ボタンで安全を守ります。'],
+'계정 → 활동 내역(내 예약)에서 예약 상태와 시간을 확인할 수 있어요. 완료 후 결제·리뷰도 여기서 진행합니다.': [
+  'Xem trạng thái và giờ đặt tại Tài khoản → Lịch sử hoạt động (Lịch của tôi). Thanh toán và đánh giá sau khi hoàn tất cũng ở đây.',
+  'Check status and time under Account → Activity (My bookings). Payment and reviews after completion happen there too.',
+  '在 账户 → 活动记录（我的预约）中可查看预约状态与时间。完成后的付款与评价也在这里。',
+  'アカウント → 活動履歴（マイ予約）で予約状況と時間を確認できます。完了後の支払い・レビューもここです。'],
+'후불 결제입니다. 서비스 완료 후 현장 카드·현금·QR(MoMo·ZaloPay·VNPay)·계좌이체 중에 고르실 수 있어요. 쿠폰은 결제 화면에서 적용됩니다.': [
+  'Thanh toán sau. Sau khi xong dịch vụ, bạn chọn thẻ tại chỗ, tiền mặt, QR (MoMo·ZaloPay·VNPay) hoặc chuyển khoản. Mã giảm giá áp dụng ở màn hình thanh toán.',
+  'Payment is after the service. You can choose card on site, cash, QR (MoMo, ZaloPay, VNPay) or bank transfer. Coupons apply on the payment screen.',
+  '为后付款。服务结束后可选择现场刷卡、现金、QR（MoMo·ZaloPay·VNPay）或转账。优惠券在付款页面使用。',
+  '後払いです。サービス完了後、現地でのカード・現金・QR（MoMo・ZaloPay・VNPay）・振込から選べます。クーポンは支払い画面で適用します。'],
+'계정 → 쿠폰함에서 보유 쿠폰을 확인하고 받을 수 있어요. 결제 시 자동으로 적용 가능한 쿠폰이 표시됩니다.': [
+  'Xem và nhận mã giảm giá tại Tài khoản → Ví mã giảm giá. Khi thanh toán, các mã dùng được sẽ tự hiện ra.',
+  'View and claim coupons under Account → Coupons. Applicable coupons appear automatically at payment.',
+  '在 账户 → 优惠券 中查看并领取。付款时会自动显示可用的优惠券。',
+  'アカウント → クーポンで確認・受け取りができます。支払い時に使えるクーポンが自動で表示されます。'],
+'마음에 드는 마사지사는 카드 우측 상단 ♡를 눌러 찜해두세요. 계정 → 즐겨찾기에서 모아볼 수 있어요.': [
+  'Nhấn ♡ ở góc trên bên phải thẻ để lưu chuyên viên bạn thích. Xem lại ở Tài khoản → Yêu thích.',
+  'Tap the ♡ at the top right of a card to save a therapist. Find them under Account → Favorites.',
+  '点击卡片右上角的 ♡ 收藏喜欢的理疗师。可在 账户 → 收藏 中查看。',
+  'カード右上の ♡ で気に入ったセラピストを保存できます。アカウント → お気に入りでまとめて見られます。'],
+'계정 → 마사지사·홈뷰티 파트너 되기에서 신청할 수 있어요. 프리랜서/마사지샵을 고르고 신분증·계좌·사진을 올리면 관리자 확인 후 승인됩니다.': [
+  'Đăng ký tại Tài khoản → Trở thành đối tác. Chọn freelancer hoặc tiệm, tải lên giấy tờ tùy thân, tài khoản ngân hàng và ảnh; quản trị viên sẽ duyệt.',
+  'Apply under Account → Become a partner. Choose freelancer or shop, upload your ID, bank account and photos, and an admin will review it.',
+  '在 账户 → 成为合作伙伴 中申请。选择自由职业者或店铺，上传身份证件、银行账户与照片，管理员审核后通过。',
+  'アカウント → パートナーになるから申請できます。フリーランスか店舗を選び、身分証・口座・写真をアップすると管理者の確認後に承認されます。'],
+'홈 우상단 🌐 버튼에서 한국어·베트남어·영어·중국어·일본어로 바꿀 수 있어요.': [
+  'Đổi ngôn ngữ bằng nút 🌐 ở góc trên bên phải trang chủ: Hàn, Việt, Anh, Trung, Nhật.',
+  'Use the 🌐 button at the top right of Home to switch between Korean, Vietnamese, English, Chinese and Japanese.',
+  '点击首页右上角的 🌐 按钮，可切换韩语、越南语、英语、中文、日语。',
+  'ホーム右上の 🌐 ボタンから韓国語・ベトナム語・英語・中国語・日本語に切り替えられます。'],
+'홈 상단의 ✨ AI 맞춤 추천을 확인해 보세요. 이용 이력·평점·지역을 분석해 어울리는 마사지사를 골라드려요. 조건을 말해주시면 바로 찾아드릴게요.': [
+  'Hãy xem ✨ Gợi ý AI ở đầu trang chủ. Chúng tôi phân tích lịch sử, đánh giá và khu vực để chọn chuyên viên phù hợp. Bạn cứ nói điều kiện, mình tìm ngay.',
+  'Check ✨ AI picks at the top of Home. We look at your history, ratings and area to suggest a good match. Just tell me your conditions and I will search.',
+  '请看首页上方的 ✨ AI 推荐。我们会分析使用记录、评分与地区来挑选合适的理疗师。说出条件，我马上帮您找。',
+  'ホーム上部の ✨ AIおすすめをご覧ください。利用履歴・評価・エリアから合うセラピストを選びます。条件を教えていただければすぐ探します。'],
+'코스와 시간에 따라 달라집니다. 홈에서 서비스를 고르면 정확한 금액이 표시돼요.': [
+  'Giá thay đổi theo gói và thời lượng. Chọn dịch vụ ở trang chủ sẽ thấy số tiền chính xác.',
+  'It depends on the course and duration. Pick a service on Home to see the exact amount.',
+  '价格因套餐与时长而异。在首页选择服务即可看到准确金额。',
+  'コースと時間によって変わります。ホームでサービスを選ぶと正確な金額が表示されます。'],
+# 숫자·주소가 섞이는 문장의 조각들 (botPriceLine·botCancelLine·botContactLine 이 조립한다)
+'가장 저렴한 코스가': ['Gói rẻ nhất từ', 'The cheapest course starts at', '最便宜的套餐自', '一番安いコースは'],
+'부터예요. 코스와 시간에 따라 달라집니다.': [
+  'trở lên. Giá thay đổi theo gói và thời lượng.', 'and up. It varies by course and duration.',
+  '起。价格因套餐与时长而异。', 'からです。コースと時間によって変わります。'],
+'시간 전까지는 자유롭게 취소할 수 있어요.': [
+  'giờ trước giờ hẹn, bạn có thể hủy thoải mái.', 'hours before the appointment you can cancel freely.',
+  '小时前可自由取消。', '時間前までは自由にキャンセルできます。'],
+'그 이후 취소와 노쇼는 최근': ['Sau đó, hủy muộn và không đến sẽ tính trong', 'After that, late cancellations and no-shows count over the last',
+  '之后的取消与爽约将计入最近', 'それ以降のキャンセルとノーショーは直近'],
+'일 기준': ['ngày gần nhất:', 'days:', '天：', '日間で:'],
+'회 누적 시 경고,': ['lần sẽ bị cảnh báo,', 'times triggers a warning,', '次将收到警告，', '回で警告、'],
+'회 누적 시': ['lần thì', 'times means', '次则', '回で'],
+'일간 예약이 제한됩니다.': ['bị hạn chế đặt lịch trong ngày.', 'days of booking restriction.', '天内限制预约。', '日間予約が制限されます。'],
+'앱 내 채팅으로 마사지사와 직접 대화할 수 있어요. 그 외 문의는': [
+  'Bạn có thể nhắn trực tiếp với chuyên viên qua chat trong ứng dụng. Các thắc mắc khác xin gửi',
+  'You can chat directly with the therapist in the app. For anything else, email',
+  '您可以在应用内与理疗师直接聊天。其他咨询请发送邮件至',
+  'アプリ内チャットでセラピストと直接やり取りできます。その他のお問い合わせは'],
+'문의': ['Liên hệ', 'Contact', '咨询', 'お問い合わせ'],
+'웹사이트': ['Website', 'Website', '网站', 'ウェブサイト'],
+'으로 메일 주시면 순서대로 답변드립니다.': [
+  'chúng tôi sẽ trả lời theo thứ tự nhận được.', 'and we will reply in the order received.',
+  '，我们会按顺序回复。', 'までメールいただければ順にお返事します。'],
+})
+
 # 화면 제목
 TITLES = {
 '계정 정보': ['Thông tin tài khoản', 'Account', '账户信息', 'アカウント情報'],
