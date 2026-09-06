@@ -107,6 +107,10 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 .p .mt{font-size:11.5px;color:var(--ink-soft)}
 .p .rk{margin-left:auto;font-family:var(--serif);font-size:22px;color:var(--amber);flex:none}
 .empty{color:var(--ink-soft);font-size:13.5px;padding:26px 4px;text-align:center}
+.chip{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:600;padding:2px 7px;
+      border-radius:999px;vertical-align:1px;background:var(--sand-deep);color:var(--ink-soft)}
+.chip.t-vip{background:#EBDCC6;color:var(--amber)}
+.chip.t-shop{background:#DDE7EB;color:var(--cool)}
 
 /* ── 로그인 ── */
 .gate{max-width:372px;margin:9vh auto;background:var(--white);border:1px solid var(--line);
@@ -236,6 +240,11 @@ const rate = (a, b) => b ? (Math.round(a / b * 1000) / 10) + '%' : '—';
 const C = { amber:'#B0742F', clay:'#8C5A3C', sand:'#E0C9A6', ink:'#2A2320',
             cool:'#4A6D7C', good:'#2E7D5B', bad:'#B2506A', mute:'#C7BCAF' };
 
+const TIER_KO = { vip:'우대', shop:'가게', freelancer:'프리랜서' };
+const tierChip = (t, tiers) => t
+  ? `<span class="chip t-${esc(t)}">${esc(TIER_KO[t] || t)} ${tiers && tiers[t] != null ? Math.round(tiers[t]*100)+'%' : ''}</span>`
+  : '';
+
 let STATE = { bucket:'day', periods:14 }, LAST = null;
 
 const badge = (d, unit) => {
@@ -357,8 +366,11 @@ function donut(parts, total, midTop, midBot) {
 // ── 화면 채우기 ──
 function render(d) {
   const S = d.series || [], s = d.sum || {}, p = d.prev || {}, t = d.today || {}, now = d.now || {};
-  const rev = Math.round((s.gmv || 0) * Number(d.fee_rate || 0));
-  const prevRev = Math.round((p.gmv || 0) * Number(d.fee_rate || 0));
+  // 등급이 섞이면 "거래액 × 요율" 은 틀린다. DB 가 예약별 요율로 더해 준 값을 쓴다.
+  const rev = Number(s.fee || 0), prevRev = Number(p.fee || 0);
+  const tiers = d.fee_tiers || {};
+  const tierTxt = ['vip','shop','freelancer'].filter(k => tiers[k] != null)
+    .map(k => Math.round(tiers[k] * 100) + '%').join(' · ') || '등급별';
   const label = { day:'최근 14일', week:'최근 12주', month:'최근 12개월', year:'최근 5년' }[d.bucket];
 
   $('range').textContent =
@@ -388,8 +400,8 @@ function render(d) {
       prev:p.bookings ? p.matched / p.bookings : null, spark:col('matched'), c:C.good, amber:true,
       foot:s.bookings ? `실패 ${num((s.cancelled||0) + (s.no_show||0))}건` : '예약 없음' },
     { lab:'수수료 수익', val:short(rev) + '₫', now:rev, prev:prevRev,
-      spark:S.map(r => Math.round(r.gmv * Number(d.fee_rate || 0))), c:C.amber, amber:true,
-      foot:`거래액 ${short(s.gmv)}₫ · 요율 ${Math.round(Number(d.fee_rate) * 100)}%` }
+      spark:col('fee'), c:C.amber, amber:true,
+      foot:`거래액 ${short(s.gmv)}₫ · 요율 ${tierTxt}` }
   ].map(k => `<div class="card kpi">
       <div class="lab">${esc(k.lab)}</div>
       <div class="row"><div>
@@ -402,7 +414,8 @@ function render(d) {
   // 그래서 그래프는 거래액 하나만 그리고, 수수료는 숫자로 적는다.
   $('money-note').innerHTML =
     `완료된 예약의 거래액입니다. 이 기간 거래액 <b>${esc(vnd(s.gmv))}</b> 중 `
-    + `수수료 <b style="color:var(--amber)">${esc(vnd(rev))}</b> (요율 ${Math.round(Number(d.fee_rate) * 100)}%).`;
+    + `수수료 <b style="color:var(--amber)">${esc(vnd(rev))}</b>. `
+    + `요율은 마사지사 등급에 따라 ${esc(tierTxt)} 이고, 예약이 들어온 시점의 요율로 계산됩니다.`;
   $('c-money').innerHTML = area(S,
     [{ key:'gmv', name:'거래액', color:C.amber, fill:true }], short);
 
@@ -429,17 +442,19 @@ function render(d) {
         ${x.photo_url ? `<img class="av" src="${esc(x.photo_url)}" alt="" loading="lazy">`
                       : '<div class="av"></div>'}
         <div style="min-width:0">
-          <div class="nm">${esc(x.name || '(이름 없음)')}</div>
+          <div class="nm">${esc(x.name || '(이름 없음)')}${tierChip(x.tier, tiers)}</div>
           <div class="mt">예약 ${num(x.bookings)} · 완료 ${num(x.done)}
             ${x.rating != null ? ' · ★' + Number(x.rating).toFixed(1) : ''}
             ${x.district ? ' · ' + esc(x.district) : ''}</div>
-          <div class="mt">${vnd(x.gmv)}</div>
+          <div class="mt">${vnd(x.gmv)} · 수수료 ${vnd(x.fee)}</div>
         </div><div class="rk">${i + 1}</div></div>`).join('')}</div>`
     : '<div class="empty">이 기간에 들어온 예약이 없습니다.</div>';
 
+  const mix = now.tier_mix || {};
   $('who').innerHTML =
     `회원 ${num(now.members)}명<br>마사지사 ${num(now.providers_total)}명 `
-    + `(활동 ${num(now.providers_active)} · 심사 대기 ${num(now.providers_pending)})`;
+    + `(활동 ${num(now.providers_active)} · 심사 대기 ${num(now.providers_pending)})<br>`
+    + `수수료 ${TIER_KO.vip} ${num(mix.vip)} · ${TIER_KO.shop} ${num(mix.shop)} · ${TIER_KO.freelancer} ${num(mix.freelancer)}`;
 }
 
 async function loadData() {
