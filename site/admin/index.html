@@ -138,10 +138,13 @@ const short = (n) => { n = Number(n || 0);
 const pct = (a, b) => b ? Math.round(a / b * 1000) / 10 + '%' : '—';
 
 let STATE = { bucket: 'day', periods: 14 };
+let LAST = null;   // 창 크기가 바뀌면 차트를 다시 그려야 해서 마지막 응답을 들고 있는다
 
 // ── 막대 그래프. 라이브러리 없이 SVG 로 직접 그린다(외부 의존을 늘릴 이유가 없다) ──
 function bars(rows, series, fmt) {
-  const W = 1000, H = 210, PAD_L = 8, PAD_B = 26, PAD_T = 14;
+  // height:auto 라 viewBox 의 가로세로비가 곧 화면 높이가 된다.
+  // 좁은 화면에서 1000:210 을 그대로 쓰면 차트가 70px 로 납작해져 읽을 수 없다.
+  const W = innerWidth < 760 ? 460 : 1000, H = 210, PAD_L = 8, PAD_B = 26, PAD_T = 14;
   const max = Math.max(1, ...rows.flatMap(r => series.map(s => Number(r[s.key] || 0))));
   const n = rows.length, gw = (W - PAD_L * 2) / Math.max(n, 1);
   const bw = Math.max(2, Math.min(26, gw / (series.length + 0.8)));
@@ -162,8 +165,8 @@ function bars(rows, series, fmt) {
          + ` height="${Math.max(v > 0 ? 1.5 : 0, h).toFixed(1)}" fill="${s.color}" rx="1.5">`
          + `<title>${esc(r.k)} · ${esc(s.name)} ${esc(fmt(v))}</title></rect>`;
     });
-    // 눈금이 빽빽하면 건너뛴다
-    const step = Math.ceil(n / 14);
+    // 눈금이 빽빽하면 건너뛴다. 좁은 화면일수록 더 많이 건너뛴다
+    const step = Math.ceil(n / (W < 700 ? 5 : 14));
     if (i % step === 0 || i === n - 1)
       g += `<text x="${cx}" y="${H - 8}" font-size="10.5" fill="#6B5F57" text-anchor="middle">`
          + `${esc(r.k.length > 7 ? r.k.slice(5) : r.k)}</text>`;
@@ -171,7 +174,7 @@ function bars(rows, series, fmt) {
   const key = series.map(s =>
     `<span style="display:inline-flex;align-items:center;gap:6px;margin-right:16px;font-size:12.5px;color:#6B5F57">
        <i style="width:10px;height:10px;border-radius:2px;background:${s.color};display:inline-block"></i>${esc(s.name)}</span>`).join('');
-  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img">${g}</svg>
+  return `<svg viewBox="0 0 ${W} ${H}" role="img">${g}</svg>
           <div style="padding:8px 0 4px">${key}</div>`;
 }
 
@@ -230,8 +233,15 @@ async function loadData() {
   const { data, error } = await sb.rpc('admin_dashboard',
     { p_bucket: STATE.bucket, p_periods: STATE.periods });
   if (error) { $('range').textContent = '불러오지 못했습니다 — ' + error.message; return; }
+  LAST = data;
   render(data);
 }
+
+let rz;
+addEventListener('resize', () => {
+  clearTimeout(rz);
+  rz = setTimeout(() => { if (LAST) render(LAST); }, 200);
+});
 
 $('tabs').onclick = (e) => {
   const b = e.target.closest('button[data-b]'); if (!b) return;

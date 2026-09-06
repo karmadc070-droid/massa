@@ -255,8 +255,7 @@ def build():
 
     # 관리자 지표 화면은 콘텐츠 페이지가 아니라 앱이다. 템플릿을 타지 않고 그대로 옮긴다.
     # 접근 통제는 여기가 아니라 DB 함수(admin_dashboard)가 한다.
-    shutil.rmtree(f"{OUT}/admin", ignore_errors=True)
-    shutil.copytree(f"{SRC}/admin", f"{OUT}/admin")
+    shutil.copytree(f"{SRC}/admin", f"{OUT}/admin", dirs_exist_ok=True)
 
     written = []
     for lang in LANGS:
