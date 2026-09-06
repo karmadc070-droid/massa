@@ -153,7 +153,8 @@ function bars(rows, series, fmt) {
   for (let i = 1; i <= 3; i++) {
     const y = PAD_T + (H - PAD_T - PAD_B) * (1 - i / 3);
     g += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="#E2D8CB" stroke-width="1"/>`
-       + `<text x="0" y="${y - 5}" font-size="11" fill="#6B5F57">${esc(fmt(max * i / 3))}</text>`;
+       // 눈금 값은 정수로 맞춘다. 안 그러면 "2.333" 같은 값이 축에 찍힌다
+       + `<text x="0" y="${y - 5}" font-size="11" fill="#6B5F57">${esc(fmt(Math.round(max * i / 3)))}</text>`;
   }
   rows.forEach((r, i) => {
     const cx = PAD_L + gw * (i + 0.5);
