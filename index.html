@@ -1247,6 +1247,8 @@ function fillList(screenId, providers) {
       SEL.serviceType = (SEL.provider.specialties || ['nail'])[0];
       window.book();
     } else {
+      // 홈뷰티를 보고 온 뒤라면 종류가 뷰티로 남아 있다. 마사지 경로에서는 마사지로 되돌린다.
+      if (BEAUTY_KEYS[SEL.serviceType]) { SEL.serviceType = 'aroma'; SEL.serviceId = null; }
       window.book();
     }
   });
