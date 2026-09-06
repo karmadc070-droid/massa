@@ -437,8 +437,9 @@ function render(d) {
         </div><div class="rk">${i + 1}</div></div>`).join('')}</div>`
     : '<div class="empty">이 기간에 들어온 예약이 없습니다.</div>';
 
-  document.querySelector('nav.side .foot #who').textContent =
-    `마사지사 ${num(now.providers_total)}명 · 활동 ${num(now.providers_active)} · 심사 대기 ${num(now.providers_pending)}`;
+  $('who').innerHTML =
+    `회원 ${num(now.members)}명<br>마사지사 ${num(now.providers_total)}명 `
+    + `(활동 ${num(now.providers_active)} · 심사 대기 ${num(now.providers_pending)})`;
 }
 
 async function loadData() {
