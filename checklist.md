@@ -588,3 +588,38 @@ Cloudflare Email Routing 은 **규칙당 액션 1개 · 액션당 주소 1개 ·
 - 우회 ② catch-all 을 `moahagwon` 으로 돌리면 support@ 외 주소만 그쪽으로 간다 (support@ 는 여전히 한 곳)
 - **시스템 알림 메일은 이 제약과 무관하다** — Resend 로 보내므로 이미 두 주소에 모두 간다
 
+
+### P5. support@massaviet.com 수신이 실제로 안 된다 — 원인 미확정 (2026-09-06)
+
+**증상.** 발송은 성공하는데 도착하지 않고, **바운스도 오지 않는다.** 50분 이상 기다려도 마찬가지.
+
+**확인한 것 — 설정은 모든 축에서 정상이다**
+| 항목 | 상태 |
+|---|---|
+| zone | `active`, 네임서버 Cloudflare |
+| MX | route1·2·3.mx.cloudflare.net 3개 (외부 DNS 1.1.1.1 에서도 조회됨) |
+| SPF | `v=spf1 include:_spf.mx.cloudflare.net ~all` |
+| Email Routing | `enabled=true` · `status=ready` · `synced=true` |
+| 규칙 | `support@massaviet.com` → forward, **priority 0**, enabled |
+| catch-all | **비활성** (drop 이지만 꺼져 있어 이 규칙에 걸리지 않는다) |
+| 수신 주소 | karmadc070·moahagwon **둘 다 verified** |
+
+**시험한 것**
+- A. Resend → support@ → karmadc070 : 확인 불가 (내가 볼 수 없는 메일함)
+- B. Resend → wtest@ → Worker → 두 주소 : **미도착**. Worker 는 호출 1회·success·errors 0
+- C. Resend → support@ → **moahagwon** (내가 볼 수 있는 곳으로 돌려서) : **미도착** ← 가장 결정적
+- D. Gmail(moahagwon) → support@ → moahagwon : 미도착이지만 **이 시험은 무효다.**
+  Gmail 은 같은 Message-ID 를 중복 제거하므로 자기 자신에게 되돌아오는 메일은 안 보일 수 있다. 설계 실수였다
+
+C 가 실패한 것이 핵심이다. **Worker 문제가 아니라 massaviet.com 인바운드 자체가 배달되지 않는다.**
+
+**남은 가설** — Email Routing 을 켠 지 1시간이 안 됐다. 프로비저닝이 덜 끝났을 가능성.
+Resend 키가 발송 전용이라 배달 상태를 조회할 수 없어 더 좁히지 못했다.
+
+**현재 상태** — `support@ → karmadc070@gmail.com` 원상 복구. 시험용 Worker·규칙은 전부 삭제.
+
+- [ ] **P5-1. 사장님 확인 부탁**: 휴대폰 등 아무 계정에서 `support@massaviet.com` 으로 한 통 보내고
+  karmadc070 에 오는지 확인. **오면** 프로비저닝 지연이었던 것이고, 그때 두 곳 받기를 마저 붙인다.
+  **안 오면** 사이트 문의 페이지가 죽은 주소를 안내하고 있는 셈이라 우선순위를 올려야 한다
+- [ ] P5-2. 두 곳으로 받기는 수신이 실증된 뒤에. Gmail 자동 전달이 가장 확실하고,
+  Email Worker 를 다시 쓴다면 **`forward` 예외를 삼키지 말 것** (그래야 analytics 에 errors 로 잡힌다)
