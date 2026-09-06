@@ -2608,7 +2608,7 @@ async function loadPartnerRevenue() {
   const total = sum(paid);
   const inDays = (d) => paid.filter(b => (now - new Date(b.completed_at || b.created_at).getTime()) < d * 864e5);
   const wk = sum(inDays(7)), mo = sum(inDays(30));
-  const fee = Math.round(total * FEE_RATE), net = total - fee;
+  const fee = sumFee(paid), net = total - fee;
   const completed = rows.filter(b => b.status === 'completed').length;
   const kpis = [
     ['총 매출', total.toLocaleString() + '₫'],
@@ -2706,7 +2706,12 @@ window.reportChat = () => {
   openReport(p ? p.display_name : '제공자', CHAT_PID);
 };
 window.blockChat = () => { if (CHAT_PID) toggleBlock(CHAT_PID); };
-let FEE_RATE = 0.10;          // 플랫폼 수수료(설정에서 변경 가능)
+let FEE_RATE = 0.20;          // 등급을 못 찾았을 때의 대체 요율 (덜 받는 실수를 막으려 높은 쪽)
+let FEE_TIERS = { vip: 0.10, shop: 0.15, freelancer: 0.20 };
+const TIER_KO = { vip: '우대', shop: '가게', freelancer: '프리랜서' };
+// 예약마다 요율이 다르다. 예약에 박힌 fee_rate 를 쓰고, 없으면 대체 요율을 쓴다.
+const feeOf = (b) => Math.round((b.amount_vnd || 0) * (b.fee_rate != null ? Number(b.fee_rate) : FEE_RATE));
+const sumFee = (arr) => (arr || []).reduce((a, b) => a + feeOf(b), 0);
 let DUE_DAYS = 3;             // 완료 후 입금 기한(일)
 let SETT_AUTO = false;        // 자동 경고
 window.toggleAutoWarn = (on) => { SETT_AUTO = on; loadSettlement(); };
@@ -2717,15 +2722,22 @@ function won(n) { return Number(n || 0).toLocaleString(); }
 async function loadSettlement() {
   const wrap = document.getElementById('settlementList'); if (!wrap) return;
   wrap.innerHTML = '<div class="hint">불러오는 중…</div>';
-  const { data, error } = await sb.from('bookings').select('provider_id, amount_vnd, is_paid, created_at, completed_at, providers(display_name, deposit_code)').eq('is_paid', true);
+  const { data, error } = await sb.from('bookings').select('provider_id, amount_vnd, fee_rate, is_paid, created_at, completed_at, providers(display_name, deposit_code, fee_tier)').eq('is_paid', true);
   if (error) { wrap.innerHTML = '<div class="notice">불러오기 실패: ' + error.message + '</div>'; return; }
   const { data: setts } = await sb.from('settlement').select('*');
   const smap = {}; (setts || []).forEach(s => smap[s.provider_id] = s);
   // 마사지사가 올린 입금 신고 중 아직 확인 안 된 것 — 관리자가 통장과 대조할 대상이다
   const { data: reps } = await sb.from('provider_deposit').select('*').eq('status', 'reported').eq('kind', 'commission');
+  // 등급과 '10% 후보' 추천. 추천만 하고 올리는 건 사람이 누른다.
+  let sugMap = {};
+  try {
+    const { data: fees } = await sb.rpc('admin_provider_fees');
+    ((fees && fees.rows) || []).forEach(x => sugMap[x.id] = x);
+    if (fees && fees.tiers) FEE_TIERS = fees.tiers;
+  } catch (e) {}
   const rmap = {}; (reps || []).forEach(d => { (rmap[d.provider_id] = rmap[d.provider_id] || []).push(d); });
   const g = {};
-  (data || []).forEach(b => { const t = b.completed_at || b.created_at; const k = b.provider_id || 'none'; if (!g[k]) g[k] = { id: b.provider_id, name: b.providers ? b.providers.display_name : '미배정', code: b.providers ? b.providers.deposit_code : null, sum: 0, cnt: 0, first: t }; g[k].sum += b.amount_vnd; g[k].cnt++; if (t < g[k].first) g[k].first = t; });
+  (data || []).forEach(b => { const t = b.completed_at || b.created_at; const k = b.provider_id || 'none'; if (!g[k]) g[k] = { id: b.provider_id, name: b.providers ? b.providers.display_name : '미배정', code: b.providers ? b.providers.deposit_code : null, tier: b.providers ? b.providers.fee_tier : null, sum: 0, fee: 0, cnt: 0, first: t }; g[k].sum += b.amount_vnd; g[k].fee += feeOf(b); g[k].cnt++; if (t < g[k].first) g[k].first = t; });
   const rows = Object.values(g).sort((a, b) => b.sum - a.sum);
   const now = Date.now();
   // 자동 경고: 지연·미입금·미경고 건 자동 기록
@@ -2739,7 +2751,7 @@ async function loadSettlement() {
     const { data: s2 } = await sb.from('settlement').select('*'); (s2 || []).forEach(s => smap[s.provider_id] = s);
   }
   wrap.innerHTML = rows.length ? rows.map(r => {
-    const fee = Math.round(r.sum * FEE_RATE);       // 회사가 받을 돈
+    const fee = r.fee;                               // 예약별 요율로 더한 값
     const keep = r.sum - fee;                        // 마사지사 수령
     const dueMs = new Date(r.first).getTime() + DUE_DAYS * 864e5;
     const s = r.id ? smap[r.id] : null;
@@ -2767,11 +2779,33 @@ async function loadSettlement() {
     return '<div class="card" style="cursor:default">'
       + '<div class="trow1"><span class="t">' + r.name + ' ' + code + '</span>' + badge + '</div>'
       + '<div class="d">' + r.cnt + '건 · 고객 결제 ' + r.sum.toLocaleString() + '₫</div>'
-      + '<div class="d" style="color:#1E6B45;font-weight:bold">받을 수수료(' + Math.round(FEE_RATE * 100) + '%) ' + fee.toLocaleString() + '₫</div>'
+      + '<div class="d" style="color:#1E6B45;font-weight:bold">받을 수수료 ' + fee.toLocaleString() + '₫</div>'
       + '<div class="d">마사지사 수령 ' + keep.toLocaleString() + '₫ · 입금기한 ' + fmtDate(dueMs) + '까지</div>'
+      + tierRow(r, sugMap[r.id])
       + warned + pend + btns + '</div>';
   }).join('') : '<div class="notice">정산할 결제 내역이 없습니다.</div>';
 }
+// 수수료 등급 줄. 지금 등급을 보여 주고, 눌러서 바꾼다.
+function tierRow(r, sug) {
+  if (!r.id) return '';
+  const cur = r.tier || 'freelancer';
+  const chips = ['vip', 'shop', 'freelancer'].map(t =>
+    '<button class="chip' + (t === cur ? ' sel' : '') + '" onclick="setTier(\'' + r.id + '\',\'' + t + '\')">'
+    + TIER_KO[t] + ' ' + Math.round((FEE_TIERS[t] || 0) * 100) + '%</button>').join('');
+  const hint = (sug && sug.suggest_vip)
+    ? '<div class="d" style="color:#B0742F;font-weight:bold">최근 30일 완료 ' + sug.done_recent
+      + '건 · 평점 ' + (sug.rating == null ? '-' : Number(sug.rating).toFixed(1))
+      + ' — 우대 10% 후보입니다</div>' : '';
+  return hint + '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">'
+    + '<span class="d" style="margin-right:2px">수수료 등급</span>' + chips + '</div>';
+}
+window.setTier = async (id, tier) => {
+  if (!confirm(TIER_KO[tier] + ' ' + Math.round((FEE_TIERS[tier] || 0) * 100) + '% 로 바꿀까요?\n\n'
+    + '이미 들어온 예약의 수수료는 바뀌지 않습니다. 지금부터 들어오는 예약에만 적용됩니다.')) return;
+  const { error } = await sb.rpc('set_fee_tier', { p_provider: id, p_tier: tier });
+  if (error) { alert('실패: ' + error.message); return; }
+  loadSettlement();
+};
 window.loadSettlement = loadSettlement;
 
 // ── 정산 사이클(주/월 마감) ──
@@ -2884,16 +2918,16 @@ async function loadMySettle() {
   // 내가 올린 입금 신고 상태
   const { data: myDeps } = await sb.from('provider_deposit').select('*').in('provider_id', ids).order('reported_at', { ascending: false }).limit(20);
   const depMap = {}; (myDeps || []).forEach(d => { (depMap[d.provider_id] = depMap[d.provider_id] || []).push(d); });
-  const { data: bks } = await sb.from('bookings').select('provider_id, amount_vnd, created_at, completed_at, is_paid').in('provider_id', ids).eq('is_paid', true);
+  const { data: bks } = await sb.from('bookings').select('provider_id, amount_vnd, fee_rate, created_at, completed_at, is_paid').in('provider_id', ids).eq('is_paid', true);
   const { data: setts } = await sb.from('settlement').select('*').in('provider_id', ids);
   const smap = {}; (setts || []).forEach(s => smap[s.provider_id] = s);
   const g = {};
-  (bks || []).forEach(b => { const t = b.completed_at || b.created_at; const k = b.provider_id; if (!g[k]) g[k] = { id: k, name: nameMap[k] || '', sum: 0, cnt: 0, first: t }; g[k].sum += b.amount_vnd; g[k].cnt++; if (t < g[k].first) g[k].first = t; });
+  (bks || []).forEach(b => { const t = b.completed_at || b.created_at; const k = b.provider_id; if (!g[k]) g[k] = { id: k, name: nameMap[k] || '', sum: 0, fee: 0, cnt: 0, first: t }; g[k].sum += b.amount_vnd; g[k].fee += feeOf(b); g[k].cnt++; if (t < g[k].first) g[k].first = t; });
   const rows = Object.values(g);
   if (!rows.length) { wrap.innerHTML = '<div class="notice">아직 정산할 완료 예약이 없습니다.</div>'; return; }
   const now = Date.now(); let totalOwe = 0;
   const cards = rows.map(r => {
-    const fee = Math.round(r.sum * FEE_RATE); totalOwe += fee;
+    const fee = r.fee; totalOwe += fee;
     const dueMs = new Date(r.first).getTime() + DUE_DAYS * 864e5;
     const s = smap[r.id]; const paid = s && s.status === 'paid'; const overdue = !paid && now > dueMs;
     const badge = paid ? '<span style="color:#1E6B45;font-weight:bold;font-size:12px">입금 완료</span>'
@@ -3104,7 +3138,8 @@ async function loadAiBiz() {
   // 매출 예측
   html += '<div class="card" style="cursor:default"><div class="trow1"><span class="t">💵 AI 매출 예측 (다음 주)</span></div>'
     + '<div class="d" style="color:#1E6B45;font-weight:bold">예상 매출 ' + nextRev.toLocaleString() + '₫</div>'
-    + '<div class="d">회사 입금 예상(10%) ' + Math.round(nextRev * FEE_RATE).toLocaleString() + '₫ · 내 수령 예상 ' + Math.round(nextRev * (1 - FEE_RATE)).toLocaleString() + '₫</div>'
+    + (() => { const mine = list.find(b => b.fee_rate != null); const rt = mine ? Number(mine.fee_rate) : FEE_RATE;
+        return '<div class="d">회사 입금 예상(' + Math.round(rt * 100) + '%) ' + Math.round(nextRev * rt).toLocaleString() + '₫ · 내 수령 예상 ' + Math.round(nextRev * (1 - rt)).toLocaleString() + '₫</div>'; })()
     + '<div class="d">' + (list.length < 10 ? '데이터가 적어 오차가 큽니다. 예약이 쌓일수록 정확해져요.' : '최근 4주 추세 기반 추정치입니다.') + '</div></div>';
   wrap.innerHTML = html;
 }
@@ -3244,11 +3279,11 @@ window.createCoupon = async () => {
 async function loadSales() {
   const wrap = document.getElementById('salesList'); if (!wrap) return;
   wrap.innerHTML = '<div class="hint">분석 중…</div>';
-  const { data } = await sb.from('bookings').select('amount_vnd, created_at, is_paid, provider_id, providers(display_name, kind)').eq('is_paid', true).limit(1000);
+  const { data } = await sb.from('bookings').select('amount_vnd, fee_rate, created_at, is_paid, provider_id, providers(display_name, kind)').eq('is_paid', true).limit(1000);
   const list = data || [];
   if (!list.length) { wrap.innerHTML = '<div class="notice">결제 완료된 예약이 없습니다.</div>'; return; }
   const total = list.reduce((a, b) => a + (b.amount_vnd || 0), 0);
-  const fee = Math.round(total * FEE_RATE);
+  const fee = sumFee(list);
   const now = new Date(); const mKey = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
   const months = {}; list.forEach(b => { const k = mKey(new Date(b.created_at)); months[k] = (months[k] || 0) + (b.amount_vnd || 0); });
   const mk = Object.keys(months).sort().slice(-6);
@@ -4277,7 +4312,7 @@ async function load() {
     CACHE.providers = providers;
     fillList('thList', providers.filter(p => p.kind === 'masseur'));
     if (window.loadAiRecos) loadAiRecos();
-    try { const { data: fs } = await sb.from('app_settings').select('value').eq('key', 'fee').maybeSingle(); if (fs && fs.value) { FEE_RATE = fs.value.rate ?? FEE_RATE; DUE_DAYS = fs.value.due_days ?? DUE_DAYS; } } catch (e) {}
+    try { const { data: fs } = await sb.from('app_settings').select('value').eq('key', 'fee').maybeSingle(); if (fs && fs.value) { FEE_RATE = fs.value.rate ?? FEE_RATE; DUE_DAYS = fs.value.due_days ?? DUE_DAYS; if (fs.value.tiers) FEE_TIERS = fs.value.tiers; } } catch (e) {}
     fillList('therapy', providers.filter(p => p.kind === 'therapist'));
     const { data: services, error: e3 } = await sb.from('services').select('*');
     if (e3) throw e3; CACHE.services = services;
