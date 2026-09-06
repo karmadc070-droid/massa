@@ -1057,10 +1057,12 @@
   <div class="screen" id="adminBookings" data-title="예약 관리 (관리자)">
     <div class="chips" id="abFilter">
       <div class="chip sel" data-s="all" onclick="pick(this);loadAdminBookings()">전체</div>
-      <div class="chip" data-s="pending" onclick="pick(this);loadAdminBookings()">대기</div>
-      <div class="chip" data-s="accepted" onclick="pick(this);loadAdminBookings()">수락</div>
+      <div class="chip" data-s="requested" onclick="pick(this);loadAdminBookings()">요청됨</div>
+      <div class="chip" data-s="confirmed" onclick="pick(this);loadAdminBookings()">확정</div>
+      <div class="chip" data-s="in_progress" onclick="pick(this);loadAdminBookings()">진행 중</div>
       <div class="chip" data-s="completed" onclick="pick(this);loadAdminBookings()">완료</div>
       <div class="chip" data-s="cancelled" onclick="pick(this);loadAdminBookings()">취소</div>
+      <div class="chip" data-s="no_show" onclick="pick(this);loadAdminBookings()">노쇼</div>
     </div>
     <div id="adminBkList"></div>
   </div>
@@ -2376,7 +2378,7 @@ async function loadPartnerBookings() {
 }
 window.loadPartnerBookings = loadPartnerBookings;
 window.setBookingStatus = async (id, st) => {
-  await sb.from('bookings').update(Object.assign({ status: st }, st === 'completed' ? { completed_at: new Date().toISOString() } : st === 'accepted' ? { accepted_at: new Date().toISOString() } : {})).eq('id', id);
+  await sb.from('bookings').update(Object.assign({ status: st }, st === 'completed' ? { completed_at: new Date().toISOString() } : {})).eq('id', id);
   loadPartnerBookings();
 };
 // 파트너: 고객 노쇼 처리 (고객 페널티 누적)
@@ -3196,7 +3198,10 @@ async function loadAdminBookings() {
   if (st !== 'all') q = q.eq('status', st);
   const { data, error } = await q;
   if (error) { wrap.innerHTML = '<div class="notice">불러오기 실패: ' + error.message + '</div>'; return; }
-  const ST = { pending: ['대기','#E8A33D'], accepted: ['수락','#2E8B8B'], completed: ['완료','#1E6B45'], cancelled: ['취소','#E5484D'], rejected: ['거절','#E5484D'] };
+  // 실제 상태값(booking_status enum)과 하나씩 맞춘다.
+  const ST = { requested: ['요청됨','#E8A33D'], confirmed: ['확정','#2E8B8B'],
+               on_the_way: ['이동 중','#2E8B8B'], in_progress: ['진행 중','#2E8B8B'],
+               completed: ['완료','#1E6B45'], cancelled: ['취소','#E5484D'], no_show: ['노쇼','#E5484D'] };
   wrap.innerHTML = (data && data.length) ? data.map(b => {
     const s = ST[b.status] || [b.status, '#7A8C94'];
     return '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + (b.booking_no || b.id.slice(0, 8)) + '</span><span style="color:' + s[1] + ';font-weight:bold;font-size:12px">' + s[0] + '</span></div>'
@@ -3209,7 +3214,7 @@ async function loadAdminBookings() {
   }).join('') : '<div class="notice">해당 상태의 예약이 없습니다.</div>';
 }
 window.loadAdminBookings = loadAdminBookings;
-window.adminSetBooking = async (id, status) => { const patch = { status }; if (status === 'completed') patch.completed_at = new Date().toISOString(); if (status === 'accepted') patch.accepted_at = new Date().toISOString(); await sb.from('bookings').update(patch).eq('id', id); loadAdminBookings(); };
+window.adminSetBooking = async (id, status) => { const patch = { status }; if (status === 'completed') patch.completed_at = new Date().toISOString(); await sb.from('bookings').update(patch).eq('id', id); loadAdminBookings(); };
 
 // ── 관리자: 기사(마사지사) 관리 ──
 async function loadAdminProviders() {
