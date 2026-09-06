@@ -190,7 +190,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
     <div class="grid g23">
       <div class="card" id="s-money">
         <h3>수익</h3>
-        <p class="note">완료된 예약의 거래액과 거기서 나오는 수수료입니다.</p>
+        <p class="note" id="money-note"></p>
         <div id="c-money"></div>
       </div>
       <div class="card" id="s-match">
@@ -238,15 +238,20 @@ const C = { amber:'#B0742F', clay:'#8C5A3C', sand:'#E0C9A6', ink:'#2A2320',
 
 let STATE = { bucket:'day', periods:14 }, LAST = null;
 
+const badge = (d, unit) => {
+  if (Math.abs(d) < 0.05) return '<span class="delta">변화 없음</span>';
+  return `<span class="delta ${d > 0 ? 'up' : 'dn'}">${d > 0 ? '▲' : '▼'} ${Math.abs(d).toFixed(1)}${unit}</span>`;
+};
 // 직전 기간 대비 증감. 이전이 0이면 비율을 낼 수 없으니 말로 쓴다.
 function delta(now, prev) {
   now = Number(now||0); prev = Number(prev||0);
-  if (!prev) return now ? '<span class="delta up">신규</span>'
-                        : '<span class="delta">변화 없음</span>';
-  const d = (now - prev) / prev * 100;
-  if (Math.abs(d) < 0.05) return '<span class="delta">변화 없음</span>';
-  const cls = d > 0 ? 'up' : 'dn';
-  return `<span class="delta ${cls}">${d > 0 ? '▲' : '▼'} ${Math.abs(d).toFixed(1)}%</span>`;
+  if (!prev) return now ? '<span class="delta up">신규</span>' : '<span class="delta">변화 없음</span>';
+  return badge((now - prev) / prev * 100, '%');
+}
+// 비율끼리는 나누면 안 된다. 81.1% 에서 81.3% 로 간 건 "0.2%p 상승"이지 "0.2% 상승"이 아니다.
+function deltaPoint(now, prev) {
+  if (prev == null || !isFinite(prev)) return '<span class="delta">비교 없음</span>';
+  return badge((Number(now) - Number(prev)) * 100, '%p');
 }
 
 // ── 그리기 도구. 라이브러리 없이 SVG 로 직접 그린다 ──
@@ -378,8 +383,9 @@ function render(d) {
       foot:`신규 기기 ${num(s.newbies)} · 가입 ${num(s.signups)}` },
     { lab:'예약', val:num(s.bookings), now:s.bookings, prev:p.bookings, spark:col('bookings'), c:C.cool,
       foot:`성사 ${num(s.matched)} · 완료 ${num(s.done)}` },
-    { lab:'매칭율', val:rate(s.matched, s.bookings), now:s.bookings ? s.matched / s.bookings : 0,
-      prev:p.bookings ? p.matched / p.bookings : 0, spark:col('matched'), c:C.good, amber:true,
+    { lab:'매칭율', val:rate(s.matched, s.bookings), point:true,
+      now:s.bookings ? s.matched / s.bookings : 0,
+      prev:p.bookings ? p.matched / p.bookings : null, spark:col('matched'), c:C.good, amber:true,
       foot:s.bookings ? `실패 ${num((s.cancelled||0) + (s.no_show||0))}건` : '예약 없음' },
     { lab:'수수료 수익', val:short(rev) + '₫', now:rev, prev:prevRev,
       spark:S.map(r => Math.round(r.gmv * Number(d.fee_rate || 0))), c:C.amber, amber:true,
@@ -388,15 +394,17 @@ function render(d) {
       <div class="lab">${esc(k.lab)}</div>
       <div class="row"><div>
         <div class="val${k.amber ? ' amber' : ''}">${esc(k.val)}</div>
-        ${delta(k.now, k.prev)}
+        ${k.point ? deltaPoint(k.now, k.prev) : delta(k.now, k.prev)}
       </div>${spark(k.spark, k.c)}</div>
       <div class="foot">${esc(k.foot)}</div></div>`).join('');
 
-  // 수익
-  $('c-money').innerHTML = area(
-    S.map(r => ({ ...r, rev: Math.round(r.gmv * Number(d.fee_rate || 0)) })),
-    [{ key:'gmv', name:'거래액', color:C.amber, fill:true },
-     { key:'rev', name:'수수료 수익', color:C.ink }], short);
+  // 수익 — 수수료는 거래액의 정확히 같은 비율이라 선을 하나 더 그으면 모양이 겹칠 뿐이다.
+  // 그래서 그래프는 거래액 하나만 그리고, 수수료는 숫자로 적는다.
+  $('money-note').innerHTML =
+    `완료된 예약의 거래액입니다. 이 기간 거래액 <b>${esc(vnd(s.gmv))}</b> 중 `
+    + `수수료 <b style="color:var(--amber)">${esc(vnd(rev))}</b> (요율 ${Math.round(Number(d.fee_rate) * 100)}%).`;
+  $('c-money').innerHTML = area(S,
+    [{ key:'gmv', name:'거래액', color:C.amber, fill:true }], short);
 
   // 매칭 도넛
   const waiting = s.waiting || 0, canc = s.cancelled || 0, ns = s.no_show || 0;
