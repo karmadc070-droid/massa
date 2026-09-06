@@ -1024,7 +1024,8 @@ window.addEventListener('DOMContentLoaded', () => {
   const want = new URLSearchParams(location.search).get('screen');
   if (want && document.getElementById(want)) { stack = want === 'home' ? ['home'] : ['home', want]; render(); }
 });
-function book() { go('menu'); }
+// 코스 화면은 들어갈 때마다 다시 그린다. 마사지냐 홈뷰티냐에 따라 목록이 통째로 달라진다.
+function book() { if (window.renderMenu) renderMenu(); go('menu'); }
 
 // 매장 방문 카테고리별 매장 데이터 — 지역 인기·가성비 중심 목업
 const STORES = {
