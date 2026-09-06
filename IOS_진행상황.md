@@ -153,10 +153,23 @@ Apple이 8/26 iPad Air(M3)/iPadOS 26.6에서 심사, 세 건 지적.
 · 판매하지 않는 코스가 목록에 남아 있던 문제를 고쳤습니다.
 ```
 
-### 남은 절차 (App Store Connect 로그인 필요)
-1. `/apps` → massa → 배포 → **+ 버전 추가 (1.0.5)**
-2. 빌드에서 **19** 선택
-3. 위 릴리즈 노트 붙여넣기
-4. 심사를 위해 제출
+### 제출 완료 — 2026-09-06 · **1.0.5 (build 20) WAITING_FOR_REVIEW**
+
+build 19 를 만든 뒤 **왁싱 예약이 막히는 것을 발견**해 고치고 build 20 을 다시 만들었다.
+제출된 것은 build **20** 이다.
+
+**막혔던 절차와 푼 방법**
+1. `1.0.4` 가 `PENDING_DEVELOPER_RELEASE`(심사 통과·출시 대기)로 자리를 잡고 있어
+   `POST /iris/v1/appStoreVersions` 가 `You cannot create a new version of the App in the current state` 로 거부됐다.
+   애플은 앱당 편집 가능한 버전을 하나만 둔다.
+2. `DELETE` 도 `STATE_ERROR` 로 막혔다. → 화면의 **"출시를 취소"** 를 눌러 `DEVELOPER_REJECTED` 로 되돌렸다.
+3. 그러면 그 버전 레코드가 편집 가능해진다. **버전 문자열을 1.0.4 → 1.0.5 로 PATCH** 하고
+   `relationships/build` 에 build 20 을 붙였다. 새 버전을 만들 필요가 없었다.
+4. 릴리즈 노트는 `appStoreVersionLocalizations` PATCH 로 저장(200).
+5. **제출은 API 로 안 된다.** `PATCH reviewSubmissions {submitted:true}` 는 응답이 없고 상태가 안 바뀐다.
+   화면의 **"제출 초안(1개)" → "심사를 위해 제출"** 을 눌러야 한다. (1.0.2 때와 같다)
 
 ⚠️ ASC 는 URL 로 직접 열면 렌더링이 안 된다. `/apps` 로 들어가 SPA 링크를 눌러 이동할 것.
+⚠️ 버튼이 `<a>` 인 경우가 있어 `querySelectorAll('button')` 로는 안 잡힌다.
+   좌표 클릭도 확대 배율 때문에 어긋난다. `pointerdown/mousedown/pointerup/mouseup/click` 을
+   요소에 직접 dispatch 하는 방식이 확실하다.
