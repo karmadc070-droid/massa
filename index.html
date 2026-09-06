@@ -3371,7 +3371,8 @@ async function load() {
     fillList('thList', providers.filter(p => p.kind === 'masseur'));
     if (window.loadAiRecos) loadAiRecos();
     fillList('therapy', providers.filter(p => p.kind === 'therapist'));
-    const { data: services, error: e3 } = await sb.from('services').select('*');
+    // 내린 서비스(is_active=false)는 고객에게 보이면 안 된다. 과거 예약 때문에 행은 남겨 두고 거른다.
+    const { data: services, error: e3 } = await sb.from('services').select('*').eq('is_active', true);
     if (e3) throw e3; CACHE.services = services;
     const { data: stores, error: e2 } = await sb.from('stores').select('*').order('view_count', { ascending: false });
     if (e2) throw e2; CACHE.stores = stores;

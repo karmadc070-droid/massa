@@ -3109,7 +3109,7 @@ async function loadAiBiz() {
   const list = bks || [];
   // 시장 시세(동일 카테고리 서비스 평균)
   const kind = mine[0].kind === 'masseur' ? 'massage' : 'therapist_care';
-  const { data: svcs } = await sb.from('services').select('price_vnd, duration_min, category').eq('category', kind);
+  const { data: svcs } = await sb.from('services').select('price_vnd, duration_min, category').eq('category', kind).eq('is_active', true);
   const mkt = (svcs || []).map(s => s.price_vnd).filter(Boolean).sort((a, b) => a - b);
   const med = mkt.length ? mkt[Math.floor(mkt.length / 2)] : 0;
   const myAvg = list.length ? Math.round(list.reduce((a, b) => a + (b.amount_vnd || 0), 0) / list.length) : 0;
@@ -4314,7 +4314,7 @@ async function load() {
     if (window.loadAiRecos) loadAiRecos();
     try { const { data: fs } = await sb.from('app_settings').select('value').eq('key', 'fee').maybeSingle(); if (fs && fs.value) { FEE_RATE = fs.value.rate ?? FEE_RATE; DUE_DAYS = fs.value.due_days ?? DUE_DAYS; if (fs.value.tiers) FEE_TIERS = fs.value.tiers; } } catch (e) {}
     fillList('therapy', providers.filter(p => p.kind === 'therapist'));
-    const { data: services, error: e3 } = await sb.from('services').select('*');
+    const { data: services, error: e3 } = await sb.from('services').select('*').eq('is_active', true);
     if (e3) throw e3; CACHE.services = services;
     const { data: stores, error: e2 } = await sb.from('stores').select('*').order('view_count', { ascending: false });
     if (e2) throw e2; CACHE.stores = stores;
