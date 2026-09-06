@@ -1,0 +1,273 @@
+<!doctype html>
+<!-- massaviet.com/admin — 관리자 전용 지표 화면. 데이터 접근은 DB 함수가 막는다(여기서 숨기는 게 아니다). -->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>mㅏssㅏ 지표</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Noto+Serif+KR:wght@300;400;500&family=Inter:wght@400;500;600&display=swap');
+:root{
+  --sand:#FAF6F0; --sand-deep:#F1E9DE; --ink:#2A2320; --ink-soft:#6B5F57;
+  --line:#E2D8CB; --amber:#B0742F; --amber-lo:#F6EDE1; --white:#fff;
+  --serif:'Cormorant Garamond','Noto Serif KR',Georgia,serif;
+  --sans:'Inter',-apple-system,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--sand);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6}
+h1,h2,h3{font-family:var(--serif);font-weight:400;letter-spacing:-.01em;font-variant-numeric:lining-nums}
+h1,h2,h3,p,td,th,li{word-break:keep-all;overflow-wrap:break-word}
+.wrap{max-width:1140px;margin:0 auto;padding:0 clamp(18px,4vw,40px)}
+header{border-bottom:1px solid var(--line);background:var(--white);position:sticky;top:0;z-index:5}
+header .wrap{display:flex;align-items:center;gap:14px;height:62px}
+.brand{font-family:var(--serif);font-size:22px}
+.kicker{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--amber);font-weight:500}
+.spacer{margin-left:auto}
+button{font-family:inherit;font-size:14px;cursor:pointer}
+.btn{background:var(--ink);color:var(--white);border:0;border-radius:8px;padding:10px 18px}
+.btn.ghost{background:transparent;color:var(--ink-soft);border:1px solid var(--line)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:26px 0 20px}
+.tabs button{background:var(--white);border:1px solid var(--line);color:var(--ink-soft);border-radius:999px;padding:8px 18px}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--white);border-color:var(--ink)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:1px;background:var(--line);
+       border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.card{background:var(--white);padding:18px 20px}
+.card .lab{font-size:12px;color:var(--ink-soft);letter-spacing:.02em}
+.card .val{font-family:var(--serif);font-size:34px;line-height:1.15;margin-top:4px;font-variant-numeric:lining-nums}
+.card .sub{font-size:12px;color:var(--ink-soft);margin-top:2px}
+.card.hi{background:var(--amber-lo)}
+.card.hi .val{color:var(--amber)}
+section.blk{margin:34px 0}
+section.blk h2{font-size:24px;margin:0 0 4px}
+section.blk .note{font-size:13px;color:var(--ink-soft);margin:0 0 14px}
+.chart{background:var(--white);border:1px solid var(--line);border-radius:12px;padding:16px 18px 10px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+table{width:100%;border-collapse:collapse;background:var(--white);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th,td{padding:11px 14px;text-align:right;border-bottom:1px solid var(--line);font-size:14px;font-variant-numeric:tabular-nums}
+th{font-size:12px;color:var(--ink-soft);font-weight:500;letter-spacing:.02em;background:var(--sand-deep)}
+th:first-child,td:first-child{text-align:left}
+tr:last-child td{border-bottom:0}
+.empty{color:var(--ink-soft);font-size:14px;padding:22px 4px}
+.gate{max-width:380px;margin:9vh auto;background:var(--white);border:1px solid var(--line);border-radius:14px;padding:30px 28px}
+.gate h1{font-size:28px;margin:0 0 6px}
+.gate p{color:var(--ink-soft);font-size:14px;margin:0 0 20px}
+.gate input{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:8px;font:inherit;margin-bottom:9px;background:var(--sand)}
+.gate .btn{width:100%;margin-top:6px;padding:12px}
+.err{color:#B23A5B;font-size:13px;min-height:19px;margin-top:8px}
+footer{border-top:1px solid var(--line);margin-top:50px;padding:20px 0 40px;font-size:12.5px;color:var(--ink-soft)}
+@media(max-width:640px){.card .val{font-size:27px}th,td{padding:9px 10px;font-size:13px}}
+</style>
+</head>
+<body>
+
+<div id="gate" class="gate" hidden>
+  <h1>지표</h1>
+  <p>관리자 계정으로 로그인해 주세요.</p>
+  <input id="em" type="email" placeholder="이메일" autocomplete="username">
+  <input id="pw" type="password" placeholder="비밀번호" autocomplete="current-password">
+  <button class="btn" id="go">로그인</button>
+  <div class="err" id="gerr"></div>
+</div>
+
+<div id="app" hidden>
+  <header><div class="wrap">
+    <span class="brand">mㅏssㅏ</span>
+    <span class="kicker">지표</span>
+    <span class="spacer"></span>
+    <span id="who" style="font-size:13px;color:var(--ink-soft)"></span>
+    <button class="btn ghost" id="out">로그아웃</button>
+  </div></header>
+
+  <div class="wrap">
+    <div class="tabs" id="tabs">
+      <button data-b="day"   data-n="14" aria-pressed="true">일간</button>
+      <button data-b="week"  data-n="12">주간</button>
+      <button data-b="month" data-n="12">월간</button>
+      <button data-b="year"  data-n="5">연간</button>
+      <span class="spacer"></span>
+      <button class="btn ghost" id="rf">새로고침</button>
+    </div>
+
+    <div id="range" style="font-size:13px;color:var(--ink-soft);margin-bottom:12px"></div>
+    <div class="cards" id="kpi"></div>
+
+    <section class="blk">
+      <h2>유입</h2>
+      <p class="note">앱을 연 기기 수입니다. 같은 기기가 하루에 여러 번 열어도 한 번으로 셉니다.</p>
+      <div class="chart" id="c1"></div>
+    </section>
+
+    <section class="blk">
+      <h2>예약과 매칭</h2>
+      <p class="note">매칭은 확정·이동중·진행중·완료를 말합니다. 취소와 노쇼는 실패로 셉니다.</p>
+      <div class="chart" id="c2"></div>
+    </section>
+
+    <section class="blk">
+      <h2>수익</h2>
+      <p class="note">완료된 예약의 거래액과, 거기서 나오는 수수료입니다.</p>
+      <div class="chart" id="c3"></div>
+    </section>
+
+    <section class="blk">
+      <h2>인기 마사지사</h2>
+      <p class="note">이 기간에 들어온 예약 기준 상위 10명입니다.</p>
+      <div id="top"></div>
+    </section>
+
+    <footer><div id="foot"></div></footer>
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+const sb = createClient(
+  'https://api.moahagwon.com',
+  'eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJyb2xlIjogImFub24iLCAiaXNzIjogInN1cGFiYXNlIiwgImlhdCI6IDE3ODc0NTg4OTMsICJleHAiOiAyMTAyODE4ODkzfQ.7taJaAzxPRIkd0PeC5qnuacficFnazkBN54ttblUv-o');
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g,
+  c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const num = (n) => Number(n || 0).toLocaleString('ko-KR');
+const vnd = (n) => Number(n || 0).toLocaleString('ko-KR') + '₫';
+// 큰 금액은 카드에서 축약한다. 원 단위까지 보려면 표를 본다.
+const short = (n) => { n = Number(n || 0);
+  return n >= 1e9 ? (n/1e9).toFixed(1)+'B' : n >= 1e6 ? (n/1e6).toFixed(1)+'M'
+       : n >= 1e3 ? (n/1e3).toFixed(0)+'K' : String(n); };
+const pct = (a, b) => b ? Math.round(a / b * 1000) / 10 + '%' : '—';
+
+let STATE = { bucket: 'day', periods: 14 };
+
+// ── 막대 그래프. 라이브러리 없이 SVG 로 직접 그린다(외부 의존을 늘릴 이유가 없다) ──
+function bars(rows, series, fmt) {
+  const W = 1000, H = 210, PAD_L = 8, PAD_B = 26, PAD_T = 14;
+  const max = Math.max(1, ...rows.flatMap(r => series.map(s => Number(r[s.key] || 0))));
+  const n = rows.length, gw = (W - PAD_L * 2) / Math.max(n, 1);
+  const bw = Math.max(2, Math.min(26, gw / (series.length + 0.8)));
+  let g = '';
+  // 가로 기준선 3개
+  for (let i = 1; i <= 3; i++) {
+    const y = PAD_T + (H - PAD_T - PAD_B) * (1 - i / 3);
+    g += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="#E2D8CB" stroke-width="1"/>`
+       + `<text x="0" y="${y - 5}" font-size="11" fill="#6B5F57">${esc(fmt(max * i / 3))}</text>`;
+  }
+  rows.forEach((r, i) => {
+    const cx = PAD_L + gw * (i + 0.5);
+    series.forEach((s, j) => {
+      const v = Number(r[s.key] || 0);
+      const h = (H - PAD_T - PAD_B) * (v / max);
+      const x = cx - (bw * series.length) / 2 + bw * j;
+      g += `<rect x="${x.toFixed(1)}" y="${(H - PAD_B - h).toFixed(1)}" width="${(bw - 1.5).toFixed(1)}"`
+         + ` height="${Math.max(v > 0 ? 1.5 : 0, h).toFixed(1)}" fill="${s.color}" rx="1.5">`
+         + `<title>${esc(r.k)} · ${esc(s.name)} ${esc(fmt(v))}</title></rect>`;
+    });
+    // 눈금이 빽빽하면 건너뛴다
+    const step = Math.ceil(n / 14);
+    if (i % step === 0 || i === n - 1)
+      g += `<text x="${cx}" y="${H - 8}" font-size="10.5" fill="#6B5F57" text-anchor="middle">`
+         + `${esc(r.k.length > 7 ? r.k.slice(5) : r.k)}</text>`;
+  });
+  const key = series.map(s =>
+    `<span style="display:inline-flex;align-items:center;gap:6px;margin-right:16px;font-size:12.5px;color:#6B5F57">
+       <i style="width:10px;height:10px;border-radius:2px;background:${s.color};display:inline-block"></i>${esc(s.name)}</span>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img">${g}</svg>
+          <div style="padding:8px 0 4px">${key}</div>`;
+}
+
+function render(d) {
+  const S = d.series || [];
+  const sum = (k) => S.reduce((a, r) => a + Number(r[k] || 0), 0);
+  const visits = sum('visits'), newbies = sum('newbies'), signups = sum('signups');
+  const bk = sum('bookings'), matched = sum('matched'), done = sum('done'), gmv = sum('gmv');
+  const rev = Math.round(gmv * Number(d.fee_rate || 0));
+  const label = { day: '최근 14일', week: '최근 12주', month: '최근 12개월', year: '최근 5년' }[d.bucket];
+
+  $('range').textContent = `${label} · ${d.from} 부터 (하노이 시간 기준)`;
+
+  $('kpi').innerHTML = [
+    ['유입', num(visits), `신규 기기 ${num(newbies)}`, ''],
+    ['가입', num(signups), `누적 회원 ${num(d.now.members)}`, ''],
+    ['예약', num(bk), `성사 ${num(matched)} · 완료 ${num(done)}`, ''],
+    ['매칭율', pct(matched, bk), bk ? `실패 ${num(bk - matched)}건` : '예약 없음', 'hi'],
+    ['거래액', short(gmv) + '₫', '완료된 예약 기준', ''],
+    ['수수료 수익', short(rev) + '₫', `요율 ${Math.round(Number(d.fee_rate) * 100)}%`, 'hi']
+  ].map(([l, v, s, c]) =>
+    `<div class="card ${c}"><div class="lab">${esc(l)}</div><div class="val">${esc(v)}</div>`
+    + `<div class="sub">${esc(s)}</div></div>`).join('');
+
+  $('c1').innerHTML = bars(S, [
+    { key: 'visits',  name: '방문 기기', color: '#B0742F' },
+    { key: 'newbies', name: '신규 기기', color: '#E0C9A6' },
+    { key: 'signups', name: '가입',      color: '#8C5A3C' }], num);
+
+  $('c2').innerHTML = bars(S, [
+    { key: 'bookings', name: '예약', color: '#6B8E9F' },
+    { key: 'matched',  name: '성사', color: '#1F4E5F' },
+    { key: 'done',     name: '완료', color: '#2E7D5B' },
+    { key: 'lost',     name: '취소·노쇼', color: '#C98A98' }], num);
+
+  $('c3').innerHTML = bars(S.map(r => ({ ...r, rev: Math.round(r.gmv * Number(d.fee_rate || 0)) })), [
+    { key: 'gmv', name: '거래액', color: '#B0742F' },
+    { key: 'rev', name: '수수료', color: '#2A2320' }], short);
+
+  const tp = d.top || [];
+  $('top').innerHTML = tp.length ? `<table><thead><tr>
+      <th>마사지사</th><th>예약</th><th>완료</th><th>거래액</th><th>평점</th><th>리뷰</th>
+    </tr></thead><tbody>${tp.map(t => `<tr>
+      <td>${esc(t.name || '(이름 없음)')}</td><td>${num(t.bookings)}</td><td>${num(t.done)}</td>
+      <td>${vnd(t.gmv)}</td><td>${t.rating == null ? '—' : Number(t.rating).toFixed(1)}</td>
+      <td>${num(t.review_count)}</td></tr>`).join('')}</tbody></table>`
+    : '<div class="empty">이 기간에 들어온 예약이 없습니다.</div>';
+
+  $('foot').textContent =
+    `등록 마사지사 ${num(d.now.providers_total)}명 (활동 중 ${num(d.now.providers_active)}) · `
+    + `입금 확인 대기 ${num(d.now.deposit_pending)}건`;
+}
+
+async function loadData() {
+  $('range').textContent = '불러오는 중…';
+  const { data, error } = await sb.rpc('admin_dashboard',
+    { p_bucket: STATE.bucket, p_periods: STATE.periods });
+  if (error) { $('range').textContent = '불러오지 못했습니다 — ' + error.message; return; }
+  render(data);
+}
+
+$('tabs').onclick = (e) => {
+  const b = e.target.closest('button[data-b]'); if (!b) return;
+  [...$('tabs').querySelectorAll('button[data-b]')].forEach(x =>
+    x.setAttribute('aria-pressed', String(x === b)));
+  STATE = { bucket: b.dataset.b, periods: Number(b.dataset.n) };
+  loadData();
+};
+$('rf').onclick = loadData;
+$('out').onclick = async () => { await sb.auth.signOut(); location.reload(); };
+
+$('go').onclick = async () => {
+  $('gerr').textContent = '';
+  const { error } = await sb.auth.signInWithPassword(
+    { email: $('em').value.trim(), password: $('pw').value });
+  if (error) { $('gerr').textContent = '로그인에 실패했습니다.'; return; }
+  start();
+};
+$('pw').onkeydown = (e) => { if (e.key === 'Enter') $('go').click(); };
+
+async function start() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { $('app').hidden = true; $('gate').hidden = false; return; }
+  // 권한은 화면이 아니라 DB 가 판단한다. 함수를 한 번 불러 보고 통과하면 연다.
+  const { error } = await sb.rpc('admin_dashboard', { p_bucket: 'day', p_periods: 1 });
+  if (error) {
+    await sb.auth.signOut();
+    $('app').hidden = true; $('gate').hidden = false;
+    $('gerr').textContent = '이 계정에는 조회 권한이 없습니다.';
+    return;
+  }
+  $('gate').hidden = true; $('app').hidden = false;
+  $('who').textContent = session.user.email || '';
+  loadData();
+}
+start();
+</script>
+</body>
+</html>

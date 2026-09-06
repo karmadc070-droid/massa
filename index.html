@@ -3450,7 +3450,26 @@ async function load() {
     console.error(err);
   }
 }
-load();
+
+// 유입 집계용. 기기 랜덤 ID 하나만 남기고 개인정보는 보내지 않는다.
+// 하루 한 번만 기록되므로(DB에서 중복 무시) 호출을 아낄 이유가 없다.
+function trackVisit() {
+  let id = null;
+  try {
+    id = localStorage.getItem('massa_did');
+    if (!id) {
+      id = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now());
+      localStorage.setItem('massa_did', id);
+    }
+  } catch (e) { return; }  // 저장을 못 하면 매번 새 기기로 잡혀 숫자만 부풀린다. 아예 세지 않는다
+  const plat = window.IS_NATIVE_APP ? 'ios'
+    : (matchMedia('(display-mode: standalone)').matches ? 'android' : 'web');
+  Promise.resolve(sb.rpc('track_visit', {
+    p_device: id, p_platform: plat, p_lang: (navigator.language || '').slice(0, 5)
+  })).then(function () {}, function () {});
+}
+// 로그인 여부까지 기록해야 하므로 load() 안의 refreshSession() 이 끝난 뒤에 부른다.
+load().then(trackVisit, trackVisit);
 </script>
 </body>
 </html>

@@ -1,5 +1,7 @@
 # massaviet.com — 소개 사이트는 전부 열고 사이트맵 위치를 알린다
 User-agent: *
 Allow: /
+# 관리자 화면은 색인할 이유가 없다 (보안 장치는 아니다 — 권한은 DB 가 본다)
+Disallow: /admin/
 
 Sitemap: https://massaviet.com/sitemap.xml

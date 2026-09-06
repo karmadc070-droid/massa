@@ -253,6 +253,11 @@ def build():
     shutil.copy(f"{SRC}/style.css", f"{OUT}/style.css")
     CSSV = css_version()
 
+    # 관리자 지표 화면은 콘텐츠 페이지가 아니라 앱이다. 템플릿을 타지 않고 그대로 옮긴다.
+    # 접근 통제는 여기가 아니라 DB 함수(admin_dashboard)가 한다.
+    shutil.rmtree(f"{OUT}/admin", ignore_errors=True)
+    shutil.copytree(f"{SRC}/admin", f"{OUT}/admin")
+
     written = []
     for lang in LANGS:
         mod = importlib.import_module(f"content_{lang}")
@@ -285,9 +290,11 @@ def build():
 
     open(f"{OUT}/robots.txt", "w", encoding="utf-8", newline="\n").write(
         "# massaviet.com — 소개 사이트는 전부 열고 사이트맵 위치를 알린다\n"
-        "User-agent: *\nAllow: /\n\nSitemap: https://massaviet.com/sitemap.xml\n")
+        "User-agent: *\nAllow: /\n"
+        "# 관리자 화면은 색인할 이유가 없다 (보안 장치는 아니다 — 권한은 DB 가 본다)\n"
+        "Disallow: /admin/\n\nSitemap: https://massaviet.com/sitemap.xml\n")
 
-    print(f"HTML {len(written)}개 + sitemap + robots 생성")
+    print(f"HTML {len(written)}개 + admin + sitemap + robots 생성")
     return written
 
 if __name__ == "__main__":
