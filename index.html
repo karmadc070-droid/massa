@@ -681,9 +681,7 @@
   <!-- 코스 선택 -->
   <div class="screen" id="menu" data-title="코스 선택">
     <div class="label">코스</div>
-    <div class="card sel" onclick="pick(this)"><span class="t">아로마테라피</span><span class="badge">인기</span><div class="d">아로마 오일로 심신 이완 · 향 선택 가능</div><div class="p">650,000₫ ~ <span style="color:var(--muted);font-weight:normal">(약 35,000원~)</span></div></div>
-    <div class="card" onclick="pick(this)"><span class="t">스웨디시</span><div class="d">부드러운 압의 전신 순환 관리</div><div class="p">600,000₫ ~</div></div>
-    <div class="card" onclick="pick(this)"><span class="t">타이 마사지</span><div class="d">스트레칭 중심 · 오일 없이 진행</div><div class="p">550,000₫ ~</div></div>
+    <div id="menuList"></div>
     <div class="label">코스 시간</div>
     <div class="chips">
       <div class="chip" onclick="pick(this)">60분</div>
@@ -1183,7 +1181,24 @@ const TOSS_ENABLED = false;
 // 문의 접수 주소. 사이트(contact.html)와 같은 값이어야 한다
 const SUPPORT_EMAIL = 'support@massaviet.com';
 
-const TYPE_KO = { aroma: '아로마', swedish: '스웨디시', thai: '타이', deep_tissue: '딥티슈', nail: '네일', wax: '왁싱', exfoliation: '각질 제거' };
+const TYPE_KO = { aroma: '아로마', swedish: '스웨디시', thai: '타이', deep_tissue: '딥티슈',
+  hot_stone: '핫 스톤', foot: '발·다리', head: '머리', back: '등', neck_shoulder: '목·어깨',
+  sports: '스포츠', cupping: '오일+부항', no_oil: '오일 없이',
+  nail: '네일', wax: '왁싱', exfoliation: '각질 제거' };
+// 코스 화면에 그릴 순서와 설명. DB 에 그 종류의 서비스가 없으면 카드도 안 그린다.
+const MASSAGE_MENU = [
+  ['aroma',         '아로마테라피',   '아로마 오일로 심신 이완 · 향 선택 가능', '인기'],
+  ['swedish',       '스웨디시',       '부드러운 압의 전신 순환 관리', ''],
+  ['thai',          '타이 마사지',    '스트레칭 중심 · 오일 없이 진행', ''],
+  ['hot_stone',     '핫 스톤 마사지', '따뜻한 돌로 뭉친 근육을 풀어 줍니다', ''],
+  ['foot',          '발·다리 마사지', '오래 서 있었거나 많이 걸은 날', ''],
+  ['head',          '머리 마사지',    '두피와 목까지 · 눈이 피로한 날', ''],
+  ['neck_shoulder', '목·어깨 마사지', '거북목과 어깨 뭉침을 집중해서', ''],
+  ['back',          '등 마사지',      '등과 허리 중심 · 오래 앉아 일하는 분', ''],
+  ['sports',        '스포츠 마사지',  '운동 뒤 회복 · 강한 압', ''],
+  ['cupping',       '오일 마사지 + 부항', '오일 마사지에 부항을 더합니다', ''],
+  ['no_oil',        '오일 없는 마사지',   '옷 위로 · 오일이 부담스러운 분', ''],
+];
 const STATUS_KO = { requested: '요청됨', confirmed: '확정', on_the_way: '이동 중', in_progress: '진행 중', completed: '완료', cancelled: '취소됨', no_show: '노쇼' };
 const setStatus = (t, ok) => {
   const el = document.getElementById('dbStatus');
@@ -1431,11 +1446,7 @@ window.claimCoupon = async (couponId) => {
 };
 
 // ── 코스·시간·위치·결제 선택 캡처 ──
-document.querySelectorAll('#menu .card').forEach(c => c.addEventListener('click', () => {
-  const t = c.querySelector('.t').textContent;
-  SEL.serviceId = null;
-  SEL.serviceType = t.includes('스웨디시') ? 'swedish' : t.includes('타이') ? 'thai' : 'aroma';
-}));
+// 코스 카드는 renderMenu() 가 그린다. 클릭은 카드에 박아 둔 data-type 으로 받는다.
 document.querySelectorAll('#menu .chip').forEach(c => c.addEventListener('click', () => {
   SEL.duration = parseInt(c.textContent);
   if (window.updateMenuPrices) window.updateMenuPrices();
@@ -1451,8 +1462,9 @@ function currentService() {
   if (BEAUTY_NAME[SEL.serviceType]) {
     return CACHE.services.find(s => s.category === 'therapist_care' && s.name.startsWith(BEAUTY_NAME[SEL.serviceType]));
   }
-  return CACHE.services.find(s => s.massage_type === SEL.serviceType && s.duration_min === SEL.duration)
-      || CACHE.services.find(s => s.massage_type === SEL.serviceType);
+  // 시간이 정확히 맞는 것만 쓴다. 예전에는 없으면 아무거나 잡아서
+  // 120분을 고른 손님이 60분 가격으로 예약되는 일이 생겼다.
+  return CACHE.services.find(s => s.massage_type === SEL.serviceType && s.duration_min === SEL.duration) || null;
 }
 
 // 날짜 칩에서 '일(날짜)' 숫자만 읽는다.
@@ -1714,6 +1726,8 @@ async function submitBooking() {
   const _hotelEl = document.querySelector('#loc input.tx');
   if (!(_hotelEl?.value || '').trim()) { alert('숙소·건물 이름을 입력해 주세요.'); window.go('loc'); _hotelEl?.focus(); return; }
   const svc = currentService();
+  // 예전에는 코스를 못 찾으면 850,000₫ 을 임의로 물렸다. 손님이 고르지 않은 금액이 청구된다.
+  if (!svc) { alert('코스를 다시 골라 주세요. 선택하신 시간에 맞는 코스가 없습니다.'); window.go('menu'); return; }
   const day = selectedDayNum();
   const time = document.getElementById('timeView')?.textContent || '20:00';
   const scheduled = new Date(`2026-06-${day.padStart(2,'0')}T${time}:00+07:00`).toISOString();
@@ -1728,7 +1742,7 @@ async function submitBooking() {
     front_desk_note: document.querySelector('#loc select')?.value || '',
     status: 'confirmed',
     payment_method: SEL.payment,
-    amount_vnd: svc?.price_vnd || 850000
+    amount_vnd: svc.price_vnd
   };
   const { data, error } = await sb.from('bookings').insert(row).select().single();
   const done = document.querySelector('#done .summary');
@@ -1736,7 +1750,7 @@ async function submitBooking() {
     if (done) done.innerHTML = `예약 저장 실패: ${error.message}`;
   } else if (done) {
     const won = Math.round(data.amount_vnd * 0.054).toLocaleString();
-    done.innerHTML = `<span>예약번호</span> <b>${data.booking_no}</b><br>${svc?.name || ''} · ${data.amount_vnd.toLocaleString()}₫ <b>(<span>후불</span> · <span>${({card_onsite:'현장 카드',qr_onsite:'QR',cash:'현금'})[data.payment_method]}</span>)</b><br>${row.hotel_name || '롯데호텔 하노이'} ${row.room_number} · ${time}`;
+    done.innerHTML = `<span>예약번호</span> <b>${data.booking_no}</b><br>${svc.name} · ${data.amount_vnd.toLocaleString()}₫ <b>(<span>후불</span> · <span>${({card_onsite:'현장 카드',qr_onsite:'QR',cash:'현금'})[data.payment_method]}</span>)</b><br>${row.hotel_name || '롯데호텔 하노이'} ${row.room_number} · ${time}`;
   }
   // 예약이 잡힌 뒤부터 담당 테라피스트와 채팅할 수 있다
   const chatBtn = document.getElementById('doneChatBtn');
@@ -1749,19 +1763,42 @@ async function submitBooking() {
 }
 window.submitBooking = submitBooking;
 
-// ── 코스 동적 가격 ──
-function updateMenuPrices() {
-  const types = ['aroma', 'swedish', 'thai'];
-  document.querySelectorAll('#menu .card').forEach((card, i) => {
-    const svc = CACHE.services.find(s => s.massage_type === types[i] && s.duration_min === SEL.duration)
-             || CACHE.services.find(s => s.massage_type === types[i]);
-    const pEl = card.querySelector('.p');
-    if (svc && pEl) {
-      const won = Math.round(svc.price_vnd * 0.054).toLocaleString();
-      pEl.innerHTML = `${svc.price_vnd.toLocaleString()}₫ <span style="color:var(--muted);font-weight:normal">(<span>약</span> ${won}<span>원</span>)</span> · ${SEL.duration}<span>분</span>`;
-    }
+// ── 코스 목록 ──
+// DB 에 있는 종류만 그린다. 가격도 DB 에서 읽는다. 종류를 늘리거나 내려도 여기는 안 고쳐도 된다.
+function renderMenu() {
+  const box = document.getElementById('menuList'); if (!box) return;
+  const rows = MASSAGE_MENU
+    .map(([k, ko, desc, badge]) => {
+      const svc = (CACHE.services || []).find(s => s.massage_type === k && s.duration_min === SEL.duration);
+      return svc ? { k, ko, desc, badge, svc } : null;
+    })
+    .filter(Boolean);   // 그 시간대 상품이 없으면 아예 안 보여 준다 (엉뚱한 가격으로 잡히는 걸 막는다)
+
+  if (!rows.length) { box.innerHTML = '<div class="hint"><span>이 시간대에 가능한 코스가 없습니다.</span></div>'; return; }
+  if (!rows.some(r => r.k === SEL.serviceType)) SEL.serviceType = rows[0].k;
+
+  box.innerHTML = rows.map(r => {
+    const won = Math.round(r.svc.price_vnd * 0.054).toLocaleString();
+    return '<div class="card' + (r.k === SEL.serviceType ? ' sel' : '') + '" data-type="' + r.k + '">'
+      + '<span class="t">' + r.ko + '</span>'
+      + (r.badge ? '<span class="badge">' + r.badge + '</span>' : '')
+      + '<div class="d">' + r.desc + '</div>'
+      + '<div class="p">' + r.svc.price_vnd.toLocaleString() + '₫ '
+      + '<span style="color:var(--muted);font-weight:normal">(<span>약</span> ' + won + '<span>원</span>)</span>'
+      + ' · ' + SEL.duration + '<span>분</span></div></div>';
+  }).join('');
+
+  box.querySelectorAll('.card').forEach(c => c.onclick = () => {
+    box.querySelectorAll('.card').forEach(x => x.classList.remove('sel'));
+    c.classList.add('sel');
+    SEL.serviceId = null;
+    SEL.serviceType = c.dataset.type;
   });
+  if (window.translateTree) translateTree(box, LANG);   // 한국어로 그린 뒤 현재 언어로 옮긴다
 }
+window.renderMenu = renderMenu;
+// 예전 이름으로 부르는 곳이 있어 그대로 남겨 둔다
+function updateMenuPrices() { renderMenu(); }
 window.updateMenuPrices = updateMenuPrices;
 
 // ── 내 예약 ──
@@ -2575,6 +2612,7 @@ const DICT = {
   '예약을 완료하시면 담당 테라피스트와 채팅할 수 있습니다.\n서비스·시간·장소를 선택해 예약을 먼저 진행해 주세요.': ['Sau khi hoàn tất đặt lịch, bạn có thể nhắn tin với chuyên viên phụ trách.\nHãy chọn dịch vụ, thời gian và địa điểm để đặt lịch trước.', 'You can chat with your therapist once your booking is complete.\nPlease choose a service, time and place to book first.', '完成预约后即可与负责的理疗师聊天。\n请先选择服务、时间和地点完成预约。', 'ご予約が完了すると担当セラピストとチャットできます。\nサービス・時間・場所を選んで先にご予約ください。'],
   '예약을 완료하시면 담당 테라피스트와 채팅할 수 있습니다.\n서비스·시간·장소를 선택해 예약을 먼저 진행해 주세요.': ['Sau khi hoàn tất đặt lịch, bạn có thể nhắn tin với chuyên viên phụ trách.\nHãy chọn dịch vụ, thời gian và địa điểm để đặt lịch trước.', 'You can chat with your therapist once your booking is complete.\nPlease choose a service, time and place to book first.', '完成预约后即可与负责的理疗师聊天。\n请先选择服务、时间和地点完成预约。', 'ご予約が完了すると担当セラピストとチャットできます。\nサービス・時間・場所を選んで先にご予約ください。'],
   '예약을 완료하시면 담당 테라피스트와 채팅할 수 있습니다.\n서비스·시간·장소를 선택해 예약을 먼저 진행해 주세요.': ['Sau khi hoàn tất đặt lịch, bạn có thể nhắn tin với chuyên viên phụ trách.\nHãy chọn dịch vụ, thời gian và địa điểm để đặt lịch trước.', 'You can chat with your therapist once your booking is complete.\nPlease choose a service, time and place to book first.', '完成预约后即可与负责的理疗师聊天。\n请先选择服务、时间和地点完成预约。', 'ご予約が完了すると担当セラピストとチャットできます。\nサービス・時間・場所を選んで先にご予約ください。'],
+  '예약을 완료하시면 담당 테라피스트와 채팅할 수 있습니다.\n서비스·시간·장소를 선택해 예약을 먼저 진행해 주세요.': ['Sau khi hoàn tất đặt lịch, bạn có thể nhắn tin với chuyên viên phụ trách.\nHãy chọn dịch vụ, thời gian và địa điểm để đặt lịch trước.', 'You can chat with your therapist once your booking is complete.\nPlease choose a service, time and place to book first.', '完成预约后即可与负责的理疗师聊天。\n请先选择服务、时间和地点完成预约。', 'ご予約が完了すると担当セラピストとチャットできます。\nサービス・時間・場所を選んで先にご予約ください。'],
   '60분': ['60 phút', '60 min', '60分钟', '60分'],
   '90분': ['90 phút', '90 min', '90分钟', '90分'],
   '120분': ['120 phút', '120 min', '120分钟', '120分'],
@@ -2694,6 +2732,32 @@ const DICT = {
   '들어온 예약을 수락·거절하고, 완료 처리합니다.': ['Nhận hoặc từ chối lịch đặt và đánh dấu hoàn tất.', 'Accept or decline incoming bookings and mark them complete.', '接受或拒绝收到的预约，并标记完成。', '入った予約を受諾・拒否し、完了処理します。'],
   '신청을 검토해 승인·거절합니다.': ['Xem xét hồ sơ để duyệt hoặc từ chối.', 'Review applications to approve or reject.', '审核申请并批准或拒绝。', '申請を確認して承認・却下します。'],
   '아직 예약이 없습니다. 홈에서 서비스를 예약해 보세요.': ['Chưa có lịch đặt nào. Hãy đặt dịch vụ từ trang chủ.', 'No bookings yet. Book a service from the home screen.', '暂无预约。请从首页预约服务。', 'まだ予約がありません。ホームからサービスを予約してみてください。'],
+  '핫 스톤 마사지': ['Massage đá nóng', 'Hot stone massage', '热石按摩', 'ホットストーン'],
+  '발·다리 마사지': ['Massage chân', 'Foot & leg massage', '足腿按摩', '足・脚マッサージ'],
+  '머리 마사지': ['Massage đầu', 'Head massage', '头部按摩', 'ヘッドマッサージ'],
+  '목·어깨 마사지': ['Massage cổ vai gáy', 'Neck & shoulder massage', '颈肩按摩', '首・肩マッサージ'],
+  '등 마사지': ['Massage lưng', 'Back massage', '背部按摩', '背中マッサージ'],
+  '스포츠 마사지': ['Massage thể thao', 'Sports massage', '运动按摩', 'スポーツマッサージ'],
+  '오일 마사지 + 부항': ['Massage dầu + giác hơi', 'Oil massage + cupping', '精油按摩+拔罐', 'オイル＋カッピング'],
+  '오일 없는 마사지': ['Massage không dầu', 'Massage without oil', '无油按摩', 'オイルなしマッサージ'],
+  '핫 스톤': ['Đá nóng', 'Hot stone', '热石', 'ホットストーン'],
+  '발·다리': ['Chân', 'Foot & leg', '足腿', '足・脚'],
+  '머리': ['Đầu', 'Head', '头部', '頭'],
+  '목·어깨': ['Cổ vai gáy', 'Neck & shoulder', '颈肩', '首・肩'],
+  '등': ['Lưng', 'Back', '背部', '背中'],
+  '스포츠': ['Thể thao', 'Sports', '运动', 'スポーツ'],
+  '오일+부항': ['Dầu + giác hơi', 'Oil + cupping', '精油+拔罐', 'オイル＋カッピング'],
+  '오일 없이': ['Không dầu', 'No oil', '无油', 'オイルなし'],
+  '따뜻한 돌로 뭉친 근육을 풀어 줍니다': ['Đá nóng làm tan cơ căng cứng.', 'Warm stones release tight muscles.', '用温热的石头放松紧绷的肌肉。', '温めた石で凝った筋肉をほぐします。'],
+  '오래 서 있었거나 많이 걸은 날': ['Cho ngày đứng lâu hoặc đi bộ nhiều.', 'For days spent on your feet.', '适合久站或走了很多路的日子。', '長時間立った日、たくさん歩いた日に。'],
+  '두피와 목까지 · 눈이 피로한 날': ['Cả da đầu và cổ · cho ngày mỏi mắt.', 'Scalp and neck · for tired eyes.', '包含头皮与颈部 · 眼睛疲劳时。', '頭皮と首まで · 目が疲れた日に。'],
+  '거북목과 어깨 뭉침을 집중해서': ['Tập trung vào cổ và vai bị căng.', 'Focused on neck and shoulder tension.', '集中缓解颈部与肩膀的僵硬。', '首こり・肩こりを重点的に。'],
+  '등과 허리 중심 · 오래 앉아 일하는 분': ['Tập trung lưng và thắt lưng · cho người ngồi nhiều.', 'Back and lower back · for desk workers.', '以背腰为主 · 适合久坐的人。', '背中と腰を中心に · 長く座って働く方へ。'],
+  '운동 뒤 회복 · 강한 압': ['Phục hồi sau tập · lực mạnh.', 'Post-workout recovery · firm pressure.', '运动后恢复 · 力度较强。', '運動後の回復 · 強めの圧。'],
+  '오일 마사지에 부항을 더합니다': ['Massage dầu kết hợp giác hơi.', 'Oil massage plus cupping.', '精油按摩加拔罐。', 'オイルマッサージにカッピングを加えます。'],
+  '옷 위로 · 오일이 부담스러운 분': ['Trên quần áo · nếu bạn ngại dầu.', 'Over clothing · if oil is not for you.', '隔着衣物 · 不习惯精油的人。', '服の上から · オイルが苦手な方へ。'],
+  '이 시간대에 가능한 코스가 없습니다.': ['Không có liệu trình cho thời lượng này.', 'No course available for this duration.', '该时长没有可选课程。', 'この時間に選べるコースがありません。'],
+  '코스를 다시 골라 주세요. 선택하신 시간에 맞는 코스가 없습니다.': ['Vui lòng chọn lại liệu trình. Không có liệu trình phù hợp thời lượng đã chọn.', 'Please pick a course again. None matches the duration you chose.', '请重新选择课程。所选时长没有对应课程。', 'コースを選び直してください。選んだ時間に合うコースがありません。'],
   '예약 가능': ['Có thể đặt', 'Available', '可预约', '予約可能'],
   '리뷰': ['đánh giá', 'reviews', '条评价', '件のレビュー'],
   '권역': ['khu vực', 'area', '区域', 'エリア'],
@@ -2861,8 +2925,6 @@ const DICT = {
   '아로마 마사지': ['Massage tinh dầu', 'Aroma massage', '芳香按摩', 'アロママッサージ'],
   '다리 마사지': ['Massage chân', 'Leg massage', '腿部按摩', '脚のマッサージ'],
   '어깨·목 마사지': ['Massage vai · cổ', 'Shoulder & neck massage', '肩颈按摩', '肩・首のマッサージ'],
-  '머리 마사지': ['Massage đầu', 'Head massage', '头部按摩', 'ヘッドマッサージ'],
-  '오일 없는 마사지': ['Massage không dầu', 'Massage without oil', '无油按摩', 'オイルなしマッサージ'],
   '스포츠 테라피': ['Trị liệu thể thao', 'Sports therapy', '运动理疗', 'スポーツセラピー'],
   '풋 테라피': ['Trị liệu bàn chân', 'Foot therapy', '足部理疗', 'フットセラピー'],
   '등 테라피': ['Trị liệu lưng', 'Back therapy', '背部理疗', 'バックセラピー'],
@@ -3374,6 +3436,7 @@ async function load() {
     // 내린 서비스(is_active=false)는 고객에게 보이면 안 된다. 과거 예약 때문에 행은 남겨 두고 거른다.
     const { data: services, error: e3 } = await sb.from('services').select('*').eq('is_active', true);
     if (e3) throw e3; CACHE.services = services;
+    if (window.renderMenu) renderMenu();
     const { data: stores, error: e2 } = await sb.from('stores').select('*').order('view_count', { ascending: false });
     if (e2) throw e2; CACHE.stores = stores;
     const { data: psPrice } = await sb.from('provider_services').select('provider_id, services(price_vnd)');
