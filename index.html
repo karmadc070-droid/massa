@@ -1244,7 +1244,7 @@ function fillList(screenId, providers) {
       // 홈 뷰티: 제공자의 뷰티 서비스로 바로 시간 선택
       SEL.serviceId = null;
       SEL.serviceType = (SEL.provider.specialties || ['nail'])[0];
-      window.go('time');
+      window.book();
     } else {
       window.book();
     }
@@ -1456,12 +1456,23 @@ document.querySelectorAll('#confirm .card').forEach(c => c.addEventListener('cli
   SEL.payment = t.includes('QR') ? 'qr_onsite' : t.includes('현금') ? 'cash' : 'card_onsite';
 }));
 
-const BEAUTY_NAME = { nail: '네일', wax: '왁싱', exfoliation: '각질' };
+// 이름이 무엇으로 '시작'하는지에 기대면 항목을 하나 내리는 순간 예약이 막힌다.
+// 이름 안에 들어 있는 낱말로 모은다.
+const BEAUTY_KEYS = {
+  nail: ['네일', '매니큐어', '페디큐어'],
+  wax: ['왁싱'],
+  exfoliation: ['각질', '스크럽'],
+};
+function beautyList() {
+  const keys = BEAUTY_KEYS[SEL.serviceType];
+  if (!keys) return [];
+  return (CACHE.services || [])
+    .filter(s => s.category === 'therapist_care' && keys.some(k => s.name.includes(k)))
+    .sort((a, b) => a.price_vnd - b.price_vnd);
+}
 function currentService() {
   if (SEL.serviceId) { const s = CACHE.services.find(x => x.id === SEL.serviceId); if (s) return s; }
-  if (BEAUTY_NAME[SEL.serviceType]) {
-    return CACHE.services.find(s => s.category === 'therapist_care' && s.name.startsWith(BEAUTY_NAME[SEL.serviceType]));
-  }
+  if (BEAUTY_KEYS[SEL.serviceType]) return beautyList()[0] || null;
   // 시간이 정확히 맞는 것만 쓴다. 예전에는 없으면 아무거나 잡아서
   // 120분을 고른 손님이 60분 가격으로 예약되는 일이 생겼다.
   return CACHE.services.find(s => s.massage_type === SEL.serviceType && s.duration_min === SEL.duration) || null;
@@ -1767,6 +1778,36 @@ window.submitBooking = submitBooking;
 // DB 에 있는 종류만 그린다. 가격도 DB 에서 읽는다. 종류를 늘리거나 내려도 여기는 안 고쳐도 된다.
 function renderMenu() {
   const box = document.getElementById('menuList'); if (!box) return;
+  const chips = document.querySelector('#menu .chips');
+  const label = box.previousElementSibling;
+
+  // 홈뷰티는 항목마다 시간이 달라 60·90·120 칩이 뜻이 없다. 항목을 직접 고르게 한다.
+  if (BEAUTY_KEYS[SEL.serviceType]) {
+    const list = beautyList();
+    if (chips) chips.style.display = 'none';
+    const prevLab = document.querySelector('#menu .label + .label');
+    if (prevLab) prevLab.style.display = 'none';
+    if (!list.length) { box.innerHTML = '<div class="hint"><span>지금 예약할 수 있는 항목이 없습니다.</span></div>'; return; }
+    if (!list.some(x => x.id === SEL.serviceId)) SEL.serviceId = list[0].id;
+    box.innerHTML = list.map(x => {
+      const won = Math.round(x.price_vnd * 0.054).toLocaleString();
+      return '<div class="card' + (x.id === SEL.serviceId ? ' sel' : '') + '" data-svc="' + x.id + '">'
+        + '<span class="t">' + x.name + '</span>'
+        + '<div class="p">' + x.price_vnd.toLocaleString() + '₫ '
+        + '<span style="color:var(--muted);font-weight:normal">(<span>약</span> ' + won + '<span>원</span>)</span></div></div>';
+    }).join('');
+    box.querySelectorAll('.card').forEach(c => c.onclick = () => {
+      box.querySelectorAll('.card').forEach(x => x.classList.remove('sel'));
+      c.classList.add('sel');
+      SEL.serviceId = c.dataset.svc;
+    });
+    if (window.translateTree) translateTree(box, LANG);
+    return;
+  }
+  if (chips) chips.style.display = '';
+  const prevLab2 = document.querySelector('#menu .label + .label');
+  if (prevLab2) prevLab2.style.display = '';
+
   const rows = MASSAGE_MENU
     .map(([k, ko, desc, badge]) => {
       const svc = (CACHE.services || []).find(s => s.massage_type === k && s.duration_min === SEL.duration);
