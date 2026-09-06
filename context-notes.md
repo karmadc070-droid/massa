@@ -293,3 +293,63 @@ Play Console 을 직접 확인하니 프로덕션 트랙은 **"아직 프로덕�
 
 **취소 규정 최종 확인.** `CANCEL_RULES = {warn:3, block:5, block_days:7, window:30}` 를 기준으로
 앱·약관·guide·faq(FAQPage JSON-LD 포함) 네 곳이 모두 **3회 경고 / 5회 누적 7일 제한 / 30일 창** 으로 일치한다.
+
+## 2026-09-06 · 관리자 대시보드에서 내린 결정
+
+**정적 사이트에 관리자 화면을 두는 방법.** `massaviet.com` 은 생성기가 찍어 내는 정적 사이트라
+서버 쪽 인증이 없다. 페이지를 숨기는 것으로는 아무것도 막지 못한다.
+그래서 **접근 통제를 DB 로 내렸다.**
+- `app_visit` 은 RLS 를 켜고 **정책을 하나도 만들지 않는다.** 정책 없는 RLS = PostgREST 로 접근 불가.
+- 읽기는 `admin_dashboard()`, 쓰기는 `track_visit()` 만 한다. 둘 다 `security definer`.
+- 화면은 `admin_dashboard('day', 1)` 을 한 번 불러 보고 통과할 때만 열린다.
+  즉 화면이 판단하는 게 아니라 **DB 가 판단한 결과를 화면이 따를 뿐이다.**
+- `robots.txt` 의 `Disallow` 와 `noindex` 는 색인을 막을 뿐 보안 장치가 아니다. 그렇게 주석에도 적었다.
+
+`is_admin()` 헬퍼가 이미 있었지만 쓰지 않고 조건을 함수 안에 직접 적었다.
+이 함수 하나만 읽어도 누가 볼 수 있는지 보이는 편이 낫다.
+
+**유입량은 없던 데이터라 새로 만들었다.** 물어보지 않고 가입 수로 슬쩍 대체하지 않았다.
+`app_visit(visit_date, device_id)` 를 기본키로 둬서 같은 기기가 하루에 몇 번 열어도 한 줄이다.
+신규 기기는 컬럼으로 저장하지 않고 `min(visit_date)` 로 계산한다 — 컬럼을 두면 과거를 다시 계산할 수 없다.
+개인정보처리방침(앱 + 사이트 3개 언어)에 "이용 통계" 항목을 함께 추가했다. 수집을 늘렸으면 방침도 같이 고쳐야 한다.
+
+**열려 있는 위험 하나.** `track_visit` 은 비로그인도 부를 수 있어야 해서 anon 에 실행 권한을 줬다.
+임의의 `device_id` 로 반복 호출하면 행을 부풀릴 수 있다. 지금은 막지 않았다 —
+회원가입도 똑같이 열려 있고, 유입 수치가 틀어지는 것 외에 피해가 없다. 문제가 되면 그때 막는다.
+
+**차트를 라이브러리 없이 그린 이유.** Chart.js 를 넣으면 CDN 의존이 하나 늘고, 필요한 건 막대 3종뿐이다.
+대신 `height:auto` 인 SVG 는 **viewBox 의 가로세로비가 그대로 화면 높이가 된다.**
+1000×210 을 좁은 화면에 그대로 쓰면 차트가 70px 로 납작해진다. 그래서 `innerWidth < 760` 이면 viewBox 를 460 으로 바꾸고,
+창 크기가 바뀌면 마지막 응답으로 다시 그린다.
+
+**축 눈금은 반올림해야 한다.** `max*i/3` 을 그대로 찍으면 최대값이 7일 때 "2.333" 이 축에 나온다.
+
+### 이번에도 psql 에서 같은 함정
+- **enum 컬럼은 `||` 로 못 붙인다.** `status` 와 `role` 둘 다 enum 이라 `::text` 가 필요하다. `role` 때 이미 겪었는데 또 걸렸다.
+- **`group by 1` 에 집계 함수가 섞이면 조용히 실패한다.** `'x'||status||' : '||count(*)` 를 `group by 1` 하면
+  "aggregate functions are not allowed in GROUP BY" 다. stderr 가 PowerShell 에서 안 보여서
+  **빈 결과를 "데이터가 없다"로 오해할 뻔했다.** count(*) 는 7이라고 나오는데 group by 는 0행인 게 단서였다.
+  → 진단 쿼리는 `-A -t` 로 짜내지 말고 그냥 표로 뽑고 `2>&1` 을 붙이는 게 낫다.
+- **PowerShell 로 SSH 에 SQL 을 인라인으로 넘기지 말 것.** 괄호·`%`·중괄호가 계속 깨진다.
+  스크립트 파일을 `scp` 로 올려서 실행하면 한 번에 된다. 이번 세션에서 세 번 헛돌았다.
+
+### Vercel 은 사실 git 이 연결돼 있다 (메모 정정)
+"git 미연결" 이라고 적어 뒀었는데 아니다. 마지막 배포에
+`gitSource: {type:"github", repoId:1312255563, ref:"main", sha:...}` 가 붙어 있다.
+**웹훅이 안 걸려 자동 배포만 안 될 뿐**이라, 로그인된 vercel.com 탭에서 이렇게 부르면 된다.
+
+```js
+await fetch('/api/v13/deployments?forceNew=1', { method:'POST', credentials:'include',
+  headers:{'Content-Type':'application/json'},
+  body: JSON.stringify({ name:'massa', project:'prj_rXbH3q19JIMQaMMyYsqVP4P4p7Gc',
+    target:'production',
+    gitSource:{ type:'github', repoId:1312255563, ref:'main', sha:'<origin/main 해시>' } }) });
+```
+`READY` 가 되면 `massa-seven.vercel.app` 별칭이 자동으로 옮겨 붙는다. `assetlinks.json` 도 함께 간다(확인함).
+
+### 시크릿을 진단하다 흘렸다
+`select key, value from app_settings` 로 전체를 뽑는 바람에 `notify.secret` 이 작업 로그에 찍혔다.
+바로 회전했다(새 값 200 / 옛 값 401). **그 과정에서 `/root/massa_digest.sh` 에 시크릿이 박혀 있다는 걸 놓쳤다** —
+회전만 하고 끝냈으면 다음 날 아침 다이제스트가 조용히 401 로 죽었을 것이다.
+회전 스크립트가 다이제스트 스크립트를 다시 쓰도록 고쳤다.
+교훈: **설정 테이블을 통째로 뽑지 말고 필요한 키만 뽑을 것.**
