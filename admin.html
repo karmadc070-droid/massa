@@ -832,6 +832,19 @@
     <div id="partnerList"></div>
   </div>
 
+  <!-- 파트너: 내 가격 -->
+  <div class="screen" id="partnerPrice" data-title="내 가격">
+    <div class="notice">코스마다 내 가격을 정할 수 있습니다. 기본가보다 낮게는 정할 수 없고, 관리자가 승인해야 손님에게 보입니다.</div>
+    <div id="ppProvWrap" style="display:none;margin:10px 0"></div>
+    <div id="ppList"></div>
+  </div>
+
+  <!-- 관리자: 가격 승인 -->
+  <div class="screen" id="adminPrice" data-title="가격 승인 (관리자)">
+    <div class="notice">마사지사가 올린 가격을 승인하거나 반려합니다. 승인해야 손님 앱에 반영됩니다.</div>
+    <div id="apxList"></div>
+  </div>
+
   <!-- 관리자: 홈뷰티 신청 승인 -->
   <div class="screen" id="adminApps" data-title="홈 뷰티 신청 (관리자)">
     <div class="notice">등록 서류(신분증 앞·뒤, 전화번호, 계좌번호)에 문제가 없는지 확인해 승인·거절합니다.</div>
@@ -873,6 +886,8 @@
       <div class="mp-row" onclick="window.go('terms');loadAgreements()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h7"/></svg></span><span class="mp-name">약관 및 개인정보</span><span class="mp-chev">›</span></div>
       <div class="mp-row" id="mpAbout"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5"/><circle cx="12" cy="8" r=".7" fill="#4A5A61" stroke="none"/></svg></span><span class="mp-name">회사 소개</span><span class="mp-chev">›</span></div>
       <div class="mp-row" id="mpPartnerBookings" style="display:none" onclick="window.go('partnerBookings');loadPartnerBookings()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round"><path d="M4 20v-1a4 4 0 014-4h1"/><circle cx="8.5" cy="8" r="3"/><path d="M14 13l2 2 4-4"/></svg></span><span class="mp-name">예약 관리 (파트너)</span><span class="mp-chev">›</span></div>
+      <div class="mp-row" id="mpPriceRow" style="display:none" onclick="window.go('partnerPrice');loadMyPrices()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#3E7C4F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9-9 9-9-9z"/><path d="M12 8.5v7M10 10.5h3a1.5 1.5 0 010 3h-2a1.5 1.5 0 000 3h3"/></svg></span><span class="mp-name">내 가격</span><span class="mp-chev">›</span></div>
+      <div class="mp-row" id="mpPriceAdminRow" style="display:none" onclick="window.go('adminPrice');loadPriceRequests()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#B23A5B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9-9 9-9-9z"/><path d="M9 12l2 2 4-4"/></svg></span><span class="mp-name">가격 승인 (관리자)</span><span class="mp-chev">›</span></div>
       <div class="mp-row" id="mpMySettleRow" style="display:none" onclick="window.go('partnerSettle');loadMySettle()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#B23A5B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v10M9.5 9.5h4a1.5 1.5 0 010 3h-3a1.5 1.5 0 000 3h4"/></svg></span><span class="mp-name">내 입금 현황</span><span class="mp-chev">›</span></div>
       <div class="mp-row" id="mpRevenueRow" style="display:none" onclick="window.go('partnerRevenue');loadPartnerRevenue()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><rect x="7" y="10" width="3" height="6"/><rect x="12" y="7" width="3" height="9"/><rect x="17" y="12" width="3" height="4"/></svg></span><span class="mp-name">매출 관리</span><span class="mp-chev">›</span></div>
       <div class="mp-row" id="mpScheduleRow" style="display:none" onclick="window.go('partnerSchedule');loadPartnerSchedule()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg></span><span class="mp-name">스케줄 관리</span><span class="mp-chev">›</span></div>
@@ -1352,7 +1367,16 @@ const setStatus = (t, ok) => {
 };
 
 // ── 상태 캐시 & 예약 선택값 ──
-const CACHE = { providers: [], services: [], stores: [] };
+const CACHE = { providers: [], services: [], stores: [], provPrice: {} };
+
+// 마사지사가 자기 코스 가격을 따로 정했으면 그 값을, 없으면 기본가를 쓴다.
+// 화면 표시용이다. 실제 청구 금액은 서버가 예약을 받을 때 다시 계산한다(freeze_booking_amount).
+function priceOf(svc, prov) {
+  if (!svc) return 0;
+  const p = prov === undefined ? SEL.provider : prov;
+  const own = p && CACHE.provPrice[p.id] && CACHE.provPrice[p.id][svc.id];
+  return own != null ? Number(own) : Number(svc.price_vnd);
+}
 const SEL = { provider: null, serviceType: 'aroma', serviceId: null, duration: 90, hotel: '', room: '', frontNote: '', payment: 'card_onsite' };
 
 const AVATARS = ['11.jpg','22.jpg','33.jpg','44.jpg','55.jpg','66.jpg','77.jpg','88.jpg','99.jpg'];
@@ -1482,8 +1506,8 @@ async function openProfile(pid) {
   let svcHtml = '';
   Object.keys(groups).forEach(base => {
     const list = groups[base].sort((a, b) => a.duration_min - b.duration_min);
-    const chips = list.map((s, i) => '<div class="chip' + (i === 0 ? ' sel' : '') + '" data-price="' + s.price_vnd + '" data-sid="' + s.id + '" data-dur="' + s.duration_min + '">' + s.duration_min + '분</div>').join('');
-    svcHtml += '<div class="pf-svc"><div class="pf-svc-name">' + base + '</div><div class="chips">' + chips + '</div><div class="pf-svc-bottom"><div class="pf-price">' + list[0].price_vnd.toLocaleString() + ' ₫</div><button class="bookbtn pf-book">예약</button></div></div>';
+    const chips = list.map((s, i) => '<div class="chip' + (i === 0 ? ' sel' : '') + '" data-price="' + priceOf(s, p) + '" data-sid="' + s.id + '" data-dur="' + s.duration_min + '">' + s.duration_min + '분</div>').join('');
+    svcHtml += '<div class="pf-svc"><div class="pf-svc-name">' + base + '</div><div class="chips">' + chips + '</div><div class="pf-svc-bottom"><div class="pf-price">' + priceOf(list[0], p).toLocaleString() + ' ₫</div><button class="bookbtn pf-book">예약</button></div></div>';
   });
   if (!svcHtml) svcHtml = '<div class="notice">등록된 서비스가 없습니다.</div>';
 
@@ -1776,6 +1800,8 @@ window.openAuth = openAuth;
 async function submitBooking() {
   if (!SESSION) { openAuth(); return; }
   const svc = currentService();
+  // 코스를 못 찾으면 예전에는 850,000₫ 을 임의로 물렸다. 고르지 않은 금액이 청구된다.
+  if (!svc) { alert('코스를 다시 골라 주세요.'); window.go('menu'); return; }
   const day = document.querySelector('#time .day.sel')?.textContent.replace(/\D/g, '') || '7';
   const time = document.getElementById('timeView')?.textContent || '20:00';
   const scheduled = new Date(`2026-06-${day.padStart(2,'0')}T${time}:00+07:00`).toISOString();
@@ -1790,7 +1816,8 @@ async function submitBooking() {
     front_desk_note: document.querySelector('#loc select')?.value || '',
     status: 'confirmed',
     payment_method: SEL.payment,
-    amount_vnd: svc?.price_vnd || 850000
+    // 서버가 예약을 받을 때 이 값을 다시 계산해 덮어쓴다.
+    amount_vnd: priceOf(svc)
   };
   const { data, error } = await sb.from('bookings').insert(row).select().single();
   const done = document.querySelector('#done .summary');
@@ -1819,8 +1846,9 @@ function updateMenuPrices() {
              || CACHE.services.find(s => s.massage_type === types[i]);
     const pEl = card.querySelector('.p');
     if (svc && pEl) {
-      const won = Math.round(svc.price_vnd * 0.054).toLocaleString();
-      pEl.innerHTML = `${svc.price_vnd.toLocaleString()}₫ <span style="color:var(--muted);font-weight:normal">(약 ${won}원)</span> · ${SEL.duration}분`;
+      const px = priceOf(svc);
+      const won = Math.round(px * 0.054).toLocaleString();
+      pEl.innerHTML = `${px.toLocaleString()}₫ <span style="color:var(--muted);font-weight:normal">(약 ${won}원)</span> · ${SEL.duration}분`;
     }
   });
 }
@@ -2102,10 +2130,21 @@ async function loadAccount() {
   const canReview = isAdm || role === 'reviewer'; // 등록 심사 관리자: 승인만
   // 파트너(제공자 등록자) 여부 — 등록된 제공자가 있으면 파트너 메뉴 노출
   let isPartner = isAdm;
-  if (!isPartner) { try { const { count } = await sb.from('providers').select('id', { count: 'exact', head: true }).eq('profile_id', SESSION.user.id); isPartner = (count || 0) > 0; } catch (e) {} }
+  // profile_id 만 보면 안 된다. 매장으로 등록한 사람은 owner_id 로 붙어 있다.
+  // 실제로 승인된 마사지사 21명 중 profile_id 를 가진 사람은 0명이고 전부 owner_id 다.
+  // myProviders() 는 둘 다 보는데 여기만 안 봐서, 파트너 메뉴가 통째로 숨겨져 있었다.
+  if (!isPartner) {
+    try {
+      const uid = SESSION.user.id;
+      const { count } = await sb.from('providers').select('id', { count: 'exact', head: true })
+        .or('profile_id.eq.' + uid + ',owner_id.eq.' + uid);
+      isPartner = (count || 0) > 0;
+    } catch (e) {}
+  }
   const rowVis = {
     mpPartnerBookings: isPartner, mpMySettleRow: isPartner, mpRevenueRow: isPartner, mpScheduleRow: isPartner, mpEventsRow: isPartner, mpStaffRow: isPartner,
     mpChatRow: isPartner, mpGpsRow: isPartner, mpAiRow: isPartner, mpAiBizRow: isPartner, mpFraudRow: isAdm,
+    mpPriceRow: isPartner, mpPriceAdminRow: isAdm,
     mpAdminBkRow: isAdm, mpProvRow: isAdm, mpFeeRow: isAdm, mpCouponRow: isAdm, mpSalesRow: isAdm, mpCountryRow: isAdm,
     mpAdminRow: canReview, mpStatsRow: isAdm, mpReportsRow: isAdm, mpMembersRow: isAdm, mpSettlementRow: isAdm, mpAdsRow: isAdm
   };
@@ -3016,6 +3055,127 @@ async function myProviders() {
   return data || [];
 }
 
+// ── 파트너: 내 가격 ──
+// 기본가는 건드리지 않는다. 마사지사가 자기 코스만 올리고, 관리자가 승인해야 손님에게 보인다.
+// 범위 검사는 화면에서도 하지만 믿는 건 DB 쪽이다(provider_set_price 가 다시 본다).
+let PP_PID = null;
+
+const nf = (v) => Number(v || 0).toLocaleString();
+
+async function loadMyPrices() {
+  if (!SESSION) { openAuth(); return; }
+  const wrap = document.getElementById('ppList');
+  const sel = document.getElementById('ppProvWrap');
+  wrap.innerHTML = '<div class="hint">불러오는 중…</div>';
+  const mine = await myProviders();
+  if (!mine.length) { sel.style.display = 'none'; wrap.innerHTML = '<div class="notice">등록된 제공자 정보가 없습니다.</div>'; return; }
+  if (!mine.some(p => p.id === PP_PID)) PP_PID = mine[0].id;
+  // 매장이면 소속 마사지사가 여럿일 수 있다
+  if (mine.length > 1) {
+    sel.style.display = 'block';
+    sel.innerHTML = '<select id="ppProv" style="width:100%;padding:10px;border:1px solid #DDE4E1;border-radius:10px;font-size:14px">'
+      + mine.map(p => '<option value="' + p.id + '"' + (p.id === PP_PID ? ' selected' : '') + '>' + p.display_name + '</option>').join('')
+      + '</select>';
+    document.getElementById('ppProv').onchange = (e) => { PP_PID = e.target.value; renderMyPrices(); };
+  } else sel.style.display = 'none';
+  renderMyPrices();
+}
+window.loadMyPrices = loadMyPrices;
+
+async function renderMyPrices() {
+  const wrap = document.getElementById('ppList');
+  wrap.innerHTML = '<div class="hint">불러오는 중…</div>';
+  const { data, error } = await sb.rpc('provider_my_prices', { p_provider: PP_PID });
+  if (error) { wrap.innerHTML = '<div class="notice">불러오지 못했습니다: ' + error.message + '</div>'; return; }
+  const rows = (data && data.rows) || [];
+  if (!rows.length) { wrap.innerHTML = '<div class="notice">등록된 코스가 없습니다.</div>'; return; }
+
+  const groups = {};
+  rows.forEach(r => (groups[r.category] = groups[r.category] || []).push(r));
+  const catName = { massage: '마사지', therapist_care: '홈 뷰티' };
+  let html = '';
+  Object.keys(groups).forEach(cat => {
+    html += '<div class="label" style="margin:14px 0 6px">' + (catName[cat] || cat) + '</div>';
+    groups[cat].forEach(r => { html += ppRow(r); });
+  });
+  wrap.innerHTML = html;
+  wrap.querySelectorAll('.pp-save').forEach(b => b.onclick = () => savePrice(b.dataset.sid, false));
+  wrap.querySelectorAll('.pp-reset').forEach(b => b.onclick = () => savePrice(b.dataset.sid, true));
+}
+
+function ppRow(r) {
+  // 상태는 하나만 보여 준다. 대기 중이면 대기가 먼저다.
+  let badge = '';
+  if (r.pending_vnd != null) badge = '<span style="font-size:11px;color:#B26B00">● 승인 대기 ' + nf(r.pending_vnd) + '₫</span>';
+  else if (r.price_vnd != null) badge = '<span style="font-size:11px;color:#1E6B45">● 적용 중 ' + nf(r.price_vnd) + '₫</span>';
+  else if (r.reject_reason) badge = '<span style="font-size:11px;color:#B23A5B">● 반려 — ' + r.reject_reason + '</span>';
+  else badge = '<span style="font-size:11px;color:var(--muted)">기본가 사용 중</span>';
+
+  const cur = r.pending_vnd != null ? r.pending_vnd : (r.price_vnd != null ? r.price_vnd : r.base_vnd);
+  return '<div class="card" style="cursor:default">'
+    + '<div class="trow1"><span class="t">' + r.name + '</span></div>'
+    + '<div class="d">기본가 ' + nf(r.base_vnd) + '₫ · 최대 ' + nf(r.cap_vnd) + '₫ &nbsp; ' + badge + '</div>'
+    + '<div style="display:flex;gap:6px;align-items:center;margin-top:8px">'
+    +   '<input id="pp_' + r.service_id + '" type="text" inputmode="numeric" value="' + nf(cur) + '"'
+    +     ' style="flex:1;min-width:0;padding:9px;border:1px solid #DDE4E1;border-radius:9px;font-size:14px;text-align:right">'
+    +   '<span style="font-size:13px;color:var(--muted)">₫</span>'
+    +   '<button class="chip sel pp-save" data-sid="' + r.service_id + '">저장</button>'
+    +   '<button class="chip pp-reset" data-sid="' + r.service_id + '">기본가</button>'
+    + '</div></div>';
+}
+
+async function savePrice(sid, reset) {
+  let val = null;
+  if (!reset) {
+    const inp = document.getElementById('pp_' + sid);
+    val = parseInt(String(inp.value).replace(/[^\d]/g, ''), 10);
+    if (!(val > 0)) { alert('금액을 숫자로 입력해 주세요.'); return; }
+  }
+  const { data, error } = await sb.rpc('provider_set_price', { p_provider: PP_PID, p_service: sid, p_price: val });
+  if (error) { alert(error.message); return; }
+  alert(data);
+  renderMyPrices();
+}
+
+// ── 관리자: 가격 승인 ──
+async function loadPriceRequests() {
+  if (!SESSION) { openAuth(); return; }
+  const wrap = document.getElementById('apxList');
+  wrap.innerHTML = '<div class="hint">불러오는 중…</div>';
+  const { data, error } = await sb.rpc('admin_price_requests');
+  if (error) { wrap.innerHTML = '<div class="notice">불러오지 못했습니다: ' + error.message + '</div>'; return; }
+  const rows = data || [];
+  if (!rows.length) { wrap.innerHTML = '<div class="notice">승인을 기다리는 요청이 없습니다.</div>'; return; }
+  wrap.innerHTML = rows.map(r => {
+    const now = r.current_vnd != null ? nf(r.current_vnd) + '₫' : '기본가 ' + nf(r.base_vnd) + '₫';
+    const up = Math.round((r.pending_vnd / r.base_vnd - 1) * 100);
+    return '<div class="card" style="cursor:default">'
+      + '<div class="trow1"><span class="t">' + r.provider_name + '</span></div>'
+      + '<div class="d">' + r.service_name + '</div>'
+      + '<div class="d">' + now + ' → <b>' + nf(r.pending_vnd) + '₫</b> (기본가 대비 +' + up + '%) · 최대 ' + nf(r.cap_vnd) + '₫</div>'
+      + '<div style="display:flex;gap:6px;margin-top:8px">'
+      +   '<button class="chip sel apx-ok" data-p="' + r.provider_id + '" data-s="' + r.service_id + '">승인</button>'
+      +   '<button class="chip apx-no" data-p="' + r.provider_id + '" data-s="' + r.service_id + '">반려</button>'
+      + '</div></div>';
+  }).join('');
+  wrap.querySelectorAll('.apx-ok').forEach(b => b.onclick = () => reviewPrice(b.dataset.p, b.dataset.s, true));
+  wrap.querySelectorAll('.apx-no').forEach(b => b.onclick = () => reviewPrice(b.dataset.p, b.dataset.s, false));
+}
+window.loadPriceRequests = loadPriceRequests;
+
+async function reviewPrice(pid, sid, ok) {
+  let reason = null;
+  if (!ok) {
+    reason = prompt('반려 사유를 적어 주세요. 마사지사에게 그대로 보입니다.');
+    if (reason === null) return;
+  }
+  const { data, error } = await sb.rpc('admin_review_price',
+    { p_provider: pid, p_service: sid, p_approve: ok, p_reason: reason });
+  if (error) { alert(error.message); return; }
+  alert(data);
+  loadPriceRequests();
+}
+
 // ── 파트너: 고객 채팅 ──
 async function loadPartnerChats() {
   if (!SESSION) { openAuth(); return; }
@@ -3600,6 +3760,8 @@ const TITLE_I18N = {
   '예약 관리 (파트너)': ['Quản lý đặt chỗ','Manage Bookings','预约管理','予約管理'], '홈 뷰티 신청 (관리자)': ['Duyệt đăng ký','Approvals','入驻审核','登録審査'],
   '즐겨찾기': ['Yêu thích','Favorites','收藏','お気に入り'], '쿠폰함': ['Ví coupon','Coupons','优惠券','クーポン'], '내 입금 현황': ['Khoản phải nộp','My Payments','我的应缴','入金状況'],
   '고객 채팅': ['Chat khách','Customer Chat','客户聊天','顧客チャット'], '근무 위치 (GPS)': ['Vị trí làm việc (GPS)','Work Location (GPS)','工作位置（GPS）','勤務位置（GPS）'], 'AI 일정 추천': ['Gợi ý lịch AI','AI Schedule Tips','AI日程推荐','AIスケジュール提案'], '스케줄 관리': ['Lịch làm việc','Schedule','日程管理','スケジュール管理'],
+  '내 가격': ['Giá của tôi','My Prices','我的价格','私の価格'],
+  '가격 승인 (관리자)': ['Duyệt giá','Price Approvals','价格审核','価格承認'],
   'AI 가격·매출 분석': ['Phân tích giá & doanh thu AI','AI Price & Revenue','AI价格与营收分析','AI価格·売上分析'], 'AI 사기 예약 탐지': ['Phát hiện đặt chỗ gian lận','AI Fraud Detection','AI欺诈预约检测','AI不正予約検知'],
   '예약 관리 (관리자)': ['Quản lý đặt chỗ (Admin)','Bookings (Admin)','预约管理（管理员）','予約管理（管理者）'], '기사(마사지사) 관리': ['Quản lý KTV','Providers','技师管理','セラピスト管理'],
   '수수료 관리': ['Phí nền tảng','Commission','手续费管理','手数料管理'], '쿠폰 관리': ['Quản lý coupon','Coupons (Admin)','优惠券管理','クーポン管理'],
@@ -3661,6 +3823,8 @@ const DICT = {
   '서비스 선택 ▾': ['Chọn dịch vụ ▾','Select services ▾','选择服务 ▾','サービス選択 ▾'],
   '즐겨찾기': ['Yêu thích','Favorites','收藏','お気に入り'], '쿠폰함': ['Ví coupon','Coupons','优惠券','クーポン'], '내 입금 현황': ['Khoản phải nộp','My Payments','我的应缴','入金状況'],
   '고객 채팅': ['Chat khách','Customer Chat','客户聊天','顧客チャット'], '근무 위치 (GPS)': ['Vị trí làm việc (GPS)','Work Location (GPS)','工作位置（GPS）','勤務位置（GPS）'], 'AI 일정 추천': ['Gợi ý lịch AI','AI Schedule Tips','AI日程推荐','AIスケジュール提案'],
+  '내 가격': ['Giá của tôi','My Prices','我的价格','私の価格'],
+  '가격 승인 (관리자)': ['Duyệt giá','Price Approvals','价格审核','価格承認'],
   'AI 가격·매출 분석': ['Phân tích giá & doanh thu AI','AI Price & Revenue','AI价格与营收分析','AI価格·売上分析'], 'AI 사기 예약 탐지': ['Phát hiện đặt chỗ gian lận','AI Fraud Detection','AI欺诈预约检测','AI不正予約検知'],
   '✨ AI 맞춤 추천': ['✨ Gợi ý AI cho bạn','✨ AI picks for you','✨ AI为你推荐','✨ AIおすすめ'],
   '📍 현재 위치로 갱신': ['📍 Cập nhật vị trí','📍 Update my location','📍 更新当前位置','📍 現在地を更新'],
@@ -4323,8 +4487,16 @@ async function load() {
     if (e3) throw e3; CACHE.services = services;
     const { data: stores, error: e2 } = await sb.from('stores').select('*').order('view_count', { ascending: false });
     if (e2) throw e2; CACHE.stores = stores;
-    const { data: psPrice } = await sb.from('provider_services').select('provider_id, services(price_vnd)');
-    const pm = {}; (psPrice || []).forEach(r => { const pr = r.services && r.services.price_vnd; if (pr != null) pm[r.provider_id] = Math.min(pm[r.provider_id] == null ? Infinity : pm[r.provider_id], pr); }); CACHE.priceMap = pm;
+    // 마사지사가 직접 정한 가격 (승인된 것만). { 마사지사id: { 코스id: 금액 } }
+    try { const { data: pp } = await sb.rpc('public_provider_prices'); CACHE.provPrice = pp || {}; } catch (e) { CACHE.provPrice = {}; }
+    const { data: psPrice } = await sb.from('provider_services').select('provider_id, service_id, services(price_vnd)');
+    const pm = {};
+    (psPrice || []).forEach(r => {
+      const own = CACHE.provPrice[r.provider_id] && CACHE.provPrice[r.provider_id][r.service_id];
+      const pr = own != null ? Number(own) : (r.services && r.services.price_vnd);
+      if (pr != null) pm[r.provider_id] = Math.min(pm[r.provider_id] == null ? Infinity : pm[r.provider_id], pr);
+    });
+    CACHE.priceMap = pm;
     const grouped = {};
     stores.forEach(s => {
       (grouped[s.category] = grouped[s.category] || []).push({
