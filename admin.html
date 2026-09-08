@@ -3146,11 +3146,23 @@ async function loadPriceRequests() {
   if (error) { wrap.innerHTML = '<div class="notice">불러오지 못했습니다: ' + error.message + '</div>'; return; }
   const rows = data || [];
   if (!rows.length) { wrap.innerHTML = '<div class="notice">승인을 기다리는 요청이 없습니다.</div>'; return; }
-  wrap.innerHTML = rows.map(r => {
+
+  // 골라서 한 번에 승인한다. 반려는 사유가 건마다 다르므로 한 건씩만 둔다.
+  const bar = '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#F3F7F5;'
+    + 'border-radius:12px;margin-bottom:10px;position:sticky;top:0;z-index:5">'
+    + '<label style="display:flex;align-items:center;gap:6px;font-size:13.5px;cursor:pointer">'
+    +   '<input type="checkbox" id="apxAll" style="width:17px;height:17px"> 전체 선택</label>'
+    + '<span id="apxCount" style="font-size:12.5px;color:var(--muted);margin-left:auto">0건 선택</span>'
+    + '<button class="chip sel" id="apxBulk" disabled style="opacity:.45">선택 승인</button></div>';
+
+  wrap.innerHTML = bar + rows.map(r => {
     const now = r.current_vnd != null ? nf(r.current_vnd) + '₫' : '기본가 ' + nf(r.base_vnd) + '₫';
     const up = Math.round((r.pending_vnd / r.base_vnd - 1) * 100);
     return '<div class="card" style="cursor:default">'
-      + '<div class="trow1"><span class="t">' + r.provider_name + '</span></div>'
+      + '<div class="trow1" style="display:flex;align-items:center;gap:8px">'
+      +   '<input type="checkbox" class="apx-ck" style="width:17px;height:17px;flex:0 0 auto"'
+      +     ' data-p="' + r.provider_id + '" data-s="' + r.service_id + '">'
+      +   '<span class="t">' + r.provider_name + '</span></div>'
       + '<div class="d">' + r.service_name + '</div>'
       + '<div class="d">' + now + ' → <b>' + nf(r.pending_vnd) + '₫</b> (기본가 대비 +' + up + '%) · 최대 ' + nf(r.cap_vnd) + '₫</div>'
       + '<div style="display:flex;gap:6px;margin-top:8px">'
@@ -3158,10 +3170,46 @@ async function loadPriceRequests() {
       +   '<button class="chip apx-no" data-p="' + r.provider_id + '" data-s="' + r.service_id + '">반려</button>'
       + '</div></div>';
   }).join('');
+
+  const cks = [...wrap.querySelectorAll('.apx-ck')];
+  const all = wrap.querySelector('#apxAll');
+  const btn = wrap.querySelector('#apxBulk');
+  const cnt = wrap.querySelector('#apxCount');
+  const sync = () => {
+    const on = cks.filter(c => c.checked);
+    cnt.textContent = on.length + '건 선택';
+    btn.disabled = on.length === 0;
+    btn.style.opacity = on.length ? '1' : '.45';
+    all.checked = on.length === cks.length;
+    // 일부만 골랐을 때 전체 선택을 반쯤 켜진 상태로 보여 준다
+    all.indeterminate = on.length > 0 && on.length < cks.length;
+  };
+  cks.forEach(c => c.onchange = sync);
+  all.onchange = () => { cks.forEach(c => c.checked = all.checked); sync(); };
+  btn.onclick = () => bulkApprove(cks.filter(c => c.checked));
+  sync();
+
   wrap.querySelectorAll('.apx-ok').forEach(b => b.onclick = () => reviewPrice(b.dataset.p, b.dataset.s, true));
   wrap.querySelectorAll('.apx-no').forEach(b => b.onclick = () => reviewPrice(b.dataset.p, b.dataset.s, false));
 }
 window.loadPriceRequests = loadPriceRequests;
+
+async function bulkApprove(checked) {
+  if (!checked.length) return;
+  if (!confirm(checked.length + '건을 승인합니다. 승인하면 바로 손님 앱에 반영됩니다.')) return;
+  const items = checked.map(c => ({ provider_id: c.dataset.p, service_id: c.dataset.s }));
+  const { data, error } = await sb.rpc('admin_approve_prices', { p_items: items });
+  if (error) { alert(error.message); return; }
+  // 한 건이 막혀도 나머지는 승인된다. 막힌 건은 이유를 그대로 보여 준다.
+  const fails = (data && data.fails) || [];
+  let msg = (data && data.ok || 0) + '건 승인했습니다.';
+  if (fails.length) {
+    msg += '\n\n승인하지 못한 ' + fails.length + '건:\n'
+      + fails.map(f => '· ' + f.provider_name + ' — ' + f.service_name + '\n  ' + f.reason).join('\n');
+  }
+  alert(msg);
+  loadPriceRequests();
+}
 
 async function reviewPrice(pid, sid, ok) {
   let reason = null;
