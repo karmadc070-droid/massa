@@ -2262,7 +2262,8 @@ window.renderApPhotos = function () {
 // 형태(프리랜서/마사지샵)에 따라 등록 폼 전환
 window.applyApType = function (t) {
   const shop = t === 'shop';
-  const nameLbl = document.getElementById('apNameLabel'); if (nameLbl) { const ko = shop ? '상호 (업체명)' : '활동명 (실명)'; nameLbl.dataset.ko = ko; nameLbl.textContent = trOne(ko, LANG); }
+  const nameLbl = document.getElementById('apNameLabel'); if (nameLbl) { const ko = shop ? '상호 (업체명)' : '활동명 (실명)'; nameLbl.dataset.ko = ko; nameLbl.textContent = trOne(ko, LANG); // textContent 로 덮어쓰면 필수 표시(*)가 같이 지워진다. 다시 붙여 준다
+  nameLbl.insertAdjacentHTML('beforeend', '<span class="req">*</span>'); }
   const nameIn = document.getElementById('apName'); if (nameIn) { const ko = shop ? '예) 하노이 스파' : '활동명 / 실명'; nameIn.dataset.phko = ko; nameIn.setAttribute('placeholder', trOne(ko, LANG)); }
   const licLbl = document.getElementById('apLicenseLabel'); const licIn = document.getElementById('apLicense');
   if (licLbl) licLbl.style.display = shop ? '' : 'none';
@@ -2307,9 +2308,56 @@ async function loadApplyStatus() {
         + '<br>아래 내용을 수정한 뒤 <b>재제출</b> 버튼을 눌러 주세요.'
         + '<div style="margin-top:8px"><button class="chip sel" onclick="resubmitApplication(\'' + p.id + '\')">이 신청 재제출</button></div></div>';
     }
-    return '<div class="notice" style="border-color:#3E7C4F;color:#1E6B45">✅ <b>' + p.display_name + '</b> — 승인 완료. 고객 목록에 노출됩니다.</div>';
+    // 승인된 뒤에도 서류를 보완할 수 있어야 한다.
+    // 예전에는 승인되면 이 문구만 뜨고 신분증·계좌를 넣을 곳이 아예 없었다.
+    return '<div class="notice" style="border-color:#3E7C4F;color:#1E6B45">✅ <b>' + p.display_name + '</b> — 승인 완료. 고객 목록에 노출됩니다.'
+      + '<div style="margin-top:8px;color:var(--muted);font-size:12.5px">신분증·계좌가 비어 있으면 정산을 받을 수 없습니다. 아래 내용을 채우고 저장해 주세요.</div>'
+      + '<div style="margin-top:8px"><button class="chip sel" onclick="updateApproved(\'' + p.id + '\')">내 정보·서류 저장</button></div></div>';
   }).join('');
 }
+
+// 승인 상태를 유지한 채 정보·서류만 갱신한다. 심사로 되돌리지 않는다.
+// 되돌리면 고객 목록에서 사라져 영업을 못 하게 된다.
+window.updateApproved = async function (providerId) {
+  if (!SESSION) { openAuth(); return; }
+  const gv = id => (document.getElementById(id).value || '').trim();
+  const gf = id => (document.getElementById(id).dataset.url || null);
+  const photos = [0, 1, 2, 3, 4].map(i => document.getElementById('apPhoto' + i).dataset.url || '').filter(Boolean);
+
+  const patch = {};
+  const name = gv('apName'); if (name) patch.display_name = name;
+  if (photos.length) { patch.photo_url = photos[0]; patch.photo_urls = photos; }
+  const bio = gv('apBio');     if (bio)  patch.bio = bio;
+  const area = gv('apArea');   if (area) patch.service_area = area;
+  const tel = gv('apContact'); if (tel)  patch.phone = tel;
+
+  const kyc = {};
+  if (gv('apContact')) kyc.contact = gv('apContact');
+  if (gv('apBank'))    kyc.bank_name = gv('apBank');
+  if (gv('apAccount')) kyc.bank_account = gv('apAccount');
+  if (gf('apIdFront')) kyc.id_front_url = gf('apIdFront');
+  if (gf('apIdBack'))  kyc.id_back_url = gf('apIdBack');
+  if (gf('apLicense')) kyc.business_license_url = gf('apLicense');
+  if (gf('apCert'))    kyc.cert_url = gf('apCert');
+
+  if (!Object.keys(patch).length && !Object.keys(kyc).length) {
+    alert('바꿀 내용을 입력한 뒤 눌러 주세요.'); return;
+  }
+  if (Object.keys(patch).length) {
+    const { error } = await sb.from('providers').update(patch).eq('id', providerId);
+    if (error) { alert('저장 실패: ' + error.message); return; }
+  }
+  if (Object.keys(kyc).length) {
+    // 신청 당시 행이 없을 수도 있다 (예전 신청). 없으면 만든다.
+    const { data: ex } = await sb.from('provider_kyc').select('provider_id').eq('provider_id', providerId).maybeSingle();
+    const { error: e2 } = ex
+      ? await sb.from('provider_kyc').update(kyc).eq('provider_id', providerId)
+      : await sb.from('provider_kyc').insert({ ...kyc, provider_id: providerId, applicant_id: SESSION.user.id });
+    if (e2) { alert('서류 저장 실패: ' + e2.message); return; }
+  }
+  alert('저장했습니다. 관리자가 확인합니다.');
+  loadApplyStatus();
+};
 window.loadApplyStatus = loadApplyStatus;
 // 반려된 신청을 수정 내용으로 다시 제출
 window.resubmitApplication = async function (providerId) {
@@ -2385,7 +2433,8 @@ async function submitApplication() {
   if (missing.length) {
     msg.style.color = '#B23A5B';
     msg.innerHTML = '<b>아직 ' + missing.length + '가지가 비어 있어요.</b> 아래 항목(<span class="req">*</span>)을 채우면 신청할 수 있습니다.<br>'
-      + missing.map(m => '· ' + m.name).join('<br>');
+      // 이름을 <span> 으로 감싸야 번역기가 낱개로 바꿀 수 있다. 한 줄로 이어 붙이면 사전과 안 맞는다
+      + missing.map(m => '· <span>' + m.name + '</span>').join('<br>');
     apMarkMissing(missing);
     return;
   }
@@ -3858,6 +3907,13 @@ const TITLE_I18N = {
   '예약 관리 (파트너)': ['Quản lý đặt chỗ','Manage Bookings','预约管理','予約管理'], '홈 뷰티 신청 (관리자)': ['Duyệt đăng ký','Approvals','入驻审核','登録審査'],
   '즐겨찾기': ['Yêu thích','Favorites','收藏','お気に入り'], '쿠폰함': ['Ví coupon','Coupons','优惠券','クーポン'], '내 입금 현황': ['Khoản phải nộp','My Payments','我的应缴','入金状況'],
   '고객 채팅': ['Chat khách','Customer Chat','客户聊天','顧客チャット'], '근무 위치 (GPS)': ['Vị trí làm việc (GPS)','Work Location (GPS)','工作位置（GPS）','勤務位置（GPS）'], 'AI 일정 추천': ['Gợi ý lịch AI','AI Schedule Tips','AI日程推荐','AIスケジュール提案'], '스케줄 관리': ['Lịch làm việc','Schedule','日程管理','スケジュール管理'],
+  '대표 사진 (1장 이상)': ['Ảnh đại diện (ít nhất 1)','Main photo (at least 1)','主照片（至少1张）','メイン写真（1枚以上）'],
+  '구분 (마사지사·홈뷰티)': ['Loại hình (Massage · Làm đẹp)','Type (Massage · Beauty)','类别（按摩·美容）','区分（マッサージ·ビューティー）'],
+  '신분증 앞면': ['CCCD mặt trước','ID front','身份证正面','身分証 表面'],
+  '신분증 뒷면': ['CCCD mặt sau','ID back','身份证背面','身分証 裏面'],
+  '사업자 등록증 (마사지샵 필수)': ['Giấy phép kinh doanh (bắt buộc với tiệm)','Business license (required for shops)','营业执照（店铺必填）','事業者登録証（店舗必須）'],
+  '내 정보·서류 저장': ['Lưu thông tin & giấy tờ','Save my info & documents','保存我的信息与证件','情報·書類を保存'],
+  '신분증·계좌가 비어 있으면 정산을 받을 수 없습니다. 아래 내용을 채우고 저장해 주세요.': ['Nếu thiếu CCCD hoặc tài khoản ngân hàng, chúng tôi không thể thanh toán cho bạn. Vui lòng điền và lưu bên dưới.','Without your ID and bank account we cannot pay you. Please fill in and save below.','缺少身份证或银行账户将无法结算，请在下方填写并保存。','身分証・口座がないとお支払いできません。下記を入力して保存してください。'],
   '내 가격': ['Giá của tôi','My Prices','我的价格','私の価格'],
   '가격 승인 (관리자)': ['Duyệt giá','Price Approvals','价格审核','価格承認'],
   'AI 가격·매출 분석': ['Phân tích giá & doanh thu AI','AI Price & Revenue','AI价格与营收分析','AI価格·売上分析'], 'AI 사기 예약 탐지': ['Phát hiện đặt chỗ gian lận','AI Fraud Detection','AI欺诈预约检测','AI不正予約検知'],
@@ -3921,6 +3977,13 @@ const DICT = {
   '서비스 선택 ▾': ['Chọn dịch vụ ▾','Select services ▾','选择服务 ▾','サービス選択 ▾'],
   '즐겨찾기': ['Yêu thích','Favorites','收藏','お気に入り'], '쿠폰함': ['Ví coupon','Coupons','优惠券','クーポン'], '내 입금 현황': ['Khoản phải nộp','My Payments','我的应缴','入金状況'],
   '고객 채팅': ['Chat khách','Customer Chat','客户聊天','顧客チャット'], '근무 위치 (GPS)': ['Vị trí làm việc (GPS)','Work Location (GPS)','工作位置（GPS）','勤務位置（GPS）'], 'AI 일정 추천': ['Gợi ý lịch AI','AI Schedule Tips','AI日程推荐','AIスケジュール提案'],
+  '대표 사진 (1장 이상)': ['Ảnh đại diện (ít nhất 1)','Main photo (at least 1)','主照片（至少1张）','メイン写真（1枚以上）'],
+  '구분 (마사지사·홈뷰티)': ['Loại hình (Massage · Làm đẹp)','Type (Massage · Beauty)','类别（按摩·美容）','区分（マッサージ·ビューティー）'],
+  '신분증 앞면': ['CCCD mặt trước','ID front','身份证正面','身分証 表面'],
+  '신분증 뒷면': ['CCCD mặt sau','ID back','身份证背面','身分証 裏面'],
+  '사업자 등록증 (마사지샵 필수)': ['Giấy phép kinh doanh (bắt buộc với tiệm)','Business license (required for shops)','营业执照（店铺必填）','事業者登録証（店舗必須）'],
+  '내 정보·서류 저장': ['Lưu thông tin & giấy tờ','Save my info & documents','保存我的信息与证件','情報·書類を保存'],
+  '신분증·계좌가 비어 있으면 정산을 받을 수 없습니다. 아래 내용을 채우고 저장해 주세요.': ['Nếu thiếu CCCD hoặc tài khoản ngân hàng, chúng tôi không thể thanh toán cho bạn. Vui lòng điền và lưu bên dưới.','Without your ID and bank account we cannot pay you. Please fill in and save below.','缺少身份证或银行账户将无法结算，请在下方填写并保存。','身分証・口座がないとお支払いできません。下記を入力して保存してください。'],
   '내 가격': ['Giá của tôi','My Prices','我的价格','私の価格'],
   '가격 승인 (관리자)': ['Duyệt giá','Price Approvals','价格审核','価格承認'],
   'AI 가격·매출 분석': ['Phân tích giá & doanh thu AI','AI Price & Revenue','AI价格与营收分析','AI価格·売上分析'], 'AI 사기 예약 탐지': ['Phát hiện đặt chỗ gian lận','AI Fraud Detection','AI欺诈预约检测','AI不正予約検知'],
