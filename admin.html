@@ -84,6 +84,23 @@
      120px 프로필 사진에서 얼굴 아래를 상자처럼 덮어 사람이 안 보였다.
      유니폼 로고는 AI 변환이 이미지 안에 그려 넣으므로 화면에서 덧그릴 필요가 없다. */
   .aimsg { font-size: 12px; color: var(--muted); margin: 6px 2px 0; }
+  /* 위치 권한 안내 줄 */
+  .geo-ask { display: flex; align-items: center; gap: 10px; background: #F3F7F5; border: 1px solid var(--line);
+    border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; font-size: 12.5px; color: var(--muted); }
+  .geo-ask button { flex: 0 0 auto; }
+  /* 사진 확대 보기 */
+  .lb { position: fixed; inset: 0; z-index: 400; background: rgba(12,16,18,.94); display: flex;
+    align-items: center; justify-content: center; }
+  .lb img { max-width: 94vw; max-height: 80vh; object-fit: contain; border-radius: 10px; }
+  .lb-x { position: absolute; top: 14px; right: 16px; width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(255,255,255,.16); color: #fff; font-size: 22px; line-height: 40px; text-align: center; cursor: pointer; }
+  .lb-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(255,255,255,.16); color: #fff; font-size: 24px; line-height: 44px; text-align: center; cursor: pointer; user-select: none; }
+  .lb-nav.prev { left: 10px; } .lb-nav.next { right: 10px; }
+  .lb-dots { position: absolute; bottom: 26px; left: 0; right: 0; text-align: center; }
+  .lb-dots i { display: inline-block; width: 7px; height: 7px; margin: 0 4px; border-radius: 50%;
+    background: rgba(255,255,255,.4); }
+  .lb-dots i.on { background: #fff; }
   .locrow { display: flex; align-items: center; gap: 11px; padding: 14px 8px; border-bottom: 1px solid #F0F3F1; font-size: 15px; color: var(--text); cursor: pointer; transition: background .12s, padding-left .12s; }
   .locrow:hover, .locrow:active { background: #F5F8F6; padding-left: 13px; }
   .locrow.sel { color: var(--navy); font-weight: bold; }
@@ -1385,6 +1402,106 @@ const SEL = { provider: null, serviceType: 'aroma', serviceId: null, duration: 9
 
 const AVATARS = ['11.jpg','22.jpg','33.jpg','44.jpg','55.jpg','66.jpg','77.jpg','88.jpg','99.jpg'];
 function avatarImg(src) { return '<img src="' + src + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px">'; }
+
+// ── 사진 확대 보기 ──────────────────────────────────────────
+let LB_LIST = [], LB_I = 0;
+function openLightbox(urls, start) {
+  LB_LIST = (urls || []).filter(Boolean);
+  if (!LB_LIST.length) return;
+  LB_I = Math.min(Math.max(start || 0, 0), LB_LIST.length - 1);
+  let ov = document.getElementById('lbOv');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'lbOv'; ov.className = 'lb';
+    document.body.appendChild(ov);
+    ov.onclick = (e) => { if (e.target === ov) closeLightbox(); };
+  }
+  ov.style.display = 'flex';
+  renderLightbox();
+  document.addEventListener('keydown', lbKey);
+}
+function renderLightbox() {
+  const ov = document.getElementById('lbOv'); if (!ov) return;
+  const many = LB_LIST.length > 1;
+  ov.innerHTML = '<div class="lb-x" onclick="closeLightbox()">✕</div>'
+    + (many ? '<div class="lb-nav prev" onclick="event.stopPropagation();lbMove(-1)">‹</div>' : '')
+    + '<img src="' + LB_LIST[LB_I] + '" alt="">'
+    + (many ? '<div class="lb-nav next" onclick="event.stopPropagation();lbMove(1)">›</div>' : '')
+    + (many ? '<div class="lb-dots">' + LB_LIST.map((_, i) => '<i class="' + (i === LB_I ? 'on' : '') + '"></i>').join('') + '</div>' : '');
+}
+function lbMove(d) { LB_I = (LB_I + d + LB_LIST.length) % LB_LIST.length; renderLightbox(); }
+function closeLightbox() {
+  const ov = document.getElementById('lbOv');
+  if (ov) ov.style.display = 'none';
+  document.removeEventListener('keydown', lbKey);
+}
+function lbKey(e) {
+  if (e.key === 'Escape') closeLightbox();
+  else if (e.key === 'ArrowLeft') lbMove(-1);
+  else if (e.key === 'ArrowRight') lbMove(1);
+}
+window.openLightbox = openLightbox; window.closeLightbox = closeLightbox; window.lbMove = lbMove;
+
+// ── 내 위치와 실제 거리 ──────────────────────────────────────
+// 예전에는 목록 순번으로 0.6·1.2·1.8km 를 지어내 보여 줬다. 이제 위치를 허용했을 때만 진짜 거리를 쓴다.
+let MYPOS = null;
+function haversineKm(la1, ln1, la2, ln2) {
+  const R = 6371, rad = Math.PI / 180;
+  const dLa = (la2 - la1) * rad, dLn = (ln2 - ln1) * rad;
+  const a = Math.sin(dLa / 2) ** 2 + Math.cos(la1 * rad) * Math.cos(la2 * rad) * Math.sin(dLn / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+function distOf(p) {
+  if (!MYPOS || !p || p.lat == null || p.lng == null) return null;
+  return haversineKm(MYPOS.lat, MYPOS.lng, Number(p.lat), Number(p.lng));
+}
+function distText(p) {
+  const d = distOf(p);
+  if (d == null) return p && p.base_district ? '📍 ' + p.base_district + ' 권역' : '';
+  return '📍 ' + (d < 1 ? Math.round(d * 1000) + 'm' : d.toFixed(1) + ' km');
+}
+function askMyPos(showError) {
+  return new Promise(resolve => {
+    if (!navigator.geolocation) { if (showError) alert('이 기기에서는 위치를 쓸 수 없습니다.'); return resolve(null); }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        MYPOS = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        try { localStorage.setItem('massa.pos', JSON.stringify(MYPOS)); } catch (e) {}
+        refreshDistances(); resolve(MYPOS);
+      },
+      err => {
+        if (showError) alert(err.code === 1
+          ? '위치 권한이 꺼져 있어 거리를 보여드릴 수 없습니다. 설정에서 위치 접근을 허용해 주세요.'
+          : '지금은 위치를 확인할 수 없습니다. 잠시 후 다시 시도해 주세요.');
+        resolve(null);
+      },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 5 * 60 * 1000 }
+    );
+  });
+}
+function refreshDistances() {
+  document.querySelectorAll('.tdist[data-pid]').forEach(el => {
+    const p = (CACHE.providers || []).find(x => x.id === el.dataset.pid);
+    el.innerHTML = distText(p);
+  });
+  const pf = document.getElementById('pfDist');
+  if (pf && pf.dataset.pid) {
+    const p = (CACHE.providers || []).find(x => x.id === pf.dataset.pid);
+    pf.innerHTML = distText(p) || '';
+  }
+  const bn = document.getElementById('geoBanner');
+  if (bn) bn.style.display = MYPOS ? 'none' : '';
+}
+window.askMyPos = askMyPos;
+async function initMyPos() {
+  try { const s = localStorage.getItem('massa.pos'); if (s) { MYPOS = JSON.parse(s); refreshDistances(); } } catch (e) {}
+  try {
+    if (navigator.permissions && navigator.permissions.query) {
+      const st = await navigator.permissions.query({ name: 'geolocation' });
+      if (st.state === 'granted') askMyPos(false);
+    }
+  } catch (e) {}
+}
 function avatarFor(p) { if (p.photo_url) return p.photo_url; if (p.photo_urls && p.photo_urls.length) return p.photo_urls[0]; let hh = 0; const s = String(p.id || p.display_name || ''); for (let i = 0; i < s.length; i++) hh = (hh * 31 + s.charCodeAt(i)) >>> 0; return AVATARS[hh % AVATARS.length]; }
 function providerCard(p, idx) {
   const photo = avatarFor(p);
@@ -1393,12 +1510,11 @@ function providerCard(p, idx) {
             : p.review_count > 150 ? '<span class="tag q">품질</span>' : '';
   const spec = (p.specialties || []).map(s => TYPE_KO[s] || s).join('·');
   const langs = (p.languages || []).includes('ko') ? ' · 한국어 가능' : (p.languages || []).includes('en') ? ' · 영어 가능' : '';
-  const dist = (0.6 + idx * 0.6).toFixed(1);
   return `<div class="tcard"><div class="tphoto" data-prof="${p.id}" style="cursor:pointer">${avatarImg(photo)}${tag}<span class="card-fav" data-pid="${p.id}" onclick="event.stopPropagation();toggleFavorite('${p.id}',this)">${(CACHE.favorites && CACHE.favorites.has(p.id)) ? '♥' : '♡'}</span></div><div class="tinfo">
     <div class="trow1"><span class="tname" data-prof="${p.id}" style="cursor:pointer">${p.display_name}${p.is_verified ? '<span class="badge">✓</span>' : ''}</span><span class="tstart">예약 가능</span></div>
     <div class="tstars">★ ${Number(p.rating).toFixed(1)} <span>(${p.review_count} 리뷰)</span></div>
     <div class="tdesc">${spec}${langs}${p.base_district ? ' · ' + p.base_district + ' 권역' : ''}</div>
-    <div class="trow2"><span class="tdist">📍 ${dist} km</span><button class="bookbtn" data-pid="${p.id}">예약</button></div>
+    <div class="trow2"><span class="tdist" data-pid="${p.id}">${distText(p)}</span><button class="bookbtn" data-pid="${p.id}">예약</button></div>
   </div></div>`;
 }
 
@@ -1406,6 +1522,14 @@ function fillList(screenId, providers) {
   const screen = document.getElementById(screenId);
   screen.querySelectorAll('.tcard').forEach(n => n.remove());
   const notice = screen.querySelector('.notice');
+  // 위치를 아직 안 켠 손님에게만, 왜 필요한지 적고 직접 누르게 한다.
+  if (!screen.querySelector('.geo-ask')) {
+    const first = screen.querySelector('.tcard') || notice;
+    first.insertAdjacentHTML('beforebegin',
+      '<div class="geo-ask" id="geoBanner" style="display:' + (MYPOS ? 'none' : '') + '">'
+      + '<span>📍 내 위치를 켜면 마사지사까지 실제 거리를 보여드려요.</span>'
+      + '<button class="chip sel" onclick="askMyPos(true)">위치 켜기</button></div>');
+  }
   providers.forEach((p, i) => notice.insertAdjacentHTML('beforebegin', providerCard(p, i)));
   if (window.applyLang && LANG !== 'ko') applyLang(LANG);
   screen.querySelectorAll('.bookbtn').forEach(b => b.onclick = () => {
@@ -1498,8 +1622,12 @@ async function openProfile(pid) {
   window.go('provDtl');
 
   const photos = (p.photo_urls && p.photo_urls.length) ? p.photo_urls : (p.photo_url ? [p.photo_url] : [avatarFor(p)]);
+  // 확대 보기가 쓸 목록
+  window.PF_PHOTOS = photos;
   const photoHtml = photos.length
-    ? '<div class="photoslot primary" style="width:120px;height:120px;display:inline-block;border-radius:24px"><img style="display:block" src="' + photos[0] + '"></div>'
+    ? '<div class="photoslot primary" style="width:120px;height:120px;display:inline-block;border-radius:24px;cursor:zoom-in" onclick="openLightbox(PF_PHOTOS,0)"><img style="display:block" src="' + photos[0] + '">'
+      + (photos.length > 1 ? '<span class="num" style="left:auto;right:6px;bottom:6px;top:auto">📷 ' + photos.length + '</span>' : '')
+      + '</div>'
     : '<div class="pf-photo ph">' + p.display_name.slice(0, 2) + '</div>';
   const care = '<div class="pf-care"><div style="text-align:center;flex:0 0 auto"><svg width="40" height="44" viewBox="0 0 24 26" fill="#3E7C4F"><path d="M12 1l9 4v7c0 5.5-3.8 10-9 12-5.2-2-9-6.5-9-12V5l9-4z"/></svg><div style="font-size:11px;font-weight:bold;color:#3E7C4F;margin-top:2px">mㅏssㅏ Care</div></div><div style="font-size:13.5px;line-height:2"><div>✅ 팁 없음, 이동비 없음</div></div></div>';
 
@@ -1544,7 +1672,7 @@ async function openProfile(pid) {
   const videoHtml = p.video_url ? '<div class="pf-sec">영상</div><a class="pf-video" href="' + p.video_url + '" target="_blank">▶ 소개 영상 보기</a>' : '';
   body.innerHTML = '<div class="pf-photo-wrap">' + photoHtml + '</div>'
     + '<div class="pf-name">' + p.display_name + (p.is_verified ? ' <span class="badge">✓ 인증</span>' : '') + '<span class="pf-fav" id="pfFav" onclick="toggleFavorite(\'' + pid + '\')">' + ((CACHE.favorites && CACHE.favorites.has(pid)) ? '♥' : '♡') + '</span></div>'
-    + '<div class="pf-meta"><span>◎ 100m</span><span class="star">★ ' + Number(p.rating).toFixed(1) + '</span><span>(' + p.review_count + ' 리뷰)</span></div>'
+    + '<div class="pf-meta"><span id="pfDist" data-pid="' + pid + '">' + distText(p) + '</span><span class="star">★ ' + Number(p.rating).toFixed(1) + '</span><span>(' + p.review_count + ' 리뷰)</span></div>'
     + '<div style="margin:10px 0"><button class="chip sel" style="width:100%;padding:11px 0;font-size:14px" onclick="openChat(\'' + pid + '\',\'' + p.display_name + '\')">💬 예약 후 채팅하기</button></div>'
     + care
     + '<div class="pf-bio">' + (p.bio || '소개가 아직 없습니다.') + '</div>'
@@ -4731,6 +4859,7 @@ async function load() {
   if (!(await guardConsole())) return;
   await load();
   if (window.loadAccount) await loadAccount();   // 역할별 운영 메뉴 표시
+  initMyPos();   // 이미 위치를 허용해 둔 경우에만 조용히 거리 표시
 })();
 </script>
 </body>
