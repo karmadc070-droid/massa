@@ -78,12 +78,10 @@
   .photoslot .ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--muted); text-align: center; padding: 6px; }
   .photoslot .num { position: absolute; top: 5px; left: 6px; font-size: 10px; font-weight: bold; background: rgba(0,0,0,.45); color: #fff; border-radius: 6px; padding: 1px 6px; z-index: 3; }
   .photoslot.primary { border-color: #C99A5B; }
-  /* 연한 황금빛 유니폼 로고 패치(첫 사진 가슴 위치) */
-  .logopatch { position: absolute; left: 50%; bottom: 30%; transform: translateX(-50%); z-index: 2;
-    font-family: 'Malgun Gothic', serif; font-size: 13px; font-weight: bold; letter-spacing: .5px;
-    color: #6E4F2A; background: linear-gradient(180deg, rgba(226,196,140,.92), rgba(201,154,91,.92));
-    border: 1px solid rgba(255,246,224,.8); border-radius: 6px; padding: 2px 9px; box-shadow: 0 1px 4px rgba(0,0,0,.25); display: none; }
-  .photoslot.primary .logopatch.on { display: block; }
+  /* 사진 위에 얹던 mㅏssㅏ 로고 패치는 없앴다.
+     120px 프로필 사진에서 얼굴 아래를 상자처럼 덮어 사람이 안 보였다.
+     유니폼 로고는 AI 변환이 이미지 안에 그려 넣으므로 화면에서 덧그릴 필요가 없다. */
+  .aimsg { font-size: 12px; color: var(--muted); margin: 6px 2px 0; }
   .locrow { display: flex; align-items: center; gap: 11px; padding: 14px 8px; border-bottom: 1px solid #F0F3F1; font-size: 15px; color: var(--text); cursor: pointer; transition: background .12s, padding-left .12s; }
   .locrow:hover, .locrow:active { background: #F5F8F6; padding-left: 13px; }
   .locrow.sel { color: var(--navy); font-weight: bold; }
@@ -809,8 +807,9 @@
     <input class="tx" id="apPhoto2" type="file" accept="image/*" onchange="onApFile(this)" style="margin-bottom:6px">
     <input class="tx" id="apPhoto3" type="file" accept="image/*" onchange="onApFile(this)" style="margin-bottom:6px">
     <input class="tx" id="apPhoto4" type="file" accept="image/*" onchange="onApFile(this)">
+    <div class="aimsg" id="apAiMsg"></div>
     <div class="photogrid" id="apPhotoGrid" style="margin-top:10px">
-      <div class="photoslot primary"><span class="num">1 · 대표</span><span class="logopatch">mㅏssㅏ</span><img><div class="ph">대표 사진<br>(AI 유니폼 자동 적용)</div></div>
+      <div class="photoslot primary"><span class="num">1 · 대표</span><img><div class="ph">대표 사진<br>(AI 유니폼 자동 적용)</div></div>
       <div class="photoslot"><span class="num">2</span><img><div class="ph">사진 2</div></div>
       <div class="photoslot"><span class="num">3</span><img><div class="ph">사진 3</div></div>
       <div class="photoslot"><span class="num">4</span><img><div class="ph">사진 4</div></div>
@@ -1346,7 +1345,7 @@ async function openProfile(pid) {
 
   const photos = (p.photo_urls && p.photo_urls.length) ? p.photo_urls : (p.photo_url ? [p.photo_url] : [avatarFor(p)]);
   const photoHtml = photos.length
-    ? '<div class="photoslot primary" style="width:120px;height:120px;display:inline-block;border-radius:24px"><span class="logopatch on">mㅏssㅏ</span><img style="display:block" src="' + photos[0] + '"></div>'
+    ? '<div class="photoslot primary" style="width:120px;height:120px;display:inline-block;border-radius:24px"><img style="display:block" src="' + photos[0] + '"></div>'
     : '<div class="pf-photo ph">' + p.display_name.slice(0, 2) + '</div>';
   const care = '<div class="pf-care"><div style="text-align:center;flex:0 0 auto"><svg width="40" height="44" viewBox="0 0 24 26" fill="#3E7C4F"><path d="M12 1l9 4v7c0 5.5-3.8 10-9 12-5.2-2-9-6.5-9-12V5l9-4z"/></svg><div style="font-size:11px;font-weight:bold;color:#3E7C4F;margin-top:2px">mㅏssㅏ Care</div></div><div style="font-size:13.5px;line-height:2"><div>✅ 팁 없음, 이동비 없음</div></div></div>';
 
@@ -2266,13 +2265,18 @@ window.onApFile = async function (el) {
   el.dataset.url = isKyc ? p : sb.storage.from(bucket).getPublicUrl(p).data.publicUrl; // 사진=공개URL, KYC=경로
   // 대표 사진(첫 번째): 얼굴 유지 + mㅏssㅏ 유니폼으로 AI 변환
   if (el.id === 'apPhoto0') {
-    const patch = document.querySelector('#apPhotoGrid .photoslot.primary .logopatch');
-    if (patch) { patch.classList.add('on'); patch.textContent = 'AI 변환 중…'; }
+    // 진행 상태는 사진 위가 아니라 그리드 아래에 적는다. 사진을 가리지 않는다.
+    const aimsg = document.getElementById('apAiMsg');
+    if (aimsg) aimsg.textContent = 'AI 유니폼 변환 중…';
     if (window.renderApPhotos) renderApPhotos();
     try {
       await applyUniformToEl(el, f, p);
-    } catch (e) { console.warn('유니폼 변환 실패(원본 유지):', e); alert('AI 변환 실패 — 원본 사진을 유지합니다.\n' + (e.message || e)); }
-    if (patch) patch.textContent = 'mㅏssㅏ';
+      if (aimsg) aimsg.textContent = '';
+    } catch (e) {
+      console.warn('유니폼 변환 실패(원본 유지):', e);
+      if (aimsg) aimsg.textContent = '';
+      alert('AI 변환 실패 — 원본 사진을 유지합니다.\n' + (e.message || e));
+    }
   }
   el.disabled = false;
   if (!isKyc && window.renderApPhotos) renderApPhotos();
@@ -2285,10 +2289,6 @@ window.renderApPhotos = function () {
     const ph = slots[i].querySelector('.ph');
     if (url) { img.src = url; img.style.display = 'block'; ph.style.display = 'none'; }
     else { img.style.display = 'none'; ph.style.display = 'flex'; }
-    if (i === 0) {
-      const patch = slots[0].querySelector('.logopatch');
-      patch.classList.toggle('on', !!url);
-    }
   }
 };
 
