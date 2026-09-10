@@ -750,11 +750,12 @@
       <div class="chip" onclick="pick(this)">레지던스</div>
       <div class="chip" onclick="pick(this)">자택·아파트</div>
     </div>
-    <div class="label">호텔 검색 (Google Places)</div>
-    <input class="tx" type="text" placeholder="예) 롯데호텔 하노이">
+    <div class="label">숙소·건물 이름</div>
+    <input class="tx" id="locHotel" type="text" placeholder="눌러서 검색하거나 직접 입력" onfocus="openPlaceSheet()">
+    <div class="hint" id="locAddr" style="display:none"></div>
     <div class="hint">✓ 외부 방문자 등록 필요 호텔 — 프론트에 방문자 등록 후 입장 가능합니다.</div>
     <div class="label">객실 번호</div>
-    <input class="tx" type="text" placeholder="예) 2104호">
+    <input class="tx" id="locRoom" type="text" placeholder="예) 2104호">
     <div class="label">프론트 통과 방법</div>
     <select>
       <option>프론트에 방문자 등록해 두었습니다</option>
@@ -1668,9 +1669,8 @@ function fillConfirm() {
   const dow = day ? (day.querySelector('.dow')?.textContent || '').trim() : '';
   const dayNum = day ? selectedDayNum() : '';
   const time = document.getElementById('timeView')?.textContent || '';
-  const tx = document.querySelectorAll('#loc input.tx');
-  const hotel = (tx[0]?.value || '').trim();
-  const room = (tx[1]?.value || '').trim();
+  const hotel = (document.getElementById('locHotel')?.value || '').trim();
+  const room = (document.getElementById('locRoom')?.value || '').trim();
   const price = priceOf(svc);
   const won = Math.round(price * 0.054).toLocaleString();
 
@@ -1902,7 +1902,7 @@ window.openAuth = openAuth;
 async function submitBooking() {
   if (!SESSION) { openAuth(); return; }
   // 호텔 입력란의 예시 기본값을 없앴으므로, 빈 채로 넘어가지 않도록 여기서 막는다
-  const _hotelEl = document.querySelector('#loc input.tx');
+  const _hotelEl = document.getElementById('locHotel');
   if (!(_hotelEl?.value || '').trim()) { alert('숙소·건물 이름을 입력해 주세요.'); window.go('loc'); _hotelEl?.focus(); return; }
   const svc = currentService();
   // 예전에는 코스를 못 찾으면 850,000₫ 을 임의로 물렸다. 손님이 고르지 않은 금액이 청구된다.
@@ -1916,9 +1916,12 @@ async function submitBooking() {
     service_id: svc?.id || null,
     scheduled_at: scheduled,
     location_type: 'hotel',
-    hotel_name: document.querySelector('#loc input.tx')?.value || '',
-    room_number: document.querySelectorAll('#loc input.tx')[1]?.value || '',
+    hotel_name: document.getElementById('locHotel')?.value || '',
+    room_number: document.getElementById('locRoom')?.value || '',
     front_desk_note: document.querySelector('#loc select')?.value || '',
+    // 지도에서 고른 경우에만 채워진다. 직접 적었으면 null 이고 마사지사는 이름으로 찾는다.
+    address: PLACE.address || null,
+    lat: PLACE.lat, lng: PLACE.lng, place_id: PLACE.place_id,
     status: 'confirmed',
     payment_method: SEL.payment,
     // 서버가 예약을 받을 때 이 값을 다시 계산해 덮어쓴다. 화면과 어긋나지 않게 같은 규칙으로 보낸다.
@@ -3033,6 +3036,14 @@ const DICT = {
   '홈 뷰티 검색...': ['Tìm dịch vụ làm đẹp tại nhà...', 'Search home beauty...', '搜索上门美容...', 'ホームビューティーを検索...'],
   '메시지를 입력하세요': ['Nhập tin nhắn', 'Type a message', '输入消息', 'メッセージを入力'],
   '예) 2104호': ['VD) Phòng 2104', 'e.g. Room 2104', '例) 2104房', '例) 2104号室'],
+  '숙소·건물 이름': ['Tên khách sạn · tòa nhà', 'Hotel or building name', '住宿·建筑名称', '宿泊先·建物名'],
+  '눌러서 검색하거나 직접 입력': ['Chạm để tìm hoặc tự nhập', 'Tap to search or type it in', '点击搜索或直接输入', 'タップして検索、または直接入力'],
+  '숙소·건물 검색': ['Tìm khách sạn · tòa nhà', 'Search hotel or building', '搜索住宿·建筑', '宿泊先·建物を検索'],
+  '호텔·레지던스 이름을 두 글자 이상 넣어 주세요.': ['Nhập ít nhất 2 ký tự tên khách sạn hoặc căn hộ.', 'Enter at least 2 characters of the hotel or residence name.', '请输入至少两个字的酒店或公寓名称。', 'ホテル・レジデンス名を2文字以上入力してください。'],
+  '직접 입력할게요': ['Tôi sẽ tự nhập', 'I will type it myself', '我自己输入', '自分で入力します'],
+  '찾는 중…': ['Đang tìm…', 'Searching…', '搜索中…', '検索中…'],
+  '찾는 곳이 없으면 아래에서 직접 입력해 주세요.': ['Không thấy nơi bạn cần? Hãy tự nhập bên dưới.', 'Not finding it? Type it in below.', '找不到的话请在下方直接输入。', '見つからない場合は下で直接入力してください。'],
+  '지금은 검색을 쓸 수 없습니다. 아래에서 직접 입력해 주세요.': ['Hiện chưa dùng được tìm kiếm. Vui lòng tự nhập bên dưới.', 'Search is unavailable right now. Please type it in below.', '目前无法使用搜索，请在下方直接输入。', '現在検索を利用できません。下で直接入力してください。'],
   '호텔 검색 (Google Places)': ['Tìm khách sạn (Google Places)', 'Search hotels (Google Places)', '搜索酒店 (Google Places)', 'ホテル検索 (Google Places)'],
   '사진 등록 (최대 4장) · 첫 번째 사진에 mㅏssㅏ 유니폼 로고 적용': ['Tải ảnh (tối đa 4) · Ảnh đầu tiên sẽ được gắn logo đồng phục mㅏssㅏ', 'Upload photos (up to 4) · The first photo gets the mㅏssㅏ uniform logo', '上传照片(最多4张)·第一张会套用 mㅏssㅏ 制服标识', '写真登録(最大4枚)・1枚目にmㅏssㅏユニフォームロゴを適用'],
   '🩺 통증·케어 전문 테라피스트입니다. 의료 행위가 아닌 완화 케어이며, 치료가 필요한 증상은 의료기관 이용을 안내합니다.': ['🩺 Chuyên viên chuyên về giảm đau và chăm sóc. Đây là dịch vụ xoa dịu, không phải hành vi y tế; với triệu chứng cần điều trị, chúng tôi khuyên bạn đến cơ sở y tế.', '🩺 A therapist specialising in pain relief and care. This is comfort care, not medical treatment; for symptoms needing treatment we recommend seeing a medical professional.', '🩺 专注疼痛与护理的理疗师。属缓解性护理而非医疗行为，需要治疗的症状建议前往医疗机构。', '🩺 痛み・ケア専門のセラピストです。医療行為ではなく緩和ケアであり、治療が必要な症状は医療機関の受診をご案内します。'],
@@ -3436,6 +3447,113 @@ function computeProviders(screenId) {
 }
 function refreshList(screenId) { fillList(screenId, computeProviders(screenId)); }
 window.refreshList = refreshList;
+
+// ── 숙소 검색 (구글 지도) ────────────────────────────────────
+// 손님이 호텔 이름을 정확히 치기 어렵다. 검색해서 고르게 하고 좌표까지 받아 둔다.
+// 좌표가 있어야 마사지사가 길찾기를 바로 열 수 있다.
+// 키는 앱에 없다. Edge Function(places-search) 이 대신 구글에 묻는다.
+let PLACE = { name: '', address: '', lat: null, lng: null, place_id: null };
+let PLACE_TIMER = null;
+// 검색 한 번에 쓰는 표. 같은 표를 계속 쓰면 구글이 한 건으로 묶어 준다 (요금이 줄어든다)
+let PLACE_SESSION = null;
+
+window.openPlaceSheet = function () {
+  PLACE_SESSION = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()));
+  let ov = document.getElementById('placeSheet');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'placeSheet';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:220;background:rgba(20,25,28,.5);display:flex;align-items:flex-end;justify-content:center';
+    document.body.appendChild(ov);
+  }
+  ov.innerHTML = '<div class="svc-sheet"><div class="svc-grip"></div>'
+    + '<div class="svc-title">숙소·건물 검색</div>'
+    + '<input class="tx" id="placeQ" type="text" autocomplete="off" placeholder="예) Lotte Hotel Hanoi">'
+    + '<div class="hint" style="margin:6px 2px 0"><span>호텔·레지던스 이름을 두 글자 이상 넣어 주세요.</span></div>'
+    + '<div id="placeList" style="max-height:46vh;overflow:auto;margin-top:8px"></div>'
+    + '<button class="chip" style="width:100%;margin-top:10px;padding:11px 0" onclick="closePlaceSheet()"><span>직접 입력할게요</span></button>'
+    + '</div>';
+  ov.style.display = 'flex';
+  ov.onclick = (e) => { if (e.target === ov) closePlaceSheet(); };
+  const inp = ov.querySelector('#placeQ');
+  inp.value = (document.getElementById('locHotel') || {}).value || '';
+  // 글자를 칠 때마다 부르면 요금도 늘고 순서가 뒤엉킨다. 잠깐 멈췄을 때만 보낸다.
+  inp.oninput = () => { clearTimeout(PLACE_TIMER); PLACE_TIMER = setTimeout(() => searchPlaces(inp.value), 350); };
+  setTimeout(() => inp.focus(), 60);
+  if (inp.value.trim().length >= 2) searchPlaces(inp.value);
+};
+
+window.closePlaceSheet = function () {
+  const ov = document.getElementById('placeSheet');
+  if (ov) ov.style.display = 'none';
+  const inp = document.getElementById('locHotel');
+  if (inp) inp.blur();   // 다시 focus 되어 시트가 또 열리는 걸 막는다
+};
+
+async function searchPlaces(q) {
+  const box = document.getElementById('placeList'); if (!box) return;
+  q = (q || '').trim();
+  if (q.length < 2) { box.innerHTML = ''; return; }
+  box.innerHTML = '<div class="hint" style="padding:10px 2px"><span>찾는 중…</span></div>';
+  try {
+    const { data, error } = await sb.functions.invoke('places-search', {
+      body: { q, session: PLACE_SESSION, lang: LANG },
+    });
+    if (error || (data && data.error)) throw new Error((data && data.error) || error.message);
+    const items = (data && data.items) || [];
+    if (!items.length) {
+      box.innerHTML = '<div class="hint" style="padding:10px 2px"><span>찾는 곳이 없으면 아래에서 직접 입력해 주세요.</span></div>';
+      return;
+    }
+    box.innerHTML = items.map(it =>
+      '<div class="svc-row" data-id="' + it.place_id + '" data-name="' + String(it.name).replace(/"/g, '&quot;') + '">'
+      + '<div><div style="font-size:14.5px">' + it.name + '</div>'
+      + '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + (it.address || '') + '</div></div></div>').join('');
+    box.querySelectorAll('.svc-row').forEach(r => r.onclick = () => pickPlace(r.dataset.id, r.dataset.name));
+  } catch (e) {
+    // 지도가 안 되더라도 예약은 계속할 수 있어야 한다. 직접 입력으로 넘긴다.
+    box.innerHTML = '<div class="hint" style="padding:10px 2px"><span>지금은 검색을 쓸 수 없습니다. 아래에서 직접 입력해 주세요.</span></div>';
+    console.warn('장소 검색 실패:', e);
+  }
+}
+
+async function pickPlace(placeId, fallbackName) {
+  const box = document.getElementById('placeList');
+  if (box) box.innerHTML = '<div class="hint" style="padding:10px 2px"><span>불러오는 중…</span></div>';
+  let d = null;
+  try {
+    const { data, error } = await sb.functions.invoke('places-search', {
+      body: { placeId, session: PLACE_SESSION, lang: LANG },
+    });
+    if (!error && data && !data.error) d = data;
+  } catch (e) { console.warn('장소 상세 실패:', e); }
+
+  PLACE = {
+    name: (d && d.name) || fallbackName || '',
+    address: (d && d.address) || '',
+    lat: d ? d.lat : null,
+    lng: d ? d.lng : null,
+    place_id: (d && d.place_id) || placeId || null,
+  };
+  const inp = document.getElementById('locHotel');
+  if (inp) inp.value = PLACE.name;
+  const addr = document.getElementById('locAddr');
+  if (addr) {
+    addr.textContent = PLACE.address ? '📍 ' + PLACE.address : '';
+    addr.style.display = PLACE.address ? '' : 'none';
+  }
+  closePlaceSheet();
+}
+window.pickPlace = pickPlace;
+
+// 손님이 검색을 안 쓰고 직접 고쳐 적으면 좌표는 버린다. 이름과 좌표가 어긋나면 안 된다.
+document.addEventListener('input', (e) => {
+  if (e.target && e.target.id === 'locHotel' && PLACE.name && e.target.value !== PLACE.name) {
+    PLACE = { name: e.target.value, address: '', lat: null, lng: null, place_id: null };
+    const addr = document.getElementById('locAddr');
+    if (addr) { addr.textContent = ''; addr.style.display = 'none'; }
+  }
+});
 
 window.openServiceTypeSheet = function (screenId) {
   const items = SERVICE_TYPES[screenId] || [];
