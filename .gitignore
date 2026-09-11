@@ -15,3 +15,8 @@ data_safety_sample.csv
 massa_data_safety.csv
 
 site-src/__pycache__/
+
+# 백업 개인키는 이 저장소에 절대 넣지 않는다 (C:\Users\user\massa-backup-key 에 따로 둔다)
+massa-backup-private.asc
+*.private.asc
+
