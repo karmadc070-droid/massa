@@ -1502,7 +1502,10 @@ async function openProfile(pid) {
   const care = '<div class="pf-care"><div style="text-align:center;flex:0 0 auto"><svg width="40" height="44" viewBox="0 0 24 26" fill="#3E7C4F"><path d="M12 1l9 4v7c0 5.5-3.8 10-9 12-5.2-2-9-6.5-9-12V5l9-4z"/></svg><div style="font-size:11px;font-weight:bold;color:#3E7C4F;margin-top:2px">mㅏssㅏ Care</div></div><div style="font-size:13.5px;line-height:2"><div>✅ 팁 없음, 이동비 없음</div></div></div>';
 
   const { data: ps } = await sb.from('provider_services').select('service_id, services(*)').eq('provider_id', pid);
-  const svcRows = (ps || []).map(r => r.services).filter(Boolean);
+  // 내린 코스(is_active=false)는 프로필에도 보이면 안 된다.
+  // 보이면 손님이 그걸 고르는데, currentService() 는 활성 목록에서만 찾으므로 예약이 막힌다.
+  // "코스를 다시 골라 주세요" 만 뜨고 무엇을 골라야 하는지는 알 수 없다.
+  const svcRows = (ps || []).map(r => r.services).filter(s => s && s.is_active);
   const groups = {};
   svcRows.forEach(s => { const base = s.name.replace(/\s*\d+\s*분$/, '').trim(); (groups[base] = groups[base] || []).push(s); });
   let svcHtml = '';
