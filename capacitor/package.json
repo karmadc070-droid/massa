@@ -1,7 +1,7 @@
 {
   "name": "massa",
-  "version": "1.0.5",
-  "description": "mㅏssㅏ — 하노이 홈 마사지·홈뷰티 방문 예약",
+  "version": "1.0.6",
+  "description": "m?뢵s?????섎끂????留덉궗吏쨌?덈럭??諛⑸Ц ?덉빟",
   "private": true,
   "scripts": {
     "build:native": "esbuild native-src/native.js --bundle --format=iife --target=es2020 --minify --outfile=www/capacitor-native.js",
