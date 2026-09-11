@@ -15,12 +15,38 @@ const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { ...CORS, "Content-Type": "application/json" } });
 
 const KEY = Deno.env.get("GOOGLE_MAPS_KEY") ?? "";
+const JWT_SECRET = Deno.env.get("JWT_SECRET") ?? "";
 
 // 하노이 시내. 이 원 안을 우선해서 보여 준다 (다른 도시 결과가 섞이는 걸 막는다)
 const HANOI = { lat: 21.0278, lng: 105.8342, radius: 30000 };
 
+// 이 함수는 부를 때마다 구글에 요금이 붙는다. 아무나 부르면 사장님이 그 돈을 낸다.
+// 우리 앱이 보내는 토큰(익명 키 또는 로그인 토큰)만 받는다.
+const b64url = (s: string) =>
+  Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
+
+async function tokenOk(req: Request): Promise<boolean> {
+  if (!JWT_SECRET) return false;
+  const raw = (req.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "").trim();
+  const p = raw.split(".");
+  if (p.length !== 3) return false;
+  try {
+    const key = await crypto.subtle.importKey(
+      "raw", new TextEncoder().encode(JWT_SECRET),
+      { name: "HMAC", hash: "SHA-256" }, false, ["verify"],
+    );
+    const ok = await crypto.subtle.verify(
+      "HMAC", key, b64url(p[2]), new TextEncoder().encode(p[0] + "." + p[1]),
+    );
+    if (!ok) return false;
+    const body = JSON.parse(new TextDecoder().decode(b64url(p[1])));
+    return !body.exp || body.exp * 1000 > Date.now();
+  } catch { return false; }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
+  if (!await tokenOk(req)) return json({ error: "권한이 없습니다." }, 401);
   if (!KEY) return json({ error: "지도 키가 설정되지 않았습니다." }, 503);
 
   let body: { q?: string; placeId?: string; session?: string; lang?: string };
