@@ -8,7 +8,11 @@ SRC  = "site-src"
 LANGS = ["ko", "en", "vi"]          # ko 는 루트, 나머지는 /en/ /vi/
 APPLE = "https://apps.apple.com/kr/app/id6804698319"
 SUPPORT = "support@massaviet.com"
-PLAY_LIVE = False                    # 프로덕션 승인되면 True 로 바꾸고 다시 빌드한다
+# 스토어에 실제로 공개된 뒤에 True 로 바꾼다. 로그인한 브라우저에서 열린다고 공개된 게 아니다 —
+# 로그아웃 상태로 PLAY 주소를 열어 200 이 나오는지 확인하고 바꿀 것.
+# True 로 바꾸면: 설치 버튼이 살아나고, play_pending 안내 섹션이 사라진다.
+# 같이 할 일: content_*.py 의 jsonld sameAs 에 PLAY 주소 추가.
+PLAY_LIVE = False
 PLAY = "https://play.google.com/store/apps/details?id=app.massa.hanoi"
 
 # 페이지 순서 = 네비게이션 순서. (파일명, 네비 노출 여부)
@@ -267,7 +271,9 @@ def build():
             if name not in P:
                 raise SystemExit(f"{lang}: '{name}' 페이지 콘텐츠가 없다")
             page = P[name]
-            body = "".join(render(b, L, lang) for b in page["blocks"])
+            # play_pending 블록은 '안드로이드 아직 안 나왔다'는 안내다. 출시되면 사라져야 한다.
+            blocks = [b for b in page["blocks"] if not (PLAY_LIVE and b.get("play_pending"))]
+            body = "".join(render(b, L, lang) for b in blocks)
             path = f"{d}/{'index' if name=='index' else name}.html"
             open(path, "w", encoding="utf-8", newline="\n").write(chrome(lang, name, L, body, page))
             written.append(path)

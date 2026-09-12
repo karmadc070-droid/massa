@@ -389,20 +389,20 @@ PAGES = {
     {"type": "table", "rows": [
       ("Email", f'<a href="mailto:{SUPPORT}">{SUPPORT}</a>'),
       ("Khu vực", "Hà Nội, Việt Nam (Đà Nẵng, Nha Trang và TP. Hồ Chí Minh sắp tới)"),
-      ("Ứng dụng", '<a href="/vi/download.html">Tải trên App Store</a>'),
+      ("Ứng dụng", '<a href="/vi/download.html">Tải ứng dụng</a>'),
     ]}]},
  ]},
 
 "download": {
  "title": "Tải ứng dụng — massa",
- "desc": "Tải ứng dụng massa trên App Store và đặt lịch massage, làm đẹp tại nhà ở Hà Nội ngay trên điện thoại.",
+ "desc": "Tải ứng dụng massa và đặt lịch massage, làm đẹp tại nhà ở Hà Nội ngay trên điện thoại.",
  "blocks": [
   {"type": "section",
    "kicker": "Tải ứng dụng",
    "h2": "Tải massa",
    "lead": "Đặt lịch, xem hồ sơ chuyên viên, nhắn tin và đánh giá đều nằm trong ứng dụng. Cài đặt và đăng ký miễn phí.",
    "blocks": [dict(_STORES)]},
-  {"type": "section", "soft": True,
+  {"type": "section", "soft": True, "play_pending": True,
    "h2": "Bản Android<br>vẫn đang chuẩn bị",
    "lead": "Hiện đang ở giai đoạn thử nghiệm kín nên chưa tìm được trên Google Play.",
    "body": [

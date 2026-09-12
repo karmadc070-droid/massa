@@ -387,20 +387,20 @@ PAGES = {
     {"type": "table", "rows": [
       ("Email", f'<a href="mailto:{SUPPORT}">{SUPPORT}</a>'),
       ("Coverage", "Hanoi, Vietnam (Đà Nẵng, Nha Trang and Hồ Chí Minh City to follow)"),
-      ("App", '<a href="/en/download.html">Get it on the App Store</a>'),
+      ("App", '<a href="/en/download.html">Download the app</a>'),
     ]}]},
  ]},
 
 "download": {
  "title": "Get the app — massa",
- "desc": "Download the massa app from the App Store and book home massage and beauty in Hanoi straight from your phone.",
+ "desc": "Download the massa app and book home massage and beauty in Hanoi straight from your phone.",
  "blocks": [
   {"type": "section",
    "kicker": "Get the app",
    "h2": "Download massa",
    "lead": "Booking, therapist profiles, chat and reviews all live in the app. Installing and signing up are free.",
    "blocks": [dict(_STORES)]},
-  {"type": "section", "soft": True,
+  {"type": "section", "soft": True, "play_pending": True,
    "h2": "Android is<br>still coming",
    "lead": "It is in closed testing, so it does not yet appear in Google Play search.",
    "body": [

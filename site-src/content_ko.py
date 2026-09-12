@@ -396,21 +396,21 @@ PAGES = {
     {"type": "table", "rows": [
       ("문의", f'<a href="mailto:{SUPPORT}">{SUPPORT}</a>'),
       ("서비스 지역", "베트남 하노이 (다낭·나짱·호치민 확대 예정)"),
-      ("앱", '<a href="/download.html">App Store 에서 받기</a>'),
+      ("앱", '<a href="/download.html">앱 내려받기</a>'),
     ]}]},
  ]},
 
 # ─────────────────────────────────────────────── 다운로드
 "download": {
  "title": "앱 다운로드 — massa",
- "desc": "massa 앱을 App Store에서 내려받으세요. 하노이에서 집·호텔로 찾아오는 마사지와 홈뷰티를 앱에서 바로 예약할 수 있습니다.",
+ "desc": "massa 앱을 내려받으세요. 하노이에서 집·호텔로 찾아오는 마사지와 홈뷰티를 앱에서 바로 예약할 수 있습니다.",
  "blocks": [
   {"type": "section",
    "kicker": "앱 다운로드",
    "h2": "massa 앱 받기",
    "lead": "예약, 테라피스트 확인, 채팅, 후기까지 앱 하나에서 끝납니다. 설치와 가입은 무료입니다.",
    "blocks": [dict(_STORES)]},
-  {"type": "section", "soft": True,
+  {"type": "section", "soft": True, "play_pending": True,
    "h2": "안드로이드는<br>준비 중입니다",
    "lead": "지금은 비공개 테스트 단계라 Google Play 에서 검색되지 않습니다.",
    "body": [
