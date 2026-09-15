@@ -1191,12 +1191,13 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = 'https://api.moahagwon.com';
 const SUPABASE_KEY = 'eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJyb2xlIjogImFub24iLCAiaXNzIjogInN1cGFiYXNlIiwgImlhdCI6IDE3ODc0NTg4OTMsICJleHAiOiAyMTAyODE4ODkzfQ.7taJaAzxPRIkd0PeC5qnuacficFnazkBN54ttblUv-o';
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
-// 비밀번호 재설정 메일의 링크가 돌아올 주소. 앱(capacitor://)에서는 열 수 없으므로 웹 주소를 쓴다
-const RESET_REDIRECT = 'https://massa.moahagwon.com/reset.html';
+// 비밀번호 재설정 메일의 링크가 돌아올 주소. 앱(capacitor://)에서는 열 수 없으므로 웹 주소를 쓴다.
+// moahagwon.com 은 학원 쪽 도메인이다. massa 손님이 받는 메일에 그 주소가 뜨면 안 된다.
+const RESET_REDIRECT = 'https://app.massaviet.com/reset.html';
 // 앱으로 되돌아올 때 쓰는 전용 주소. iOS·안드로이드에 같은 값으로 등록해야 한다
 const APP_SCHEME = 'massa';
 // 결제창을 여는 페이지. 앱(capacitor://)에서는 토스 SDK 를 직접 못 띄우므로 웹 주소를 앱 내 브라우저로 연다
-const PAY_START = 'https://massa.moahagwon.com/pay-start.html';
+const PAY_START = 'https://app.massaviet.com/pay-start.html';
 // 토스 키가 VPS 에 들어가기 전까지는 결제 수단으로 노출하지 않는다.
 // 눌러도 안 되는 버튼을 두면 App Store 4.0 리젝 사유가 된다 (소셜 로그인에서 한 번 겪었다)
 const TOSS_ENABLED = false;
