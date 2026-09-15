@@ -1558,10 +1558,17 @@ massaviet.com(소개 사이트)은 이미 VPS 에 있다. 앱만 남았다.
       → verify: 지문이 다르면 앱이 주소창을 띄운다 (TWA 가 깨진 것)
 - [ ] V4-3. 새 AAB 를 Play 프로덕션에 올리고 심사 → verify: 업데이트 후 주소창이 안 뜸
 
-### V5. iOS (1.0.7 에 같이 싣는다)
-- [ ] V5-1. Capacitor 는 www/ 를 내장해서 origin 영향이 적다. 외부로 나가는 주소만 점검
-- [ ] V5-2. 마케팅 URL → `https://massaviet.com`, 지원 URL → `https://massaviet.com/contact.html`
-- [ ] V5-3. 부제 채우기 + 키워드 정리 + 번들 언어 선언(ko·vi·en·ja·zh)
+### V5. iOS 1.0.7 — 2026-09-15 심사 제출 완료 (build 22)
+- [x] V5-1. `RESET_REDIRECT`·`PAY_START` 를 app.massaviet.com 으로 교체한 채로 빌드
+- [x] V5-2. 마케팅 URL → `https://massaviet.com`, 지원 URL → `https://massaviet.com/contact.html`
+- [x] V5-3. **부제 채움** (비어 있었다) — "하노이 집·호텔로 찾아오는 방문 예약" 20자
+- [x] V5-4. 키워드 12개 → 17개로 교체. 이름·부제에 있는 낱말은 뺐다 (자동 색인됨)
+- [x] V5-5. **번들 언어 선언** — codemagic.yaml 에 CFBundleLocalizations(ko·vi·en·ja·zh) +
+      CFBundleDevelopmentRegion=ko 단계 추가. 제품 페이지 '언어' 가 영어 하나로 뜨던 문제
+- [x] V5-6. **출시 방식 = 자동**. 1.0.6 때는 심사 중이라 못 바꿨다. 이번엔 제출 전에 바꿨다
+
+주의 — `languageCodesISO2A: ["EN"]` 은 **번들이 선언한 언어**지 등록정보 언어가 아니다.
+등록정보 기본 언어는 처음부터 한국어였다. 이걸 헷갈려서 한 번 잘못 짚었다.
 
 ### V6. 옛 주소 정리 (몇 달 뒤)
 - [ ] V6-1. Play 통계에서 구버전 설치 비중이 충분히 내려갔는지 확인
