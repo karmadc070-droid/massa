@@ -42,6 +42,10 @@ mkdir -p "$DIR"
 rm -rf "$DIR"/*  "$DIR"/.well-known
 cp -R "$SRC"/. "$DIR"/
 rm -rf "$TMP"
+
+# config.js 는 로컬 전용이라 저장소에 없다(gitignore). 없으면 화면마다 404 가 세 번씩 찍힌다.
+# 실제 키는 Edge Function 에만 있으므로 빈 파일로 충분하다.
+[ -f "$DIR/config.js" ] || printf '// 서버 배포본에는 로컬 키를 두지 않는다. 키는 Edge Function 에만 있다.\n' > "$DIR/config.js"
 echo "  파일 $(find "$DIR" -type f | wc -l)개"
 ls -1 "$DIR" | head -12
 
