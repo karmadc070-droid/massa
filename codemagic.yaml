@@ -61,6 +61,23 @@ workflows:
           /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" "$PLIST" || true
           echo "----- Info.plist 확인 -----"
           /usr/libexec/PlistBuddy -c "Print :NSLocationWhenInUseUsageDescription" "$PLIST"
+      # 앱은 5개 언어를 쓰는데 번들이 영어 하나만 선언해서 App Store 제품 페이지에
+      # '언어: 영어' 로만 떴다. 실제로 지원하는 언어를 선언해 준다.
+      - name: 지원 언어 선언 (ko·vi·en·ja·zh)
+        script: |
+          PLIST=ios/App/App/Info.plist
+          /usr/libexec/PlistBuddy -c "Delete :CFBundleLocalizations" "$PLIST" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :CFBundleLocalizations array" "$PLIST"
+          i=0
+          for L in ko vi en ja zh-Hans; do
+            /usr/libexec/PlistBuddy -c "Add :CFBundleLocalizations:$i string $L" "$PLIST"
+            i=$((i+1))
+          done
+          # 기본 언어도 한국어로 맞춘다. 안 그러면 목록 첫 줄이 영어로 잡힌다.
+          /usr/libexec/PlistBuddy -c "Set :CFBundleDevelopmentRegion ko" "$PLIST" 2>/dev/null \
+            || /usr/libexec/PlistBuddy -c "Add :CFBundleDevelopmentRegion string ko" "$PLIST"
+          echo "----- 선언된 언어 -----"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleLocalizations" "$PLIST"
       # 소셜 로그인·결제창이 앱으로 돌아올 때 쓰는 전용 주소(massa://).
       # index.html 의 APP_SCHEME 과 반드시 같아야 한다.
       - name: URL 스킴 등록 (massa://)
