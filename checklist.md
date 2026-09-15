@@ -1522,8 +1522,25 @@ massaviet.com(소개 사이트)은 이미 VPS 에 있다. 앱만 남았다.
 - [x] 사본 비교: `/srv/massa-web`(massa.moahagwon.com) 은 9/11 자, 기능은 동일.
       차이는 RESET_REDIRECT 한 줄뿐이라 낡아서 위험한 상태는 아니다
 
+#### 리디렉트 허용목록 — 비밀번호 없이 동작으로 증명함 (2026-09-15)
+첫 시도는 **실패한 방법**이라 남겨 둔다. `/auth/v1/recover` 에 redirect_to 를 넣어 봤더니
+허용목록 밖 주소까지 전부 200 이 나왔다. GoTrue 는 **요청받을 때가 아니라 돌려보낼 때** 판정한다.
+
+판정이 실제로 일어나는 `/auth/v1/verify` 에 걸었더니 갈렸다. 토큰은 엉터리로 줘도 된다 —
+보는 것은 Location 헤더지 인증 성공 여부가 아니다.
+
+| 넣은 redirect_to | 돌려보낸 곳 | 판정 |
+|---|---|---|
+| app.massaviet.com/reset.html | **app.massaviet.com/reset.html** | 허용됨 |
+| massa.moahagwon.com/reset.html | massa.moahagwon.com/reset.html | 허용됨 |
+| evil.example.com/steal | massa.moahagwon.com (SITE_URL) | **튕김** |
+
+허용목록 밖은 SITE_URL 로 튕기고 새 주소는 그대로 돌아온다. 이게 이 이전에서
+조용히 깨질 수 있던 유일한 지점이었고, 이제 막혔다.
+
 #### 사장님이 해 주셔야 하는 것 (비밀번호가 필요해 대신 못 한다)
 - [ ] V3-1. `https://app.massaviet.com` 에서 **로그인 1회** → 세션이 잡히는지
+      (위 증명으로 위험은 거의 사라졌다. 남은 건 자격증명 교환 한 단계뿐이다)
 - [ ] V3-2. 예약 한 건 생성 → 금액이 서버값으로 덮이는지
 - [ ] V3-3. 채팅 메시지 왕복
 - [ ] V3-4. 관리자 화면 진입 (is_admin 통과)
@@ -1531,6 +1548,11 @@ massaviet.com(소개 사이트)은 이미 VPS 에 있다. 앱만 남았다.
 로그인만 되면 나머지는 기존 기능이라 같이 따라온다. **로그인이 이 이전의 유일한 미확인 지점이다.**
 
 ### V4. 안드로이드 갈아타기 (심사 1회)
+
+> **지금은 시작할 수 없다.** 프로덕션 1.0.0.0 이 2026-09-11 제출 이후 아직 **검토 중**이다.
+> 검토 중에 새 버전을 올리면 진행 중인 심사가 엎어지거나 늘어진다.
+> **Play 프로덕션이 공개된 뒤에** V4 를 시작한다. 매일 10시 예약 작업이 그 시점을 잡아 준다.
+
 - [ ] V4-1. TWA origin 을 app.massaviet.com 으로 바꿔 재빌드 (Bubblewrap)
 - [ ] V4-2. `app.massaviet.com/.well-known/assetlinks.json` 이 **기존 지문 2개 그대로** 나오는지
       → verify: 지문이 다르면 앱이 주소창을 띄운다 (TWA 가 깨진 것)
