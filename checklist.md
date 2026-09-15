@@ -1470,3 +1470,53 @@ GPG 는 매번 다른 세션 키를 쓰므로 `.gpg` 해시는 잠글 때마다 
 - `scp` 대상에 콜론(`root@host:/path`)이 있으면 **반드시 따옴표**로 감싸야 한다
 - `.ps1` 에 한글이 들어가면 Windows PowerShell 이 BOM 없는 UTF-8 을 잘못 읽어
   **문자열 파싱이 깨진다**. 스크립트는 ASCII 로만 쓸 것
+
+
+---
+
+## V. Vercel 탈출 — 앱을 app.massaviet.com 으로 옮기기
+
+목표: 앱 본체가 `massa-seven.vercel.app` 이 아니라 **사장님 도메인·사장님 서버**에서 돌게 한다.
+massaviet.com(소개 사이트)은 이미 VPS 에 있다. 앱만 남았다.
+
+원칙: **한 번에 끊지 않는다.** 새 주소를 먼저 띄워 검증하고, 옛 주소는 한동안 같이 살려 둔다.
+이미 설치된 안드로이드 앱은 업데이트를 받기 전까지 옛 주소를 본다. 지금 끄면 그 사람들 앱이 죽는다.
+
+### V1. 새 주소 띄우기 (되돌릴 수 있는 단계)
+- [ ] V1-1. DNS `app.massaviet.com` A `141.164.46.88` + AAAA 추가 → verify: `Resolve-DnsName app.massaviet.com`
+- [ ] V1-2. Caddy 에 `app.massaviet.com` 블록 추가, 루트 `/srv/massa-app` → verify: 인증서 발급 후 `curl -I` 200
+- [ ] V1-3. 앱 배포 스크립트 `scripts/vps-deploy-app.sh` 작성 (저장소 루트 → `/srv/massa-app`,
+      `site/`·`site-src/`·`store-assets/`·`scripts/`·`capacitor/`·`functions/`·`*.xlsx` 제외)
+      → verify: index.html·sw.js·manifest.webmanifest·icons·.well-known/assetlinks.json 전부 200
+- [ ] V1-4. **이 시점에 Vercel 은 그대로 둔다.** 두 주소가 같이 산다.
+
+### V2. 로그인이 새 주소에서 되게 하기
+- [ ] V2-1. Supabase GoTrue `SITE_URL`·`ADDITIONAL_REDIRECT_URLS` 에 app.massaviet.com 추가
+      → verify: 비밀번호 재설정 메일 링크가 새 주소로 오는지
+- [ ] V2-2. 구글 OAuth 콘솔에 승인된 리디렉션 URI 추가 → verify: 구글 로그인 성공
+- [ ] V2-3. **카카오 콘솔은 자동화가 안 된다 (페이지가 죽음). 사장님이 시크릿 창에서 직접.**
+- [ ] V2-4. 애플 Service ID 의 Return URL 추가 → verify: 애플 로그인 성공
+- [ ] V2-5. 결제 리턴 페이지(`pay-return.html`) 콜백 주소 점검
+
+### V3. 새 주소 전체 검증 (여기서 막히면 V4 로 가지 않는다)
+- [ ] V3-1. 로그인 4종(이메일·구글·카카오·애플) → verify: 각각 세션 생성
+- [ ] V3-2. 예약 생성 → 금액이 서버값으로 덮이는지 → verify: 트리거 동작
+- [ ] V3-3. 채팅·신고·차단 → verify: 메시지 왕복
+- [ ] V3-4. 관리자 화면(admin.html) → verify: is_admin() 통과
+- [ ] V3-5. 지도 검색(places-search) → verify: 토큰 있는 요청만 통과
+
+### V4. 안드로이드 갈아타기 (심사 1회)
+- [ ] V4-1. TWA origin 을 app.massaviet.com 으로 바꿔 재빌드 (Bubblewrap)
+- [ ] V4-2. `app.massaviet.com/.well-known/assetlinks.json` 이 **기존 지문 2개 그대로** 나오는지
+      → verify: 지문이 다르면 앱이 주소창을 띄운다 (TWA 가 깨진 것)
+- [ ] V4-3. 새 AAB 를 Play 프로덕션에 올리고 심사 → verify: 업데이트 후 주소창이 안 뜸
+
+### V5. iOS (1.0.7 에 같이 싣는다)
+- [ ] V5-1. Capacitor 는 www/ 를 내장해서 origin 영향이 적다. 외부로 나가는 주소만 점검
+- [ ] V5-2. 마케팅 URL → `https://massaviet.com`, 지원 URL → `https://massaviet.com/contact.html`
+- [ ] V5-3. 부제 채우기 + 키워드 정리 + 번들 언어 선언(ko·vi·en·ja·zh)
+
+### V6. 옛 주소 정리 (몇 달 뒤)
+- [ ] V6-1. Play 통계에서 구버전 설치 비중이 충분히 내려갔는지 확인
+- [ ] V6-2. Vercel 프로젝트를 리디렉트만 남기거나 종료
+- [ ] V6-3. 문서·스크립트의 massa-seven.vercel.app 문자열 정리 (8개 파일)
