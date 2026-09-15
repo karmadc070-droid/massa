@@ -8,9 +8,13 @@ echo '메모리:'; free -h | head -2 | tail -1
 echo ''
 
 echo '################ 2. 외부에서 열리는가 ################'
-for u in https://massaviet.com/ https://www.massaviet.com/ https://massa.moahagwon.com/ \
-         https://admin.moahagwon.com/ https://massa-seven.vercel.app/ \
-         https://massaviet.com/admin/ https://massa-seven.vercel.app/.well-known/assetlinks.json; do
+# app.massaviet.com 이 앱의 정식 주소다. vercel 과 massa.moahagwon.com 은 아직 살려 둔 옛 주소 —
+# 이미 설치된 안드로이드 앱이 업데이트를 받기 전까지 그쪽을 보기 때문이다. 셋 다 지켜본다.
+for u in https://massaviet.com/ https://www.massaviet.com/ \
+         https://app.massaviet.com/ https://app.massaviet.com/.well-known/assetlinks.json \
+         https://massa.moahagwon.com/ https://admin.moahagwon.com/ \
+         https://massa-seven.vercel.app/ https://massa-seven.vercel.app/.well-known/assetlinks.json \
+         https://massaviet.com/admin/; do
   printf '%-58s %s\n' "$u" "$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "$u")"
 done
 printf '%-58s %s  (401 이 정상)\n' 'https://api.moahagwon.com/auth/v1/settings' \
