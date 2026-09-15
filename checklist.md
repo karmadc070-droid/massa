@@ -1483,12 +1483,16 @@ massaviet.com(소개 사이트)은 이미 VPS 에 있다. 앱만 남았다.
 이미 설치된 안드로이드 앱은 업데이트를 받기 전까지 옛 주소를 본다. 지금 끄면 그 사람들 앱이 죽는다.
 
 ### V1. 새 주소 띄우기 (되돌릴 수 있는 단계)
-- [ ] V1-1. DNS `app.massaviet.com` A `141.164.46.88` + AAAA 추가 → verify: `Resolve-DnsName app.massaviet.com`
-- [ ] V1-2. Caddy 에 `app.massaviet.com` 블록 추가, 루트 `/srv/massa-app` → verify: 인증서 발급 후 `curl -I` 200
-- [ ] V1-3. 앱 배포 스크립트 `scripts/vps-deploy-app.sh` 작성 (저장소 루트 → `/srv/massa-app`,
-      `site/`·`site-src/`·`store-assets/`·`scripts/`·`capacitor/`·`functions/`·`*.xlsx` 제외)
-      → verify: index.html·sw.js·manifest.webmanifest·icons·.well-known/assetlinks.json 전부 200
-- [ ] V1-4. **이 시점에 Vercel 은 그대로 둔다.** 두 주소가 같이 산다.
+- [x] V1-1. DNS `app.massaviet.com` A `141.164.46.88` + AAAA 추가 (Cloudflare, **DNS only**) — 2026-09-15 완료
+- [x] V1-2. Caddy 에 `app.massaviet.com` 블록 추가, 루트 `/srv/massa-app` — 인증서 자동 발급 확인
+- [x] V1-3. `scripts/vps-deploy-app.sh` 작성·실행 — 파일 48개 배포, 9개 경로 전부 200
+- [x] V1-4. **Vercel 은 그대로 둔다.** 두 주소가 같이 산다.
+
+#### V1 검증 결과 (2026-09-15)
+- assetlinks 지문 2개 그대로 나옴 → TWA 전환 준비됨
+- `.env`·`signing.keystore`·`scripts/*` 전부 404 → 비밀 유출 없음
+- 실제 앱 동작: 테라피스트 목록이 DB 에서 정상 로드 (Mai H.·Linh N. … 평점·권역까지)
+- `config.js` 404 는 **Vercel 에서도 똑같이 404** 다. gitignore 된 로컬 파일이라 원래 그렇다. 이전 탓 아님.
 
 ### V2. 로그인이 새 주소에서 되게 하기
 - [ ] V2-1. Supabase GoTrue `SITE_URL`·`ADDITIONAL_REDIRECT_URLS` 에 app.massaviet.com 추가
