@@ -482,3 +482,39 @@ PostgREST 로는 아무도 못 읽고 못 쓴다. security definer 함수로만 
 - 앱 주소를 `app.massaviet.com` 으로 할지 `massaviet.com/app` 으로 할지 →
   서브도메인으로 잡았다. 경로 방식은 소개 사이트와 서비스워커 scope 가 겹친다.
 - Vercel 프로젝트를 언제 끌지 → Play 통계에서 구버전 비중을 보고 정한다. 지금은 건드리지 않는다.
+
+
+---
+
+## GoTrue 허용목록의 `/*` 와 `/**` 는 다르다 (2026-09-15)
+
+### 무슨 일이 있었나
+SITE_URL 을 `massa.moahagwon.com` → `app.massaviet.com` 으로 옮겼더니,
+**옛 주소의 재설정 링크가 튕기기 시작했다.** 허용목록에는 `https://massa.moahagwon.com/*` 이
+분명히 들어 있는데도 그랬다.
+
+### 원인
+GoTrue 는 **SITE_URL 을 언제나 허용한다.** 허용목록과 별개다.
+그래서 옛 주소는 그동안 허용목록 덕에 통과한 게 아니라 **SITE_URL 이라서** 통과하고 있었다.
+SITE_URL 을 옮기는 순간 그 우산이 사라졌고, 남은 `/*` 만으로는 `/reset.html` 을 못 받았다.
+
+잘 되던 항목들을 보니 답이 있었다. `massaviet.com` 과 `app.massaviet.com` 은
+`/*` 와 `/**` 를 **둘 다** 갖고 있었다. 나머지는 `/*` 뿐이었다.
+
+| 주소 | 전 | 후 |
+|---|---|---|
+| app.massaviet.com/reset.html | 통과 | 통과 |
+| massa.moahagwon.com/reset.html | **튕김** | 통과 |
+| admin.moahagwon.com/index.html | **튕김** (원래 깨져 있었다) | 통과 |
+| evil.example.com | 튕김 | 튕김 |
+
+### 덤으로 찾은 것
+`admin.moahagwon.com` 도 `/*` 뿐이었다. 즉 **운영 콘솔의 비밀번호 재설정 링크는
+이 작업 전부터 이미 깨져 있었다.** SITE_URL 우산을 받지 못하는 주소였기 때문이다.
+아무도 눈치채지 못한 건 관리자가 재설정을 쓸 일이 없어서였을 것이다.
+
+### 다음에 지킬 것
+**호스트를 허용목록에 넣을 때는 `/*` 와 `/**` 를 같이 넣는다.** 하나만 넣으면
+지금은 SITE_URL 이 가려 주더라도 SITE_URL 이 바뀌는 날 조용히 깨진다.
+그리고 이 종류의 고장은 **에러가 안 난다.** 그냥 엉뚱한 곳으로 간다.
+확인은 `scripts/vps-diag-allowlist.sh` 로 한다 — `/auth/v1/verify` 의 Location 헤더를 본다.
