@@ -1494,13 +1494,21 @@ massaviet.com(소개 사이트)은 이미 VPS 에 있다. 앱만 남았다.
 - 실제 앱 동작: 테라피스트 목록이 DB 에서 정상 로드 (Mai H.·Linh N. … 평점·권역까지)
 - `config.js` 404 는 **Vercel 에서도 똑같이 404** 다. gitignore 된 로컬 파일이라 원래 그렇다. 이전 탓 아님.
 
-### V2. 로그인이 새 주소에서 되게 하기
-- [ ] V2-1. Supabase GoTrue `SITE_URL`·`ADDITIONAL_REDIRECT_URLS` 에 app.massaviet.com 추가
-      → verify: 비밀번호 재설정 메일 링크가 새 주소로 오는지
-- [ ] V2-2. 구글 OAuth 콘솔에 승인된 리디렉션 URI 추가 → verify: 구글 로그인 성공
-- [ ] V2-3. **카카오 콘솔은 자동화가 안 된다 (페이지가 죽음). 사장님이 시크릿 창에서 직접.**
-- [ ] V2-4. 애플 Service ID 의 Return URL 추가 → verify: 애플 로그인 성공
-- [ ] V2-5. 결제 리턴 페이지(`pay-return.html`) 콜백 주소 점검
+### V2. 로그인이 새 주소에서 되게 하기 — 2026-09-15 완료
+- [x] V2-1. GoTrue `ADDITIONAL_REDIRECT_URLS` 에 `app.massaviet.com/*` · `/**` 추가, auth 재기동
+      → 컨테이너 안 `GOTRUE_URI_ALLOW_LIST` 에 들어간 것 확인. 기존 주소는 하나도 빼지 않음
+- [x] V2-2~4. **구글·카카오·애플 콘솔은 손댈 필요가 없었다.** 앞선 계획이 틀렸다.
+      공급자에 보내는 `redirect_uri` 는 앱 주소가 아니라 **GoTrue 콜백**
+      `https://api.moahagwon.com/auth/v1/callback` 로 고정이다. 셋 다 실제로 확인했다.
+      앱 도메인이 바뀌어도 공급자 콘솔은 그대로다. 카카오 콘솔을 열 일도 없었다.
+- [x] V2-5. `RESET_REDIRECT`·`PAY_START` 가 `massa.moahagwon.com` 을 가리키고 있었다 →
+      `app.massaviet.com` 으로 교체. **학원 도메인이 massa 손님 메일에 뜨면 안 된다.**
+      → verify: 배포본 index.html 의 massa.moahagwon.com 0건, 결제·재설정 4개 페이지 200
+
+#### 남겨 둔 것
+- `api.moahagwon.com` (API 엔드포인트) 는 그대로 둔다. 손님 눈에 보이지 않고,
+  바꾸려면 새 vhost·인증서·전 클라이언트 교체가 따라온다. 별건이다.
+- `admin.html` 의 RESET_REDIRECT 는 그대로 둔다. 운영은 admin.moahagwon.com 에서 한다.
 
 ### V3. 새 주소 전체 검증 (여기서 막히면 V4 로 가지 않는다)
 - [ ] V3-1. 로그인 4종(이메일·구글·카카오·애플) → verify: 각각 세션 생성
