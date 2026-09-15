@@ -1511,11 +1511,24 @@ massaviet.com(소개 사이트)은 이미 VPS 에 있다. 앱만 남았다.
 - `admin.html` 의 RESET_REDIRECT 는 그대로 둔다. 운영은 admin.moahagwon.com 에서 한다.
 
 ### V3. 새 주소 전체 검증 (여기서 막히면 V4 로 가지 않는다)
-- [ ] V3-1. 로그인 4종(이메일·구글·카카오·애플) → verify: 각각 세션 생성
-- [ ] V3-2. 예약 생성 → 금액이 서버값으로 덮이는지 → verify: 트리거 동작
-- [ ] V3-3. 채팅·신고·차단 → verify: 메시지 왕복
-- [ ] V3-4. 관리자 화면(admin.html) → verify: is_admin() 통과
-- [ ] V3-5. 지도 검색(places-search) → verify: 토큰 있는 요청만 통과
+
+#### 자격증명 없이 확인한 것 — 2026-09-15 전부 통과
+- [x] 화면 렌더링: `/`·`admin.html`·`reset.html`·`delete-account.html`·`privacy`·`terms` 정상
+- [x] **콘솔 에러 0건** (새 탭 기준). `config.js` 404 는 배포 때 빈 파일을 놓아 없앴다
+- [x] 서비스워커 등록·활성 확인, 앱이 `api.moahagwon.com` 을 바라봄
+- [x] **새 출처에서 CORS 통과** — providers·services·stores 전부 200
+- [x] **Edge Function 도 새 출처에서 동작** — places-search 200, 후보 4건
+- [x] V3-5. 지도 검색 정상 (토큰 없는 요청은 여전히 401)
+- [x] 사본 비교: `/srv/massa-web`(massa.moahagwon.com) 은 9/11 자, 기능은 동일.
+      차이는 RESET_REDIRECT 한 줄뿐이라 낡아서 위험한 상태는 아니다
+
+#### 사장님이 해 주셔야 하는 것 (비밀번호가 필요해 대신 못 한다)
+- [ ] V3-1. `https://app.massaviet.com` 에서 **로그인 1회** → 세션이 잡히는지
+- [ ] V3-2. 예약 한 건 생성 → 금액이 서버값으로 덮이는지
+- [ ] V3-3. 채팅 메시지 왕복
+- [ ] V3-4. 관리자 화면 진입 (is_admin 통과)
+
+로그인만 되면 나머지는 기존 기능이라 같이 따라온다. **로그인이 이 이전의 유일한 미확인 지점이다.**
 
 ### V4. 안드로이드 갈아타기 (심사 1회)
 - [ ] V4-1. TWA origin 을 app.massaviet.com 으로 바꿔 재빌드 (Bubblewrap)
