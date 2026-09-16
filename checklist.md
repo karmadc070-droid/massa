@@ -1571,6 +1571,26 @@ massaviet.com(소개 사이트)은 이미 VPS 에 있다. 앱만 남았다.
 등록정보 기본 언어는 처음부터 한국어였다. 이걸 헷갈려서 한 번 잘못 짚었다.
 
 ### V6. 옛 주소 정리 (몇 달 뒤)
+
+> ### ★ Vercel 을 끄기 전에 반드시 먼저 할 것 — 스토어 법적 URL 교체
+> 구글 플레이는 **개인정보처리방침 URL 이 반드시 열려야** 한다고 요구한다.
+> 지금 두 스토어에 등록된 주소가 전부 vercel 이다. 그대로 Vercel 을 끄면
+> 그 주소가 404 가 되고 **앱이 제재를 받는다.** 순서를 틀리면 안 된다.
+>
+> | 항목 | 지금 (옛 주소) | 바꿀 값 | 상태 |
+> |---|---|---|---|
+> | 개인정보처리방침 | massa-seven.vercel.app/privacy.html | `https://massaviet.com/privacy.html` | 200 확인 |
+> | 이용약관 | massa-seven.vercel.app/terms.html | `https://massaviet.com/terms.html` | 200 확인 |
+> | 웹사이트 | massa-seven.vercel.app | `https://massaviet.com` | 200 확인 |
+> | 계정 삭제 | massa-seven.vercel.app/delete-account.html | `https://app.massaviet.com/delete-account.html` | 200 확인 |
+>
+> 계정 삭제만 앱 주소를 쓴다. 소개 사이트에는 그 페이지가 없다 (404 확인).
+>
+> - [ ] V6-0a. Play Console — 스토어 설정의 개인정보처리방침·웹사이트, 앱 콘텐츠의 계정 삭제 URL
+> - [ ] V6-0b. App Store Connect — 앱 정보의 개인정보 처리방침 URL (마케팅·지원 URL 은 1.0.7 에서 이미 교체)
+
 - [ ] V6-1. Play 통계에서 구버전 설치 비중이 충분히 내려갔는지 확인
 - [ ] V6-2. Vercel 프로젝트를 리디렉트만 남기거나 종료
-- [ ] V6-3. 문서·스크립트의 massa-seven.vercel.app 문자열 정리 (8개 파일)
+- [x] V6-3a. `scripts/health_check.sh` 가 새 주소도 지켜보게 수정 — 2026-09-16
+- [ ] V6-3b. 문서 4개의 massa-seven.vercel.app 문자열 정리
+      (`스토어등록_정보.md` · `테스터_모집안내.md` · `PLAY_STORE_진행상황.md` · `store-assets/ds-import.csv`)
