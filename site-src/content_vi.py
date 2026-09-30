@@ -11,9 +11,9 @@ LABELS = {
             "terms": "Điều khoản", "privacy": "Quyền riêng tư"},
     "langname": {"ko": "KO", "en": "EN", "vi": "VI"},
     "cta": "Tải ứng dụng",
-    "footer_tag": "Massage và làm đẹp tại nhà, đặt lịch tận nơi ở Hà Nội.",
+    "footer_tag": "Massage và làm đẹp tại nhà, đặt lịch tận nơi ở Việt Nam.",
     "f_service": "Dịch vụ", "f_company": "massa", "f_support": "Hỗ trợ",
-    "legal": ("© 2026 massa. Nền tảng đặt lịch massage và làm đẹp tại nhà ở Hà Nội.<br>"
+    "legal": ("© 2026 massa. Nền tảng đặt lịch massage và làm đẹp tại nhà ở Việt Nam. Hiện đang hoạt động tại Hà Nội.<br>"
               "massa là nền tảng kết nối khách hàng với nhà cung cấp đã được xác minh; dịch vụ cung cấp không phải là điều trị y tế."),
     "smart": "Đặt lịch nhanh hơn trên ứng dụng",
     "smart_cta": "Tải ngay",
@@ -23,7 +23,7 @@ _LD_HOME = """{
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
   "name": "massa",
-  "description": "Nền tảng đặt lịch massage và làm đẹp tại nhà ở Hà Nội",
+  "description": "Nền tảng đặt lịch massage và làm đẹp tại nhà ở Việt Nam (hiện hoạt động tại Hà Nội)",
   "url": "https://massaviet.com/vi/",
   "image": "https://massaviet.com/img/hero.webp",
   "email": "support@massaviet.com",
@@ -37,12 +37,12 @@ _STORES = {"type": "stores", "ios": "iPhone · iPad", "and": "Android", "soon": 
 PAGES = {
 
 "index": {
- "title": "massa — Massage & làm đẹp tại nhà ở Hà Nội",
- "desc": "Chuyên viên đã được xác minh đến tận nhà hoặc khách sạn của bạn tại Hà Nội. Chọn giờ bạn muốn, thanh toán tại chỗ sau khi xong.",
+ "title": "massa — Massage & làm đẹp tại nhà ở Việt Nam",
+ "desc": "Chuyên viên đến tận nhà hoặc khách sạn của bạn. Chọn giờ bạn muốn, thanh toán tại chỗ sau khi xong. Hiện đang hoạt động tại Hà Nội.",
  "jsonld": _LD_HOME,
  "blocks": [
   {"type": "hero",
-   "kicker": "Hà Nội · Đến tận nơi",
+   "kicker": "Việt Nam · Đến tận nơi",
    "h1": "Giờ mà bạn<br>không phải<br><em>ra khỏi nhà.</em>",
    "lead": "Đêm muộn sau giờ làm, hay trong phòng khách sạn giữa chuyến công tác. Chuyên viên đã qua xác minh đến đúng giờ bạn chọn. Bạn thanh toán tại chỗ, sau khi dịch vụ kết thúc.",
    "alt": "Chuyên viên đang massage trong căn phòng thắp nến",
@@ -109,10 +109,10 @@ PAGES = {
 
   {"type": "section", "soft": True,
    "kicker": "Khu vực",
-   "h2": "Bắt đầu từ Hà Nội",
+   "h2": "Bắt đầu từ Việt Nam",
    "blocks": [
     {"type": "table", "rows": [
-      ("Đang hoạt động", "Khắp Hà Nội — Ba Đình, Hoàn Kiếm, Mỹ Đình, Tây Hồ và hơn thế"),
+      ("Đang hoạt động", "Hà Nội — Ba Đình, Hoàn Kiếm, Mỹ Đình, Tây Hồ và hơn thế"),
       ("Sắp tới", "Đà Nẵng, Nha Trang, Thành phố Hồ Chí Minh"),
       ("Ngôn ngữ", "Tiếng Hàn, tiếng Việt, tiếng Anh, tiếng Nhật, tiếng Trung"),
     ]}]},
@@ -125,8 +125,8 @@ PAGES = {
  ]},
 
 "services": {
- "title": "Dịch vụ — massage & làm đẹp tại nhà ở Hà Nội | massa",
- "desc": "Massage tại nhà (aromatherapy, Thụy Điển, Thái, mô sâu), làm đẹp tại nhà (móng, wax, tẩy da chết) và danh bạ spa đối tác khắp Hà Nội.",
+ "title": "Dịch vụ — massage & làm đẹp tại nhà ở Việt Nam | massa",
+ "desc": "Massage tại nhà (aromatherapy, Thụy Điển, Thái, mô sâu), làm đẹp tại nhà (móng, wax, tẩy da chết) và danh bạ spa đối tác. Hiện đang hoạt động tại Hà Nội.",
  "blocks": [
   {"type": "section",
    "kicker": "Dịch vụ",
@@ -277,7 +277,7 @@ PAGES = {
 
 "partner": {
  "title": "Tuyển đối tác — chuyên viên massage & làm đẹp | massa",
- "desc": "massa đang tuyển đối tác massage và làm đẹp tại nhà ở Hà Nội. Không phí gia nhập, không phí hàng tháng, chỉ tính hoa hồng trên lịch đã hoàn thành.",
+ "desc": "massa đang tuyển đối tác massage và làm đẹp tại nhà ở Việt Nam, bắt đầu từ Hà Nội. Không phí gia nhập, không phí hàng tháng, chỉ tính hoa hồng trên lịch đã hoàn thành.",
  "blocks": [
   {"type": "section",
    "kicker": "Đối tác",
@@ -366,14 +366,14 @@ PAGES = {
 
 "about": {
  "title": "Giới thiệu — massa",
- "desc": "massa kết nối khách hàng ở Hà Nội với các nhà cung cấp massage và làm đẹp đã được xác minh. Chúng tôi là nền tảng, không phải người trực tiếp làm dịch vụ.",
+ "desc": "massa kết nối khách hàng ở Việt Nam với các nhà cung cấp massage và làm đẹp. Chúng tôi là nền tảng, không phải người trực tiếp làm dịch vụ. Hiện đang hoạt động tại Hà Nội.",
  "blocks": [
   {"type": "section",
    "kicker": "Giới thiệu",
    "h2": "massa là<br>nền tảng trung gian",
    "lead": "Chúng tôi không tự làm dịch vụ. Chúng tôi kết nối khách hàng với nhà cung cấp đã thẩm định, và giữ cho mọi việc giữa hai bên có trách nhiệm.",
    "body": [
-     "Hà Nội có nhiều chuyên viên giỏi, nhưng từ phía khách rất khó biết ai đáng tin. Ở chiều ngược lại, người có tay nghề lại bị buộc vào giờ của cửa hàng hoặc ít kênh tiếp cận khách. massa nằm ở khoảng giữa đó.",
+     "Việt Nam có nhiều chuyên viên giỏi, nhưng từ phía khách rất khó biết ai đáng tin. Ở chiều ngược lại, người có tay nghề lại bị buộc vào giờ của cửa hàng hoặc ít kênh tiếp cận khách. massa nằm ở khoảng giữa đó.",
      "Vì vậy chúng tôi dồn sức nhiều nhất vào thẩm định và lưu vết. Biết ai sẽ đến, có dữ liệu khi xảy ra chuyện, và cùng một luật cho cả hai bên — chúng tôi cho rằng đó là điều kiện tối thiểu để dịch vụ tại nhà có thể tồn tại."]},
   {"type": "section", "soft": True,
    "h2": "Nguyên tắc",
@@ -388,14 +388,14 @@ PAGES = {
    "blocks": [
     {"type": "table", "rows": [
       ("Email", f'<a href="mailto:{SUPPORT}">{SUPPORT}</a>'),
-      ("Khu vực", "Hà Nội, Việt Nam (Đà Nẵng, Nha Trang và TP. Hồ Chí Minh sắp tới)"),
+      ("Khu vực", "Việt Nam — hiện tại Hà Nội (Đà Nẵng, Nha Trang và TP. Hồ Chí Minh sắp tới)"),
       ("Ứng dụng", '<a href="/vi/download.html">Tải ứng dụng</a>'),
     ]}]},
  ]},
 
 "download": {
  "title": "Tải ứng dụng — massa",
- "desc": "Tải ứng dụng massa và đặt lịch massage, làm đẹp tại nhà ở Hà Nội ngay trên điện thoại.",
+ "desc": "Tải ứng dụng massa và đặt lịch massage, làm đẹp tại nhà ở Việt Nam ngay trên điện thoại. Hiện đang hoạt động tại Hà Nội.",
  "blocks": [
   {"type": "section",
    "kicker": "Tải ứng dụng",
@@ -475,7 +475,7 @@ PAGES = {
    "kicker": "Hiệu lực 14/08/2026 · sửa đổi 06/09/2026 · phiên bản 1.1",
    "h2": "Chính sách quyền riêng tư",
    "body": ["Đây là bản dịch để tham khảo. Bản tiếng Hàn là bản có hiệu lực pháp lý.",
-            "massa (\"công ty\") là nền tảng trung gian đặt lịch tại nhà, kết nối khách hàng ở Hà Nội với nhà cung cấp massage và làm đẹp đã được xác minh. Chúng tôi xử lý dữ liệu cá nhân như sau."],
+            "massa (\"công ty\") là nền tảng trung gian đặt lịch tại nhà, kết nối khách hàng ở Việt Nam với nhà cung cấp massage và làm đẹp. Chúng tôi xử lý dữ liệu cá nhân như sau."],
    "blocks": [
     {"type": "table", "rows": [
       ("1. Dữ liệu thu thập", "Tài khoản — email, mật khẩu (lưu dạng mã hóa), mã định danh đăng nhập mạng xã hội. Hồ sơ — họ tên, số điện thoại, giới tính, quốc tịch, ngôn ngữ. Đặt lịch — địa chỉ đến gồm tên khách sạn và số phòng, ngày giờ, ghi chú yêu cầu, phương thức và số tiền thanh toán. Vị trí — vị trí thiết bị ở mức tương đối hoặc chính xác, chỉ khi bạn đồng ý. Nhà cung cấp — bản sao giấy tờ tùy thân, tài khoản nhận tiền, giấy phép kinh doanh, chứng chỉ, ảnh hồ sơ. Tự động — thời điểm truy cập, thông tin thiết bị và trình duyệt, nhật ký lỗi ứng dụng. Thống kê sử dụng — ghi nhận việc mở ứng dụng (mã định danh ngẫu nhiên lưu trên thiết bị, ngày, nền tảng, ngôn ngữ hiển thị). Mỗi thiết bị chỉ ghi một dòng mỗi ngày; không lưu kèm tên, email hay địa chỉ IP."),

@@ -9,9 +9,9 @@ LABELS = {
             "terms": "Terms", "privacy": "Privacy"},
     "langname": {"ko": "KO", "en": "EN", "vi": "VI"},
     "cta": "Get the app",
-    "footer_tag": "Massage and home beauty, booked to your door in Hanoi.",
+    "footer_tag": "Massage and home beauty, booked to your door in Vietnam.",
     "f_service": "Service", "f_company": "massa", "f_support": "Support",
-    "legal": ("© 2026 massa. Home massage and beauty booking in Hanoi.<br>"
+    "legal": ("© 2026 massa. Home massage and beauty booking in Vietnam. Currently operating in Hanoi.<br>"
               "massa is a platform connecting customers with verified providers. The care offered is not a medical treatment."),
     "smart": "Book faster in the app",
     "smart_cta": "Get it",
@@ -21,7 +21,7 @@ _LD_HOME = """{
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
   "name": "massa",
-  "description": "Home massage and beauty booking platform in Hanoi",
+  "description": "Home massage and beauty booking platform in Vietnam (currently operating in Hanoi)",
   "url": "https://massaviet.com/en/",
   "image": "https://massaviet.com/img/hero.webp",
   "email": "support@massaviet.com",
@@ -35,12 +35,12 @@ _STORES = {"type": "stores", "ios": "iPhone · iPad", "and": "Android", "soon": 
 PAGES = {
 
 "index": {
- "title": "massa — Home massage & beauty in Hanoi, booked to your door",
- "desc": "Verified therapists come to your home or hotel in Hanoi. Choose your time, and pay on the spot once the service is done.",
+ "title": "massa — Home massage & beauty in Vietnam, booked to your door",
+ "desc": "Therapists come to your home or hotel. Choose your time, and pay on the spot once the service is done. Currently operating in Hanoi.",
  "jsonld": _LD_HOME,
  "blocks": [
   {"type": "hero",
-   "kicker": "Hanoi · At your door",
+   "kicker": "Vietnam · At your door",
    "h1": "The hour you<br>don't have to<br><em>go out.</em>",
    "lead": "Late after work, or in a hotel room on a business trip. A verified therapist comes at the time you choose. You pay on the spot, after the service is finished.",
    "alt": "A therapist giving a massage in a candlelit room",
@@ -107,10 +107,10 @@ PAGES = {
 
   {"type": "section", "soft": True,
    "kicker": "Where we operate",
-   "h2": "Starting in Hanoi",
+   "h2": "Starting in Vietnam",
    "blocks": [
     {"type": "table", "rows": [
-      ("Live now", "Across Hanoi — Ba Đình, Hoàn Kiếm, Mỹ Đình, Tây Hồ and more"),
+      ("Live now", "Hanoi — Ba Đình, Hoàn Kiếm, Mỹ Đình, Tây Hồ and more"),
       ("Next", "Đà Nẵng, Nha Trang, Hồ Chí Minh City"),
       ("Languages", "Korean, Vietnamese, English, Japanese, Chinese"),
     ]}]},
@@ -123,8 +123,8 @@ PAGES = {
  ]},
 
 "services": {
- "title": "Services — massa home massage & beauty in Hanoi",
- "desc": "Home massage (aromatherapy, Swedish, Thai, deep tissue), home beauty (nails, waxing, exfoliation) and a partner spa directory across Hanoi.",
+ "title": "Services — massa home massage & beauty in Vietnam",
+ "desc": "Home massage (aromatherapy, Swedish, Thai, deep tissue), home beauty (nails, waxing, exfoliation) and a partner spa directory. Currently operating in Hanoi.",
  "blocks": [
   {"type": "section",
    "kicker": "Services",
@@ -275,7 +275,7 @@ PAGES = {
 
 "partner": {
  "title": "Become a partner — therapists & beauty professionals | massa",
- "desc": "massa is recruiting massage and home beauty partners in Hanoi. No joining fee, no monthly fee, and commission only on completed bookings.",
+ "desc": "massa is recruiting massage and home beauty partners in Vietnam, starting in Hanoi. No joining fee, no monthly fee, and commission only on completed bookings.",
  "blocks": [
   {"type": "section",
    "kicker": "Partners",
@@ -364,14 +364,14 @@ PAGES = {
 
 "about": {
  "title": "About — massa",
- "desc": "massa connects customers in Hanoi with verified massage and home beauty providers. We are the platform, not the provider.",
+ "desc": "massa connects customers in Vietnam with massage and home beauty providers. We are the platform, not the provider. Currently operating in Hanoi.",
  "blocks": [
   {"type": "section",
    "kicker": "About",
    "h2": "massa is<br>the platform",
    "lead": "We do not provide the service ourselves. We connect customers with vetted providers and keep what happens between them accountable.",
    "body": [
-     "Hanoi has plenty of good therapists, but from a customer's side it is hard to tell who is trustworthy. From the other side, skilled people are tied to a venue's hours or have few ways to reach customers. massa sits in that gap.",
+     "Vietnam has plenty of good therapists, but from a customer's side it is hard to tell who is trustworthy. From the other side, skilled people are tied to a venue's hours or have few ways to reach customers. massa sits in that gap.",
      "So most of our effort goes into vetting and records. Knowing who is coming, having a record when something goes wrong, and applying the same rules to both sides — we think that is the minimum for a home-visit service to work at all."]},
   {"type": "section", "soft": True,
    "h2": "What we hold to",
@@ -386,14 +386,14 @@ PAGES = {
    "blocks": [
     {"type": "table", "rows": [
       ("Email", f'<a href="mailto:{SUPPORT}">{SUPPORT}</a>'),
-      ("Coverage", "Hanoi, Vietnam (Đà Nẵng, Nha Trang and Hồ Chí Minh City to follow)"),
+      ("Coverage", "Vietnam — currently Hanoi (Đà Nẵng, Nha Trang and Hồ Chí Minh City to follow)"),
       ("App", '<a href="/en/download.html">Download the app</a>'),
     ]}]},
  ]},
 
 "download": {
  "title": "Get the app — massa",
- "desc": "Download the massa app and book home massage and beauty in Hanoi straight from your phone.",
+ "desc": "Download the massa app and book home massage and beauty in Vietnam straight from your phone. Currently operating in Hanoi.",
  "blocks": [
   {"type": "section",
    "kicker": "Get the app",
@@ -473,7 +473,7 @@ PAGES = {
    "kicker": "Effective 14 August 2026 · revised 6 September 2026 · version 1.1",
    "h2": "Privacy policy",
    "body": ["This is a translation provided for convenience. The Korean version is the binding text.",
-            "massa (\"the company\") is a home-visit booking platform connecting customers in Hanoi with verified massage and beauty providers. We handle personal data as set out below."],
+            "massa (\"the company\") is a home-visit booking platform connecting customers in Vietnam with massage and beauty providers. We handle personal data as set out below."],
    "blocks": [
     {"type": "table", "rows": [
       ("1. What we collect", "Account — email, password (stored hashed), social login identifier. Profile — name, mobile number, gender, nationality, language. Booking — visit address including hotel and room number, date and time, request notes, payment method and amount. Location — approximate or precise device location, only with your consent. Providers — ID document, settlement account, business registration, qualifications, profile photos. Automatic — access times, device and browser information, app error logs. Usage statistics — a record that the app was opened (a random identifier stored on your device, the date, platform and display language). At most one row per device per day; no name, email or IP address is stored alongside it."),
