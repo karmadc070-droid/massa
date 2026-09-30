@@ -1666,6 +1666,33 @@ Play Console 알림 센터에 2026-09-09 자로 뜬 "심각" 등급 알림:
       (en/safety.html 에 'hygiene mark' 1건 남지만 "위생 표시를 붙이지 않습니다" 라는 부정문이다)
 - [x] Z-12-6. 앱 i18n 5개 언어 문구 추가 (신원 확인 / 자격 확인 / 아직 확인 전)
 
+## Z-13. 스토어 등록정보 교체·제출 완료 — 2026-09-30
+
+- [x] 한국어·영어·베트남어 간단한 설명·자세한 설명을 새 2단계 기준으로 교체
+- [x] 웹사이트 URL `massa-seven.vercel.app` → `massaviet.com` (즉시 반영됨, 심사 없음)
+- [x] 변경사항 5건 검토 제출 (등록정보 4 + 개인정보처리방침 URL 1)
+- [x] 관리형 게시 켜져 있음 — 승인돼도 자동 공개 안 됨
+
+### Play Console 텍스트 칸을 채우는 법 (다음에 헤매지 말 것)
+1. **`type` 로 한글을 넣지 마라.** 조합이 깨진다. 실제로 이렇게 들어갔다 —
+   잦아→짦아, 딥티슈→딕티슈, 왁싱→왕싱, 속눈썹→속눈썰, 호안끼엠→호안낄엠.
+2. **`key` 로 "period" 같은 걸 보내면 그 단어가 그대로 찍힌다.** 쓰지 마라.
+3. **ctrl+v 도 안 먹는다.** CDP 키 이벤트는 실제 붙여넣기를 일으키지 않는다.
+4. **되는 방법** — 네이티브 setter 로 값을 넣고 input·change·blur 를 직접 쏜다.
+   그래야 Angular 모델이 갱신되고 글자수 카운터가 따라 움직인다. 카운터가 안 변하면 실패한 것이다.
+   ```js
+   const el=[...document.querySelectorAll('textarea')].find(e=>e.getAttribute('aria-label')==='자세한 앱 설명');
+   Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set.call((el.focus(),el), 텍스트);
+   el.dispatchEvent(new Event('input',{bubbles:true}));
+   el.dispatchEvent(new Event('change',{bubbles:true}));
+   el.blur(); el.dispatchEvent(new Event('blur',{bubbles:true}));
+   ```
+5. 저장은 `innerText === '저장'` 인 버튼을 `.click()`. 성공하면
+   **"저장되었습니다. 게시 개요에서 전송하여 검토를 받으세요."** 토스트가 뜬다. 안 뜨면 저장 안 된 것이다.
+6. **반드시 새로고침해서 값이 남았는지 확인하라.** 토스트만 믿지 마라 — 처음에 저장된 줄 알았는데 아니었다.
+7. 언어 전환은 `기본값 – 한국어 – ko-KR` 버튼 → 목록에서 `영어(미국) – en-US` / `베트남어 – vi` span 클릭.
+8. 스토어 설정의 연락처 dialog 는 입력이 document 에서 안 잡힌다. 좌표로 클릭하고 **URL 은 ASCII 라 `type` 으로 쳐도 된다.**
+
 ### ★★ 진짜 원인을 찾았다 — 승인이 곧 인증이었다
 `admin.html` 의 `reviewApp()` 이 **`is_verified: status === 'approved'`** 였다.
 즉 **승인 버튼을 누르는 순간 인증 마크가 자동으로 붙었다.** 서류를 한 장도 안 봐도 붙었다.
