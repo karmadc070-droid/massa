@@ -1677,7 +1677,15 @@ DB 는 깨끗해서 가짜 마크·별점은 안 뜨지만, **화면 문구가 �
 
 - [x] `capacitor/package.json` 1.0.7 → 1.0.8, 푸시 (a5773c7)
 - [x] Codemagic 빌드 #23 시작 (branch main, workflow `massa iOS App Store 빌드·TestFlight 업로드`)
-- [ ] 빌드 성공 확인 — **직전 빌드 #22 는 `post-processing failed` 였다. 결과를 꼭 볼 것**
+- [x] 빌드 #23 결과 확인 — **IPA 업로드는 성공했다.** `post-processing failed` 는 겁먹을 것이 아니었다.
+      로그 원문: `UPLOAD SUCCEEDED with no errors` · `App Store Connect finished processing build`
+      실패한 것은 **그 뒤의 TestFlight 외부 테스터 심사 제출** 한 단계뿐이다.
+      > Failure: Complete test information is required to submit application ... for external testing.
+      > App is missing required Beta App Information: Feedback Email.
+      > App is missing required Beta App Review Information: First Name, Last Name, Phone Number, Email.
+      **App Store 제출과는 무관하다.** 외부 테스터를 쓸 생각이 없으면 고칠 필요도 없다.
+      거슬리면 https://appstoreconnect.apple.com/apps/6804698319/testflight/test-info 에서 채우면 된다.
+      #22 도 같은 이유였을 가능성이 높다. 다음에 또 보이면 이 줄을 먼저 읽을 것.
 - [ ] ASC 에서 **개인정보 처리방침 URL 을 `https://massaviet.com/privacy.html` 로 교체** (#63)
 - [ ] 1.0.8 심사 제출
 - [ ] 승인·출시 후에야 Vercel 을 끌 수 있다 (#62)
