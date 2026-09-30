@@ -518,3 +518,50 @@ SITE_URL 을 옮기는 순간 그 우산이 사라졌고, 남은 `/*` 만으로�
 지금은 SITE_URL 이 가려 주더라도 SITE_URL 이 바뀌는 날 조용히 깨진다.
 그리고 이 종류의 고장은 **에러가 안 난다.** 그냥 엉뚱한 곳으로 간다.
 확인은 `scripts/vps-diag-allowlist.sh` 로 한다 — `/auth/v1/verify` 의 Location 헤더를 본다.
+
+---
+
+## Vercel 을 프록시로 바꿨다 (2026-09-30)
+
+### 왜
+플레이 프로덕션이 승인돼 게시 직전이었는데, 확인해 보니 **출시되는 안드로이드 TWA 가 여는 주소는
+`massa-seven.vercel.app`** 이었다(APK 문자열에서 5회 확인). 그런데 그 Vercel 프로젝트는
+**9월 10일 이후 배포가 멈춰 있었다.** GitHub 연동이 커밋을 물지 않는다 — 오늘 푸시한
+`37f9159` 도 자동 배포가 안 떴다. 그대로 게시했으면 새 사용자는 3주 묵은 화면,
+즉 허위 인증 마크 22개와 허위 별점 1,775건을 그대로 봤을 것이다.
+
+### 무엇을 했나
+Vercel 배포에 **파일 두 개만** 올렸다. 앱 파일은 하나도 올리지 않았다.
+
+```
+vercel.json                    라우팅 규칙
+.well-known/assetlinks.json    TWA 검증 파일
+```
+
+```json
+{ "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "https://app.massaviet.com/$1" } ] }
+```
+
+filesystem 단계에서 잡히는 건 assetlinks 뿐이고, 나머지 모든 경로는 VPS 로 넘어간다.
+
+### 반드시 지킬 두 가지
+1. **리다이렉트가 아니라 프록시(rewrite)여야 한다.** 주소가 `app.massaviet.com` 으로 바뀌면
+   TWA 의 출처 검증과 GoTrue 허용목록이 한꺼번에 깨진다. 검증할 때 `num_redirects:0` 을 꼭 본다.
+2. **assetlinks 는 프록시에 맡기지 않고 Vercel 에 직접 둔다.** TWA 가 앱을 여느냐 브라우저를
+   여느냐가 여기에 달렸다. 프록시가 잠깐 죽어도 이건 살아 있어야 한다.
+
+`.vercelignore` 로 앱 파일이 다시 올라가는 걸 막아 뒀다. 앱 파일이 같이 올라가면
+filesystem 단계에서 그게 먼저 잡혀 프록시가 조용히 무력화된다.
+
+### 결과
+세 주소가 같은 내용을 준다. 앞으로 VPS 에 배포하면 Vercel 쪽도 자동으로 따라온다.
+**Vercel 이 배포되든 말든 상관없어졌다.** 이게 #62 Vercel 탈출의 실질적 완료다.
+남은 건 나중에 TWA 를 `app.massaviet.com` 으로 다시 빌드하는 것뿐인데,
+그건 새 버전 심사라 게시가 끝난 뒤에 한다.
+
+### 검증
+`scripts/vps-test-vercel-proxy.sh <host>` — 200·리다이렉트 0·새 문구·assetlinks 지문·
+하위 경로 7개·비밀 파일 404 를 한 번에 본다. 미리보기에서 먼저 돌리고 별칭을 붙였다.
+
