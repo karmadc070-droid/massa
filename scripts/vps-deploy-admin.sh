@@ -1,5 +1,6 @@
 #!/bin/sh
-# 운영 콘솔(admin.html)을 /srv/massa-admin 에 배포하고 admin.moahagwon.com 으로 서빙한다
+# 운영 콘솔(admin.html)을 /srv/massa-admin 에 배포하고 admin.massaviet.com 으로 서빙한다
+# (2026-10-01 이전. 옛 주소 admin.moahagwon.com 은 301 로 살려 둔다)
 set -e
 
 DIR=/srv/massa-admin
@@ -27,14 +28,16 @@ for f in masaage1_b.png wag1_b.png banner1.png banner2.png banner3.png; do
 done
 
 echo "=== Caddy 설정 ==="
+# 2026-10-01 운영 콘솔 주소가 admin.moahagwon.com → admin.massaviet.com 으로 바뀌었다.
+# 옛 주소는 지우지 않고 새 주소로 301 리다이렉트만 한다(북마크·예전 메일 링크 보호).
 F=/root/Caddyfile
-if grep -q "admin.moahagwon.com" "$F"; then
+if grep -q "admin.massaviet.com" "$F"; then
   echo "이미 등록돼 있음"
 else
   cp "$F" "$F.bak.$(date +%s)"
   cat >> "$F" <<'EOF'
 
-admin.moahagwon.com {
+admin.massaviet.com {
     root * /srv/massa-admin
     file_server
     encode gzip
@@ -46,7 +49,7 @@ admin.moahagwon.com {
     }
 }
 EOF
-  echo "Caddyfile 에 admin.moahagwon.com 추가"
+  echo "Caddyfile 에 admin.massaviet.com 추가"
 fi
 
 C=$(docker ps --format '{{.Names}}' | grep -i caddy | head -1)
@@ -60,6 +63,7 @@ fi
 
 echo "=== 인증서 발급 대기 ==="
 sleep 20
-curl -s -o /dev/null -w "admin : %{http_code}\n" https://admin.moahagwon.com/ || echo "실패"
+curl -s -o /dev/null -w "admin     : %{http_code}\n" https://admin.massaviet.com/ || echo "실패"
+curl -s -o /dev/null -w "옛 주소   : %{http_code} (301 이어야 한다)\n" https://admin.moahagwon.com/ || echo "실패"
 curl -s -o /dev/null -w "api   : %{http_code}\n" https://api.moahagwon.com/auth/v1/settings || echo "실패"
 echo "=== DEPLOY DONE ==="
