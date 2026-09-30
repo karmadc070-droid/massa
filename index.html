@@ -1883,7 +1883,14 @@ function openAuth() {
       r = await limit(sb.auth.signInWithPassword({ email, password: pw }));
       if (r.error) {
         const up = await limit(sb.auth.signUp({ email, password: pw }));
-        if (up.error) { msg.textContent = up.error.message; btn.disabled = false; return; }
+        // 이미 가입된 계정인데 signUp 까지 왔다는 건 앞의 로그인이 비밀번호 때문에 실패했다는 뜻이다.
+        // 'User already registered' 를 그대로 보여주면 원인을 정반대로 읽게 된다.
+        if (up.error) {
+          const exists = /already\s*registered|already\s*exists/i.test(up.error.message || '');
+          msg.textContent = exists ? '비밀번호가 맞지 않습니다. 아래 [비밀번호를 잊으셨나요?] 로 재설정해 주세요.'
+                                   : up.error.message;
+          btn.disabled = false; return;
+        }
         if (!up.data.session) { r = await limit(sb.auth.signInWithPassword({ email, password: pw })); }
         else r = up;
       }
