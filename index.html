@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="description" content="하노이 집·호텔로 찾아가는 마사지·홈뷰티 방문 예약. 검증된 테라피스트를 원하는 시간에 부르세요.">
+<meta name="description" content="베트남 집·호텔로 찾아가는 마사지·홈뷰티 방문 예약. 원하는 시간에 테라피스트를 부르세요. 현재 하노이에서 운영합니다.">
 <meta name="theme-color" content="#1F4E5F">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,7 +13,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>mㅏssㅏ 고객 앱 와이어프레임 v3 — 하노이 MVP</title>
+<title>mㅏssㅏ — 베트남 출장 마사지·홈뷰티 방문 예약</title>
 <style>
   :root {
     --navy: #1F4E5F;
@@ -606,7 +606,7 @@
         <div class="trow2"><span class="tdist">📍 2.4 km</span><button class="bookbtn" onclick="book()">예약</button></div>
       </div>
     </div>
-    <div class="notice">🛡 인증 마크는 자격증·신원 확인·대면 면접 3단계 검증을 통과한 마사지사에게만 부여됩니다.</div>
+    <div class="notice">🛡 인증 마크는 신분증과 자격 서류 확인이 끝난 마사지사에게만 붙습니다. 확인 전인 분에게는 붙지 않습니다.</div>
   </div>
 
   <!-- 홈 뷰티 — 네일·왁싱·각질 케어 리스트 -->
@@ -3013,7 +3013,7 @@ const DICT = {
   '동의하고 시작하기': ['Đồng ý và bắt đầu', 'Agree and continue', '同意并开始', '同意して開始'],
   '서비스 이용을 위해 아래 약관에 동의해 주세요. 동의 기록은 안전하게 보관됩니다.': ['Vui lòng đồng ý với các điều khoản dưới đây để sử dụng dịch vụ. Bản ghi đồng ý được lưu trữ an toàn.', 'Please agree to the terms below to use the service. Your consent record is stored securely.', '请同意以下条款以使用服务。同意记录将被安全保存。', 'サービスのご利用には以下の規約への同意が必要です。同意記録は安全に保管されます。'],
   '할인·이벤트 소식을 알림으로 받습니다. 동의하지 않아도 서비스 이용에 제한이 없습니다.': ['Nhận thông báo về ưu đãi và sự kiện. Không đồng ý vẫn dùng dịch vụ bình thường.', 'Get notified about deals and events. Declining does not limit your use of the service.', '接收优惠和活动通知。不同意也不影响服务使用。', '割引・イベント情報を通知で受け取ります。同意しなくてもサービス利用に制限はありません。'],
-  '🛡 인증 마크는 자격증·신원 확인·대면 면접 3단계 검증을 통과한 마사지사에게만 부여됩니다.': ['🛡 Dấu xác thực chỉ được cấp cho chuyên viên đã qua 3 bước kiểm tra: chứng chỉ, danh tính và phỏng vấn trực tiếp.', '🛡 The verified badge is granted only to therapists who pass three checks: certification, identity, and an in-person interview.', '🛡 认证标识仅授予通过资格证书、身份核实、面对面面试三重审核的按摩师。', '🛡 認証マークは資格・本人確認・対面面接の3段階審査を通過したセラピストにのみ付与されます。'],
+  '🛡 인증 마크는 신분증과 자격 서류 확인이 끝난 마사지사에게만 붙습니다. 확인 전인 분에게는 붙지 않습니다.': ['🛡 Dấu xác thực chỉ hiển thị với chuyên viên đã được kiểm tra giấy tờ tùy thân và chứng chỉ. Người chưa kiểm tra thì không có dấu này.', '🛡 The verified badge is shown only on therapists whose ID and credentials we have checked. Therapists not yet checked carry no badge.', '🛡 认证标识仅显示于已核验身份证件与资格文件的按摩师。未核验者不显示该标识。', '🛡 認証マークは身分証と資格書類の確認が済んだセラピストにのみ表示されます。未確認の方には付きません。'],
   '💅 네일·왁싱·각질 케어를 집·호텔에서. 인증 마크는 신원 확인·위생 교육을 마친 홈 뷰티 제공자에게 부여됩니다.': ['💅 Nail, waxing và tẩy da chết ngay tại nhà hoặc khách sạn. Dấu xác thực dành cho người cung cấp đã hoàn tất kiểm tra danh tính và đào tạo vệ sinh.', '💅 Nail, waxing and exfoliation at your home or hotel. The verified badge goes to providers who completed identity checks and hygiene training.', '💅 在家或酒店享受美甲·脱毛·去角质。认证标识授予已完成身份核实与卫生培训的美容服务者。', '💅 ネイル・ワックス・角質ケアをご自宅やホテルで。認証マークは本人確認と衛生研修を修了した提供者に付与されます。'],
   '🏪 매장 방문 카테고리는 지역별 인기·가성비 매장을 모아 보여줍니다. 홈서비스 예약은 마사지·방문 치료에서 가능합니다.': ['🏪 Mục đến cửa hàng tập hợp các tiệm được ưa chuộng và có giá tốt theo khu vực. Đặt dịch vụ tại nhà ở mục massage hoặc trị liệu.', '🏪 The in-store category collects popular, good-value shops by area. For at-home service, use the massage or therapy menu.', '🏪 到店服务栏目汇总各区域人气与高性价比店铺。上门服务请在按摩或上门理疗中预约。', '🏪 店舗訪問カテゴリは地域ごとの人気・コスパ店舗をまとめています。訪問サービスの予約はマッサージ・訪問ケアから行えます。'],
   '🏨 호텔별 외부 방문자 정책이 다릅니다. 출입이 제한되는 호텔은 검색 단계에서 미리 안내됩니다.': ['🏨 Chính sách khách bên ngoài khác nhau tùy khách sạn. Những nơi hạn chế ra vào sẽ được báo trước khi bạn tìm kiếm.', '🏨 Visitor policies differ by hotel. Hotels with entry restrictions are flagged during search.', '🏨 各酒店对外来访客的规定不同。出入受限的酒店会在搜索时提前提示。', '🏨 ホテルごとに外部訪問者の規定が異なります。入館が制限されるホテルは検索時に事前にご案内します。'],
