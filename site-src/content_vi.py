@@ -99,10 +99,10 @@ PAGES = {
    "lead": "Bạn đang cho một người lạ vào nhà. Giảm bớt gánh nặng đó là phần chúng tôi dồn công sức nhiều nhất.",
    "blocks": [
     {"type": "grid", "items": [
-      {"n": "01", "t": "Xác minh ba bước",
-       "d": "Chỉ chuyên viên vượt qua kiểm tra chứng chỉ, kiểm tra nhân thân và phỏng vấn trực tiếp mới nhận dấu xác minh."},
-      {"n": "02", "t": "Chứng nhận bộ vệ sinh",
-       "d": "Đối tác được xác nhận dùng vật tư một lần sẽ có dấu riêng trên hồ sơ."},
+      {"n": "01", "t": "Dấu bạn tin được",
+       "d": "✓ nghĩa là chúng tôi đã kiểm tra giấy tờ tùy thân. ★ nghĩa là đã kiểm tra thêm chứng chỉ. Không có dấu nghĩa là chúng tôi chưa kiểm tra gì — và chúng tôi ghi đúng như vậy."},
+      {"n": "02", "t": "Không thu tiền trước",
+       "d": "Bạn thanh toán tại chỗ sau khi dịch vụ kết thúc. Không thu trước bất cứ khoản nào."},
       {"n": "03", "t": "Nút an toàn",
        "d": "Nếu có sự cố giữa buổi, một chạm là vị trí của bạn được gửi ngay cho đội ngũ của chúng tôi."},
     ]},
@@ -229,26 +229,34 @@ PAGES = {
  ]},
 
 "safety": {
- "title": "An toàn & xác minh — dấu xác minh và các biện pháp | massa",
- "desc": "Cách massa xác minh chuyên viên qua ba bước, ý nghĩa dấu vệ sinh, nút an toàn và quy trình báo cáo — và cả những gì chúng tôi không thể bảo đảm.",
+ "title": "An toàn & kiểm tra — mỗi dấu nghĩa là gì | massa",
+ "desc": "Hai dấu của massa — đã xác minh danh tính và đã xác minh chứng chỉ — thực sự nghĩa là gì, nút an toàn và quy trình báo cáo, và cả những gì chúng tôi không thể bảo đảm.",
  "blocks": [
   {"type": "section",
-   "kicker": "An toàn & xác minh",
+   "kicker": "An toàn & kiểm tra",
    "h2": "Bạn đang cho một<br>người lạ vào nhà",
-   "lead": "Đó là phần khó nhất của dịch vụ này, và cũng là phần chúng tôi làm kỹ nhất.",
+   "lead": "Chỉ khi các dấu chính xác thì nỗi lo đó mới giảm. Vì vậy chúng tôi chỉ hiển thị những gì đã kiểm tra, và nói thẳng khi chưa kiểm tra.",
    "blocks": [
     {"type": "grid", "items": [
-      {"n": "01", "t": "Chứng chỉ", "d": "Chúng tôi kiểm tra chứng chỉ massage, làm đẹp và kinh nghiệm làm việc. Giấy tờ không thôi là chưa đủ."},
-      {"n": "02", "t": "Nhân thân", "d": "Giấy tờ tùy thân xác nhận tên thật và tuổi. Hồ sơ nằm trong kho riêng, chỉ người thẩm định mở được."},
-      {"n": "03", "t": "Phỏng vấn trực tiếp", "d": "Chúng tôi gặp trực tiếp để xem thái độ và cách giao tiếp. Phải qua cả ba thì dấu xác minh mới xuất hiện."},
+      {"n": "•", "t": "Chưa xác minh", "d": "Chúng tôi chưa nhận được hoặc chưa kiểm tra xong giấy tờ. Không có dấu không có nghĩa là tay nghề kém, mà là chúng tôi chưa kiểm tra gì cả."},
+      {"n": "✓", "t": "Đã xác minh danh tính", "d": "Đã nộp giấy tờ tùy thân hai mặt và đối chiếu tên thật. Hồ sơ nằm trong kho riêng, chỉ người thẩm định mở được."},
+      {"n": "★", "t": "Đã xác minh chứng chỉ", "d": "Ngoài danh tính, còn kiểm tra thêm chứng chỉ massage, làm đẹp hoặc giấy phép kinh doanh."},
     ]}]},
 
   {"type": "section", "soft": True,
+   "kicker": "Điều các dấu không nói",
+   "h2": "Đừng loại bỏ người<br>chưa có dấu",
+   "body": [
+    "massa mở cửa vào tháng 9 năm 2026, và phần lớn chuyên viên hiện tại vẫn ở mức chưa xác minh. Chúng tôi nâng từng người lên khi giấy tờ về tới.",
+    "Chúng tôi không ghi là đã kiểm tra những gì chưa kiểm tra. Ít dấu không phải vì dịch vụ sơ sài, mà vì chúng tôi không bịa ra dấu.",
+    "Hiện chúng tôi chưa phỏng vấn trực tiếp. Khi bắt đầu làm, chúng tôi sẽ thêm một dấu cho việc đó và ghi rõ ở đây."]},
+
+  {"type": "section",
    "kicker": "Vệ sinh",
    "h2": "Mặc định là dùng một lần",
    "body": [
-    "Với những thứ chạm trực tiếp vào da — wax, làm móng — vệ sinh là tất cả. Sáp, giấy wax và giũa chỉ dùng một lần, không tái sử dụng.",
-    "Đối tác đã được xác nhận điều này sẽ có dấu vệ sinh trên hồ sơ. Không có dấu không có nghĩa là vệ sinh kém, nhưng giúp bạn chọn được nơi chúng tôi đã kiểm tra."]},
+    "Với những thứ chạm trực tiếp vào da — wax, làm móng — vệ sinh là tất cả. Chúng tôi yêu cầu đối tác dùng sáp, giấy wax và giũa một lần rồi bỏ, không tái sử dụng.",
+    "Đây là tiêu chuẩn chúng tôi yêu cầu, chưa phải điều chúng tôi kiểm tra và gắn dấu cho từng người. Khi nào có cách xác minh, chúng tôi mới gắn dấu vệ sinh. Nếu tại chỗ không tuân thủ dùng một lần, xin hãy báo cho chúng tôi."]},
 
   {"type": "section",
    "kicker": "Trong lúc làm",
@@ -272,7 +280,7 @@ PAGES = {
    "h2": "Những gì chúng tôi không bảo đảm được",
    "body": [
     "Nói thẳng: massa là nền tảng trung gian, và chúng tôi không thể kiểm soát hoàn toàn hành vi con người.",
-    "Xác minh làm giảm rủi ro, nhưng không đưa về 0. Dịch vụ cung cấp nhằm mục đích thư giãn và chăm sóc, <b>không phải điều trị y tế</b> — với triệu chứng cần điều trị, xin hãy đến cơ sở y tế.",
+    "Kiểm tra giấy tờ làm giảm rủi ro, nhưng không đưa về 0. Dịch vụ cung cấp nhằm mục đích thư giãn và chăm sóc, <b>không phải điều trị y tế</b> — với triệu chứng cần điều trị, xin hãy đến cơ sở y tế.",
     "Nhưng khi có chuyện, việc kiểm tra dữ liệu, xác minh sự thật và xử lý đến nơi thì chúng tôi sẽ làm nghiêm túc."]},
  ]},
 
@@ -300,8 +308,8 @@ PAGES = {
     {"type": "steps", "items": [
       {"t": "Đăng ký trong ứng dụng", "d": "Tài khoản → Trở thành đối tác, chọn cá nhân hoặc cửa hàng."},
       {"t": "Nộp hồ sơ", "d": "Giấy tờ tùy thân, tài khoản nhận tiền, chứng chỉ và ảnh hồ sơ."},
-      {"t": "Thẩm định", "d": "Xét hồ sơ rồi phỏng vấn trực tiếp."},
-      {"t": "Bắt đầu", "d": "Được duyệt là có dấu xác minh và bắt đầu nhận yêu cầu đặt lịch."},
+      {"t": "Kiểm tra giấy tờ", "d": "Chúng tôi kiểm tra giấy tờ tùy thân và chứng chỉ bạn đã tải lên."},
+      {"t": "Bắt đầu", "d": "Được duyệt là bắt đầu nhận yêu cầu đặt lịch. Các dấu xác minh được cấp riêng, theo từng giấy tờ đã kiểm tra."},
     ]}]},
 
   {"type": "section",
@@ -345,7 +353,7 @@ PAGES = {
       ("Tôi đang mang thai, có làm được không?",
        "Xin hãy báo khi đặt lịch và hỏi ý kiến bác sĩ trước. Dịch vụ của massa không phải điều trị y tế và không phù hợp với mọi tình trạng."),
       ("Làm sao biết ai sẽ đến?",
-       "Dấu xác minh chỉ xuất hiện sau khi qua kiểm tra chứng chỉ, kiểm tra nhân thân và phỏng vấn trực tiếp. Hồ sơ cũng có điểm đánh giá và nhận xét của người đã thực sự đặt."),
+       "✓ nghĩa là chúng tôi đã kiểm tra giấy tờ tùy thân. ★ nghĩa là đã kiểm tra thêm chứng chỉ hoặc giấy phép kinh doanh. Người chưa được kiểm tra thì hiển thị không có dấu nào. Đánh giá chỉ có thể viết cho lịch hẹn đã thực sự sử dụng."),
       ("Nếu có chuyện xảy ra giữa buổi?",
        "Nút an toàn (SOS) trong ứng dụng gửi vị trí của bạn đến đội ngũ chúng tôi ngay. Bạn cũng có thể báo cáo và chặn ngay trong ứng dụng."),
       ("Có người rủ trả tiền mặt ngoài ứng dụng",

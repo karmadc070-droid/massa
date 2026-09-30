@@ -97,10 +97,10 @@ PAGES = {
    "lead": "You are letting a stranger into your home. Reducing that weight is where most of our work has gone.",
    "blocks": [
     {"type": "grid", "items": [
-      {"n": "01", "t": "Three-stage vetting",
-       "d": "Only therapists who clear a credential check, an identity check and an in-person interview get the verified badge."},
-      {"n": "02", "t": "Hygiene kit check",
-       "d": "Partners confirmed to use single-use consumables carry a separate mark on their profile."},
+      {"n": "01", "t": "Marks you can trust",
+       "d": "✓ means we checked their ID. ★ means we checked their qualifications too. No mark means we have checked nothing — and we say so."},
+      {"n": "02", "t": "Pay after, not before",
+       "d": "You pay on the spot once the service is done. Nothing is collected up front."},
       {"n": "03", "t": "Safety button",
        "d": "If something goes wrong mid-service, one tap sends your location straight to our team."},
     ]},
@@ -227,26 +227,34 @@ PAGES = {
  ]},
 
 "safety": {
- "title": "Safety & vetting — verified badges and safeguards | massa",
- "desc": "How massa vets therapists in three stages, what the hygiene mark means, how the safety button and reporting work — and what we cannot guarantee.",
+ "title": "Safety & checks — what each mark means | massa",
+ "desc": "What massa's two marks — ID verified and credentials verified — actually mean, how the safety button and reporting work, and what we cannot guarantee.",
  "blocks": [
   {"type": "section",
-   "kicker": "Safety & vetting",
+   "kicker": "Safety & checks",
    "h2": "You are letting a<br>stranger into your home",
-   "lead": "That is the hardest part of this service, and the part we have worked on most.",
+   "lead": "Reducing that worry only works if the marks are accurate. So we show only what we have checked, and say plainly when we have not.",
    "blocks": [
     {"type": "grid", "items": [
-      {"n": "01", "t": "Credentials", "d": "We check massage and beauty qualifications and work history. Paperwork alone is not enough."},
-      {"n": "02", "t": "Identity", "d": "Government ID confirms real name and age. Documents sit in private storage that only reviewers can open."},
-      {"n": "03", "t": "In-person interview", "d": "We meet each applicant and assess manner and communication. All three must pass before the badge appears."},
+      {"n": "•", "t": "Not verified yet", "d": "We have not received or finished checking this person's documents. No mark does not mean poor work. It means we have checked nothing."},
+      {"n": "✓", "t": "ID verified", "d": "Government ID, front and back, submitted and matched against the name. Documents sit in private storage only reviewers can open."},
+      {"n": "★", "t": "Credentials verified", "d": "ID verified, plus a massage or beauty qualification, or a business licence, checked as well."},
     ]}]},
 
   {"type": "section", "soft": True,
+   "kicker": "What the marks don't say",
+   "h2": "Don't rule out<br>the unmarked",
+   "body": [
+    "massa opened in September 2026, and most therapists listed today are still at the not-verified stage. We raise each one as documents arrive.",
+    "We do not write down as checked what we have not checked. Few marks is not a sign of a thin service. It is a sign that we don't invent marks.",
+    "We do not run in-person interviews yet. If we start, we will add a mark for it and say so here."]},
+
+  {"type": "section",
    "kicker": "Hygiene",
    "h2": "Single-use by default",
    "body": [
-    "For anything touching skin directly — waxing, nails — hygiene is the whole job. Wax, strips and files are single-use and never reused.",
-    "Partners we have confirmed on this carry a hygiene mark on their profile. Its absence does not mean poor hygiene, but it lets you choose the ones we have checked."]},
+    "For anything touching skin directly — waxing, nails — hygiene is the whole job. We require partners to use wax, strips and files once and never reuse them.",
+    "That is a standard we require, not something we check and mark case by case yet. Until we have a way to verify it, we show no hygiene mark. If single-use is not respected on the day, please report it."]},
 
   {"type": "section",
    "kicker": "During the service",
@@ -270,7 +278,7 @@ PAGES = {
    "h2": "What we cannot guarantee",
    "body": [
     "Plainly: massa is a platform, and we cannot fully control what people do.",
-    "Vetting lowers the odds of something going wrong. It does not take them to zero. The care offered is for relaxation and upkeep and is <b>not a medical treatment</b> — please see a medical professional for anything that needs treating.",
+    "Checking documents lowers the odds of something going wrong. It does not take them to zero. The care offered is for relaxation and upkeep and is <b>not a medical treatment</b> — please see a medical professional for anything that needs treating.",
     "What we will do, when something does go wrong, is check the records, establish the facts and take the steps that follow."]},
  ]},
 
@@ -298,8 +306,8 @@ PAGES = {
     {"type": "steps", "items": [
       {"t": "Apply in the app", "d": "Account → Become a partner, then choose freelancer or venue."},
       {"t": "Submit documents", "d": "ID, settlement account, qualifications and profile photos."},
-      {"t": "Vetting", "d": "Document review followed by an in-person interview."},
-      {"t": "Start working", "d": "Once approved, the verified badge appears and requests start coming in."},
+      {"t": "Document check", "d": "We check the ID and credentials you uploaded."},
+      {"t": "Start working", "d": "Once approved, requests start coming in. Marks appear separately, as each document is checked."},
     ]}]},
 
   {"type": "section",
@@ -343,7 +351,7 @@ PAGES = {
       ("I'm pregnant — is it safe?",
        "Please tell us when booking, and speak to your doctor first. massa's care is not a medical treatment and is not suitable for every condition."),
       ("How do I know who is coming?",
-       "The verified badge only appears after a credential check, an identity check and an in-person interview. Profiles also show ratings and reviews from people who actually booked."),
+       "✓ ID verified means we checked their government ID. ★ Credentials verified means we checked a qualification or business licence too. Therapists we have not checked are shown with no mark at all. Reviews can only be left on a booking someone actually received."),
       ("What if something goes wrong during the service?",
        "The in-app safety button (SOS) sends your location to our team immediately. You can also report and block from the app."),
       ("Someone suggested paying cash outside the app",
