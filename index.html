@@ -1379,7 +1379,7 @@ function providerCard(p, idx) {
   const spec = (p.specialties || []).map(s => '<span>' + (TYPE_KO[s] || s) + '</span>').join('·');
   const langs = (p.languages || []).includes('ko') ? ' · <span>한국어 가능</span>' : (p.languages || []).includes('en') ? ' · <span>영어 가능</span>' : '';
   return `<div class="tcard"><div class="tphoto" data-prof="${p.id}" style="cursor:pointer">${avatarImg(photo)}${tag}<span class="card-fav" data-pid="${p.id}" onclick="event.stopPropagation();toggleFavorite('${p.id}',this)">${(CACHE.favorites && CACHE.favorites.has(p.id)) ? '♥' : '♡'}</span></div><div class="tinfo">
-    <div class="trow1"><span class="tname" data-prof="${p.id}" style="cursor:pointer">${p.display_name}${p.is_verified ? '<span class="badge">✓</span>' : ''}</span><span class="tstart">예약 가능</span></div>
+    <div class="trow1"><span class="tname" data-prof="${p.id}" style="cursor:pointer">${p.display_name}${p.is_verified ? '<span class="badge">✓</span>' : ''}${p.credential_verified ? '<span class="badge" style="background:#2E8B8B">★</span>' : ''}</span><span class="tstart">예약 가능</span></div>
     <div class="tstars">${Number(p.review_count) > 0 ? `★ ${Number(p.rating).toFixed(1)} <span>(${p.review_count} <span>리뷰</span>)</span>` : '<span>아직 후기 없음</span>'}</div>
     <div class="tdesc">${spec}${langs}${p.base_district ? ' · <span>' + p.base_district + '</span> <span>권역</span>' : ''}</div>
     <div class="trow2"><span class="tdist" data-pid="${p.id}">${distText(p)}</span><button class="bookbtn" data-pid="${p.id}">예약</button></div>
@@ -1546,7 +1546,11 @@ async function openProfile(pid) {
   const facilityHtml = '<div class="pf-sec">시설 소개</div><div class="pf-bio">' + (p.facility || '개인 룸 · 위생 키트 · 샤워 시설') + '</div>';
   const videoHtml = p.video_url ? '<div class="pf-sec">영상</div><a class="pf-video" href="' + p.video_url + '" target="_blank">▶ 소개 영상 보기</a>' : '';
   body.innerHTML = '<div class="pf-photo-wrap">' + photoHtml + '</div>'
-    + '<div class="pf-name">' + p.display_name + (p.is_verified ? ' <span class="badge">✓ 인증</span>' : '') + '<span class="pf-fav" id="pfFav" onclick="toggleFavorite(\'' + pid + '\')">' + ((CACHE.favorites && CACHE.favorites.has(pid)) ? '♥' : '♡') + '</span></div>'
+    + '<div class="pf-name">' + p.display_name
+      + (p.is_verified ? ' <span class="badge">✓ <span>신원 확인</span></span>' : '')
+      + (p.credential_verified ? ' <span class="badge" style="background:#2E8B8B">★ <span>자격 확인</span></span>' : '')
+      + ((!p.is_verified && !p.credential_verified) ? ' <span class="badge" style="background:#8A8A8A">•<span>아직 확인 전</span></span>' : '')
+      + '<span class="pf-fav" id="pfFav" onclick="toggleFavorite(\'' + pid + '\')">' + ((CACHE.favorites && CACHE.favorites.has(pid)) ? '♥' : '♡') + '</span></div>'
     + '<div class="pf-meta"><span id="pfDist" data-pid="' + pid + '">' + distText(p) + '</span>' + (Number(p.review_count) > 0 ? '<span class="star">★ ' + Number(p.rating).toFixed(1) + '</span><span>(' + p.review_count + ' <span>리뷰</span>)</span>' : '<span>아직 후기 없음</span>') + '</div>'
     + '<div style="margin:10px 0"><button class="chip sel" style="width:100%;padding:11px 0;font-size:14px" onclick="openChat(\'' + pid + '\',\'' + p.display_name + '\')">💬 예약 후 채팅하기</button></div>'
     + care
@@ -1682,7 +1686,8 @@ function fillConfirm() {
   rows.push('<b><span>' + (svc?.name || '') + '</span></b>');
   if (p) {
     rows.push(p.display_name
-      + (p.is_verified ? ' ✓ <span>인증 테라피스트</span>' : '')
+      + (p.is_verified ? ' ✓ <span>신원 확인</span>' : '')
+      + (p.credential_verified ? ' ★ <span>자격 확인</span>' : '')
       + (p.rating ? ' · ★ ' + Number(p.rating).toFixed(1) : ''));
   }
   if (dayNum) rows.push('06/' + dayNum.padStart(2, '0') + ' (<span>' + dow + '</span>) ' + time);
@@ -3099,6 +3104,9 @@ const DICT = {
   '평점·리뷰 기준 추천': ['Gợi ý theo đánh giá và nhận xét', 'Recommended by rating and reviews', '按评分与评价推荐', '評価・レビューに基づくおすすめ'],
   '내 위치·전문 분야 기준 추천': ['Gợi ý theo vị trí và chuyên môn', 'Recommended by location and specialty', '按位置与专长推荐', '現在地・専門分野に基づくおすすめ'],
   '아직 후기 없음': ['Chưa có đánh giá', 'No reviews yet', '暂无评价', 'まだレビューはありません'],
+  '신원 확인': ['Đã xác minh danh tính', 'ID verified', '身份已核验', '本人確認済み'],
+  '자격 확인': ['Đã xác minh chứng chỉ', 'Credentials verified', '资格已核验', '資格確認済み'],
+  '아직 확인 전': ['Chưa xác minh', 'Not verified yet', '尚未核验', '未確認'],
   '요청됨': ['Đã gửi yêu cầu', 'Requested', '已申请', 'リクエスト済み'],
   '확정': ['Đã xác nhận', 'Confirmed', '已确认', '確定'],
   '이동 중': ['Đang di chuyển', 'On the way', '在路上', '移動中'],

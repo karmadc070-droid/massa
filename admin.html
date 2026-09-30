@@ -3687,14 +3687,40 @@ async function loadAdminProviders() {
     + (function () { const lv = p.penalty_level || 0; const sus = p.suspended_until && new Date(p.suspended_until) > new Date(); if (!lv && !sus) return ''; const t = sus ? '🚫 예약 정지 (~' + new Date(p.suspended_until).toLocaleDateString() + ')' : lv >= 2 ? '⚠ 노출 저하' : '⚠ 경고'; return '<div class="d" style="color:#E5484D;font-weight:bold">' + t + ' · 최근 거절 ' + (p.reject_count || 0) + '회</div>'; })()
     + '<div class="d">' + (p.specialties || []).map(s => TYPE_KO[s] || s).join('·') + ' · ' + (p.phone || '연락처 없음') + '</div>'
     + '<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button class="chip" onclick="openProfile(\'' + p.id + '\')">프로필</button>'
-    + (p.is_verified ? '' : '<button class="chip sel" onclick="adminVerify(\'' + p.id + '\')">인증 부여</button>')
+    + (p.is_verified ? '<span class="chip sel">✓ 신원 확인됨</span>' : '<button class="chip" onclick="adminVerify(\'' + p.id + '\')">신원 확인 주기</button>')
+    + (p.credential_verified ? '<span class="chip sel" style="background:#2E8B8B;border-color:#2E8B8B">★ 자격 확인됨</span>' : '<button class="chip" style="border-color:#2E8B8B;color:#2E8B8B" onclick="adminCredential(\'' + p.id + '\')">자격 확인 주기</button>')
+    + ((p.is_verified || p.credential_verified) ? '<button class="chip" style="border-color:#E5484D;color:#E5484D" onclick="adminUnverify(\'' + p.id + '\')">인증 내리기</button>' : '')
     + (((p.penalty_level || 0) > 0 || p.suspended_until) ? '<button class="chip" style="border-color:#1E6B45;color:#1E6B45" onclick="clearPenalty(\'' + p.id + '\')">제재 해제</button>' : '')
-    + (p.hygiene_certified ? '<span class="chip sel" style="background:#2E8B8B;border-color:#2E8B8B">위생 인증됨</span>' : '<button class="chip" style="border-color:#2E8B8B;color:#2E8B8B" onclick="setHygiene(\'' + p.id + '\')">위생 인증 부여</button>')
     + '</div></div>').join('') : '<div class="notice">검색 결과가 없습니다.</div>';
 }
 window.loadAdminProviders = loadAdminProviders;
-window.adminVerify = async (id) => { await sb.from('providers').update({ is_verified: true }).eq('id', id); loadAdminProviders(); };
-window.setHygiene = async (id) => { if (!confirm('위생 교육·1회용 키트 사용을 확인했습니까? 확인 시 위생 인증 뱃지가 부여됩니다.')) return; await sb.from('providers').update({ hygiene_certified: true, hygiene_checked_at: new Date().toISOString() }).eq('id', id); loadAdminProviders(); };
+// 인증은 두 단계다. 서류가 실제로 올라와 있는지 먼저 확인하고, 없으면 버튼이 동작하지 않는다.
+// 손으로 켜는 스위치로 두면 예전처럼 근거 없는 마크가 다시 생긴다.
+async function kycOf(id) {
+  const { data } = await sb.from('provider_kyc')
+    .select('id_front_url,id_back_url,cert_url,business_license_url')
+    .eq('provider_id', id).maybeSingle();
+  return data || {};
+}
+window.adminVerify = async (id) => {
+  const k = await kycOf(id);
+  if (!k.id_front_url && !k.id_back_url) { alert('신분증이 올라와 있지 않습니다. 신원 확인을 줄 수 없습니다.'); return; }
+  if (!confirm('올라온 신분증을 직접 확인하셨습니까? 확인 시 ✓ 신원 확인 이 표시됩니다.')) return;
+  await sb.from('providers').update({ is_verified: true }).eq('id', id);
+  loadAdminProviders();
+};
+window.adminCredential = async (id) => {
+  const k = await kycOf(id);
+  if (!k.cert_url && !k.business_license_url) { alert('자격증·사업자등록증이 올라와 있지 않습니다.'); return; }
+  if (!confirm('자격증 또는 사업자등록증을 직접 확인하셨습니까? 확인 시 ★ 자격 확인 이 표시됩니다.')) return;
+  await sb.from('providers').update({ credential_verified: true, credential_checked_at: new Date().toISOString() }).eq('id', id);
+  loadAdminProviders();
+};
+window.adminUnverify = async (id) => {
+  if (!confirm('이 파트너의 인증 표시를 모두 내릴까요?')) return;
+  await sb.from('providers').update({ is_verified: false, credential_verified: false, credential_checked_at: null }).eq('id', id);
+  loadAdminProviders();
+};
 window.clearPenalty = async (id) => { if (!confirm('이 제공자의 제재(경고·노출저하·정지)를 해제할까요?')) return; await sb.from('providers').update({ penalty_level: 0, suspended_until: null, reject_count: 0, is_active: true }).eq('id', id); loadAdminProviders(); };
 
 // ── 관리자: 수수료 설정 ──
@@ -3942,7 +3968,7 @@ window.createStaff = async () => {
   const kind = (document.querySelector('#stKind .chip.sel') || {}).dataset ? document.querySelector('#stKind .chip.sel').dataset.k : 'masseur';
   const spec = [...STAFF_SPEC_SEL];
   const stPhotoUrl = (document.getElementById('stPhoto').dataset.url || null);
-  const row = { owner_id: SESSION.user.id, kind, display_name: name, photo_url: stPhotoUrl, photo_urls: stPhotoUrl ? [stPhotoUrl] : [], specialties: spec.length ? spec : (kind === 'masseur' ? ['aroma'] : ['nail']), languages: ['vi'], is_active: true, is_verified: true, application_status: 'approved', rating: 0, review_count: 0, base_district: '바딘' };
+  const row = { owner_id: SESSION.user.id, kind, display_name: name, photo_url: stPhotoUrl, photo_urls: stPhotoUrl ? [stPhotoUrl] : [], specialties: spec.length ? spec : (kind === 'masseur' ? ['aroma'] : ['nail']), languages: ['vi'], is_active: true, is_verified: false, application_status: 'approved', rating: 0, review_count: 0, base_district: '바딘' };
   const { data: np, error } = await sb.from('providers').insert(row).select().single();
   if (error) { alert('실패: ' + error.message); return; }
   // 신규 직원에 서비스 자동 연결
@@ -3955,7 +3981,10 @@ window.createStaff = async () => {
   alert('직원이 추가되었습니다.'); loadStaff();
 };
 window.reviewApp = async (id, status, reason) => {
-  const patch = { application_status: status, is_verified: status === 'approved', is_active: status === 'approved',
+  // 승인과 인증은 다른 것이다. 승인은 '목록에 노출한다', 인증은 '신분증을 확인했다' 는 뜻이다.
+  // 예전에는 승인하면 is_verified 가 같이 켜져서, 서류를 한 장도 안 낸 사람에게 ✓ 가 붙었다.
+  // 인증은 [인증] 탭에서 서류를 보고 따로 준다.
+  const patch = { application_status: status, is_active: status === 'approved',
     reviewed_at: new Date().toISOString(), reviewed_by: SESSION ? SESSION.user.id : null,
     reject_reason: status === 'rejected' ? (reason || null) : null };
   const { error } = await sb.from('providers').update(patch).eq('id', id);
