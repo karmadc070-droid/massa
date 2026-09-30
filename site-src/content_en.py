@@ -27,7 +27,8 @@ _LD_HOME = """{
   "email": "support@massaviet.com",
   "areaServed": { "@type": "City", "name": "Hanoi" },
   "availableLanguage": ["ko", "vi", "en", "zh", "ja"],
-  "sameAs": ["https://apps.apple.com/kr/app/id6804698319"]
+  "sameAs": ["https://apps.apple.com/kr/app/id6804698319",
+             "https://play.google.com/store/apps/details?id=app.massa.hanoi"]
 }"""
 
 _STORES = {"type": "stores", "ios": "iPhone · iPad", "and": "Android", "soon": "Coming soon"}

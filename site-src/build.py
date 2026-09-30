@@ -12,7 +12,8 @@ SUPPORT = "support@massaviet.com"
 # 로그아웃 상태로 PLAY 주소를 열어 200 이 나오는지 확인하고 바꿀 것.
 # True 로 바꾸면: 설치 버튼이 살아나고, play_pending 안내 섹션이 사라진다.
 # 같이 할 일: content_*.py 의 jsonld sameAs 에 PLAY 주소 추가.
-PLAY_LIVE = False
+# 2026-09-30 공개 확인하고 켰다. 로그아웃 상태 베트남에서 200, 앱 이름 노출까지 확인함.
+PLAY_LIVE = True
 PLAY = "https://play.google.com/store/apps/details?id=app.massa.hanoi"
 
 # 페이지 순서 = 네비게이션 순서. (파일명, 네비 노출 여부)
