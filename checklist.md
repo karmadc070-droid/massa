@@ -1666,6 +1666,34 @@ Play Console 알림 센터에 2026-09-09 자로 뜬 "심각" 등급 알림:
       (en/safety.html 에 'hygiene mark' 1건 남지만 "위생 표시를 붙이지 않습니다" 라는 부정문이다)
 - [x] Z-12-6. 앱 i18n 5개 언어 문구 추가 (신원 확인 / 자격 확인 / 아직 확인 전)
 
+## Z-16. 운영 콘솔에 구글 로그인 — 2026-10-01
+
+비밀번호를 기억하지 못해 콘솔에 못 들어가는 상황이 반복됐다. 구글 버튼 하나로 끝낸다.
+
+붙이기 전에 가장 중요한 걸 먼저 확인했다 — **구글로 들어오면 새 계정이 생기는가.**
+새 계정이 생기면 role 이 없어서 관리자 화면이 하나도 안 보이고, 지금보다 나빠진다.
+`scripts/vps-check-google-login.sh` 결과: `karmadc070@gmail.com` 에 이미
+`email`(08-29) · `google`(09-04) · `apple`(09-06) 세 수단이 **한 계정에** 붙어 있고
+`profiles.role = admin`, 같은 메일 중복 계정 0건. 그래서 붙여도 안전했다.
+
+- [x] Z-16-1. `admin.html` 로그인 모달에 구글 버튼 + `signInWithOAuth` 핸들러
+      (`redirectTo: location.origin + location.pathname`)
+- [x] Z-16-2. 고객 앱(`index.html`)에는 **넣지 않았다**. Apple 4.0 / 4.8 때문에
+      한 번 걷어낸 것이다. 운영 콘솔은 웹 페이지라 앱 심사와 무관하다.
+- [x] Z-16-3. 배포 후 서빙되는 쪽까지 확인 (`vps-verify-google-button.sh`)
+      — 버튼 문구 1건, OAuth 호출 1건
+- [x] Z-16-4. 서버 공급자 확인 (`vps-check-google-provider.sh`) — `"google":true`
+      ※ `/auth/v1/settings` 는 `apikey` 헤더 없이 부르면 그냥 `Unauthorized` 다. 꺼진 게 아니다.
+- [x] Z-16-5. **실제 통과 여부**까지 확인 (`vps-test-google-oauth-flow.sh`)
+      — 버튼이 있어도 서버가 `redirect_to` 를 거부하면 로그인이 안 된다.
+      `/auth/v1/authorize` 의 Location 이 `accounts.google.com` 으로 가는지가 유일한 증거다.
+      새 주소·옛 주소 둘 다 정상.
+
+관리자 화면 노출은 손댈 게 없었다. `CUR_PROFILE.role === 'admin'` 하나로
+`mpAdminBkRow · mpProvRow · mpFeeRow · mpCouponRow · mpSalesRow · mpCountryRow ·
+mpStatsRow · mpReportsRow · mpMembersRow · mpSettlementRow · mpAdsRow` 가 전부 열린다.
+로그인 **수단**이 아니라 **계정의 role** 로 판단하기 때문에, 구글로 들어와도 똑같이 다 보인다.
+
 ## Z-15. 운영 콘솔을 자기 도메인으로 — 2026-10-01
 
 `admin.moahagwon.com` 은 학원 도메인이다. massa 운영 화면이 남의 집 주소에 얹혀 있었다.
