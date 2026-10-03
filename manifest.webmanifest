@@ -1,7 +1,7 @@
 {
   "name": "massa — 홈 마사지·홈뷰티",
   "short_name": "massa",
-  "description": "하노이 집·호텔로 찾아가는 마사지·홈뷰티 방문 예약 서비스",
+  "description": "베트남 집·호텔로 찾아가는 마사지·홈뷰티 방문 예약 서비스. 현재 하노이에서 운영합니다.",
   "id": "/",
   "start_url": "./?src=pwa",
   "scope": "./",
