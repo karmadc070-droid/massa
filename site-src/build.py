@@ -188,7 +188,7 @@ def chrome(lang, name, L, body, page):
 <meta property="og:url" content="{SITE}{url(lang,name)}">
 <meta property="og:image" content="{SITE}/img/hero.webp">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#FAF6F0">
+<meta name="theme-color" content="#1F4E5F">
 {verify}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
