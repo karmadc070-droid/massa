@@ -1,7 +1,17 @@
 @echo off
-rem One-shot: build, then print the log and the produced files.
-call "%~dp0build2.bat"
-echo ===LOG===
-type "%~dp0build.log"
+rem One-shot: regenerate the project from twa-manifest.json, build, then print log and files.
+setlocal enabledelayedexpansion
+cd /d "%~dp0"
+set "JAVA_HOME=C:\Users\user\jbr"
+set "ANDROID_HOME=C:\Users\user\AppData\Local\Android\Sdk"
+set "PATH=%JAVA_HOME%\bin;%PATH%"
+for /f "tokens=2 delims=:" %%A in ('findstr /c:"Key store password:" ..\android-package\signing-key-info.txt') do set "KSPW=%%A"
+set "KSPW=%KSPW: =%"
+set "BUBBLEWRAP_KEYSTORE_PASSWORD=%KSPW%"
+set "BUBBLEWRAP_KEY_PASSWORD=%KSPW%"
+del /q app-release-bundle.aab app-release-signed.apk 2>nul
+call bubblewrap update --skipVersionUpgrade
+call bubblewrap build --skipPwaValidation
 echo ===FILES===
-dir /b "%~dp0*.aab" "%~dp0*.apk" 2>nul
+dir /b *.aab *.apk 2>nul
+endlocal

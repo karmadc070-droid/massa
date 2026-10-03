@@ -1666,6 +1666,37 @@ Play Console 알림 센터에 2026-09-09 자로 뜬 "심각" 등급 알림:
       (en/safety.html 에 'hygiene mark' 1건 남지만 "위생 표시를 붙이지 않습니다" 라는 부정문이다)
 - [x] Z-12-6. 앱 i18n 5개 언어 문구 추가 (신원 확인 / 자격 확인 / 아직 확인 전)
 
+## Z-17. 안드로이드 앱을 자체 도메인으로 — 2026-10-03
+
+사용자가 "앱이 아직도 vercel.app 로 되어 있다" 고 했다. 맞았다.
+
+**TWA 는 주소를 앱 바이트 안에 굽는다.** 서버에서 바꿀 수 있는 값이 아니다.
+`android-package/massa.aab` 안: `massa-seven.vercel.app` 5곳, `app.massaviet.com` 0곳.
+
+- [x] Z-17-1. `app.massaviet.com/.well-known/assetlinks.json` 설치
+      (`vps-install-assetlinks.sh`). 없으면 새 앱이 주소창을 띄운다.
+      ※ 이후 `vps-deploy-app.sh` 가 레포의 정본으로 덮어썼는데, 그쪽이 업로드키 + Play 서명키
+      **두 지문**을 다 갖고 있어서 더 맞다. Play App Signing 이 재서명하므로 두 개가 필요하다.
+- [x] Z-17-2. `manifest.webmanifest` 설명을 베트남 기준으로
+- [x] Z-17-3. `twa/` 에 bubblewrap 프로젝트. 같은 서명키, versionCode 1 → **2**, 1.1.0
+- [x] Z-17-4. **검증은 빌드 성공 메시지를 믿지 않고 바이트를 셌다** (`verify-twa-origin.ps1`)
+      옛 APK vercel 5 / massaviet 0 → 새 APK·AAB vercel 0 / massaviet **5**
+      ※ AAB 는 리소스가 압축돼 있어 원본 바이트 검색이 안 된다. `base/resources.pb` 를 풀어서 봐야 한다.
+- [x] Z-17-5. Play 업로드. minSdk 23 → **24** (Play 자동 보호 요건). 기기 8% 감소(안드로이드 6.0)
+- [x] Z-17-6. 출시명·출시 노트 3개 언어. 옛 노트의 `하노이`·`실제 후기` 문구를 걷어냈다.
+      ※ 출시 노트는 **언어당 500자 제한**. vi 가 걸려서 세 언어 다 줄였다.
+- [ ] Z-17-7. **검토 제출 — 못 했다.** 검토 화면의 기본 버튼이 `저장` 하나뿐이고,
+      저장 후 비활성화된다. `검토를 위해 전송` 버튼이 UI 에 없다. 게시 개요에도 안 뜬다.
+      관리형 게시가 켜져 있어서로 보이지만 **확인된 것이 아니라 추측이다.**
+      임시 버전 `1.1.0 (2)` 로 저장돼 있고 내용은 다 채워져 있다.
+
+막힌 데 두 곳 다 bubblewrap 버그였다. SDK 검사가 옛 구조(`tools` 폴더)만 보고,
+apksigner 호출 때 공백 들어간 JDK 경로를 따옴표로 안 감싼다. junction 두 개로 우회했다.
+`C:\Users\user\AppData\Local\Android\Sdk\tools` → `cmdline-tools\latest`,
+`C:\Users\user\jbr` → `Android Studio\jbr`. 둘 다 추가만 한 것이라 지우면 원상복구된다.
+
+빌드 로그에 키스토어 비밀번호가 찍힌다. 로그를 지웠고 `twa/.gitignore` 로 막았다.
+
 ## Z-16. 운영 콘솔에 구글 로그인 — 2026-10-01
 
 비밀번호를 기억하지 못해 콘솔에 못 들어가는 상황이 반복됐다. 구글 버튼 하나로 끝낸다.
