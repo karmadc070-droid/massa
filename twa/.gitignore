@@ -1,0 +1,8 @@
+# 빌드 산출물과 로그는 커밋하지 않는다. build.log 에는 키스토어 비밀번호가 찍힌다.
+build.log
+*.apk
+*.aab
+*.keystore
+app/build/
+.gradle/
+store_icon.png

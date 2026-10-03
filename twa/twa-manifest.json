@@ -1,0 +1,39 @@
+{
+  "packageId": "app.massa.hanoi",
+  "host": "app.massaviet.com",
+  "name": "massa — 홈 마사지·홈뷰티",
+  "launcherName": "massa",
+  "display": "standalone",
+  "orientation": "portrait",
+  "themeColor": "#1F4E5F",
+  "themeColorDark": "#000000",
+  "navigationColor": "#1F4E5F",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#000000",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#F4F6F7",
+  "enableNotifications": true,
+  "startUrl": "/?src=pwa",
+  "iconUrl": "https://app.massaviet.com/icon-512.png",
+  "maskableIconUrl": "https://app.massaviet.com/maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "../android-package/signing.keystore",
+    "alias": "my-key-alias"
+  },
+  "appVersionName": "1.1.0",
+  "appVersionCode": 2,
+  "shortcuts": [
+    { "name": "예약 내역", "shortName": "예약", "url": "/?src=pwa#bookings", "chosenIconUrl": "https://app.massaviet.com/icon-192.png" },
+    { "name": "계정", "shortName": "계정", "url": "/?src=pwa#account", "chosenIconUrl": "https://app.massaviet.com/icon-192.png" }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://app.massaviet.com/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://app.massaviet.com/",
+  "minSdkVersion": 23,
+  "fingerprints": []
+}
