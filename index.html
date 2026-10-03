@@ -396,6 +396,24 @@
   .tsep { font-size: 13px; color: var(--muted); }
   .tview { margin-left: auto; background: var(--navy); color: #fff; border-radius: 10px; padding: 10px 16px; font-size: 16px; font-weight: bold; letter-spacing: 1px; }
   .summary { background: var(--accent); border: 1.5px solid var(--teal); border-radius: 14px; padding: 14px; font-size: 13px; line-height: 1.8; }
+
+  /* ── 대시보드 (고객·파트너 공용) ──────────────────────────────
+     숫자를 크게 하나씩 보여주는 칸. 차트는 두지 않았다 — 예약이 한 자릿수라
+     꺾은선을 그리면 없는 추세가 있는 것처럼 보인다. */
+  .dsh { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .dsh .k { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+  .dsh .k .lab { font-size: 11.5px; color: var(--muted); }
+  .dsh .k .val { font-size: 26px; font-weight: bold; color: var(--navy); line-height: 1.2; margin-top: 2px; }
+  .dsh .k .val.sm { font-size: 19px; }
+  .dsh .k .sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .dsh-sec { font-size: 12px; color: var(--muted); margin: 16px 2px 7px; }
+  .dsh-next { background: var(--navy); color: #fff; border-radius: 14px; padding: 15px; margin-bottom: 14px; }
+  .dsh-next .w { font-size: 11.5px; color: #9FC3CE; }
+  .dsh-next .t { font-size: 16px; font-weight: bold; margin: 3px 0 2px; }
+  .dsh-next .d { font-size: 12.5px; color: #CFE2E7; }
+  /* 숫자가 사실과 다를 수 있을 때 붙이는 꼬리표. 숨기지 말고 적는다. */
+  .dsh-warn { background: #FDF3E4; border-left: 3px solid var(--gold1); border-radius: 0 10px 10px 0;
+              padding: 9px 12px; font-size: 11.5px; color: #6B5330; margin-bottom: 12px; line-height: 1.6; }
   .summary b { color: var(--navy); }
   .cta { position: absolute; bottom: 16px; left: 16px; right: 16px; background: var(--navy); color: #fff; border: none; border-radius: 14px; padding: 15px; font-size: 15px; font-weight: bold; cursor: pointer; }
   .done-wrap { text-align: center; padding-top: 50px; }
@@ -803,6 +821,11 @@
   </div>
 
   <!-- 내 예약 -->
+  <!-- 고객용 대시보드 — 내 이용 현황을 한 화면에 모은다 -->
+  <div class="screen" id="myDash" data-title="내 이용 현황">
+    <div id="myDashBody"><div class="hint">불러오는 중…</div></div>
+  </div>
+
   <div class="screen" id="myBookings" data-title="내 예약">
     <div id="myBookingsList"></div>
     <div class="notice" id="myBookingsEmpty" style="display:none">아직 예약이 없습니다. 홈에서 서비스를 예약해 보세요.</div>
@@ -890,6 +913,7 @@
       <div class="mp-card c-invite" onclick="alert('친구 초대 링크가 복사되었습니다 (데모)')"><div class="mp-card-t">친구 초대</div><div class="mp-card-arrow">→</div></div>
     </div>
     <div class="mp-list">
+      <div class="mp-row" onclick="window.go('myDash');loadMyDash()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#2E8B8B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M7 15l4-5 3 3 5-7"/></svg></span><span class="mp-name">내 이용 현황</span><span class="mp-chev">›</span></div>
       <div class="mp-row" onclick="window.go('myBookings');loadMyBookings()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round"><path d="M8 6h11M8 12h11M8 18h11"/><circle cx="3.7" cy="6" r="1"/><circle cx="3.7" cy="12" r="1"/><circle cx="3.7" cy="18" r="1"/></svg></span><span class="mp-name">활동 내역</span><span class="mp-chev">›</span></div>
       <div class="mp-row" onclick="window.go('favorites');renderFavorites()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#E5484D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.6-9.5-9C1 9 2.5 5.5 6 5.5c2 0 3.2 1.2 4 2.3.8-1.1 2-2.3 4-2.3 3.5 0 5 3.5 3.5 6.5C19 16.4 12 21 12 21z"/></svg></span><span class="mp-name">즐겨찾기</span><span class="mp-chev">›</span></div>
       <div class="mp-row" onclick="window.go('coupons');renderCoupons()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16v3a2 2 0 000 4v3H4v-3a2 2 0 000-4V7z"/><path d="M14 7v10" stroke-dasharray="2 2"/></svg></span><span class="mp-name">쿠폰함</span><span class="mp-chev">›</span></div>
@@ -1003,7 +1027,7 @@ if (window.DEV_FORCED) document.body.classList.add('devmode');
 const MAIN_FLOW = ['home', 'thList', 'menu', 'time', 'loc', 'confirm', 'done'];
 const NAMES = { home: '홈', thList: '마사지 홈서비스', therapy: '홈 뷰티', spa: '스파 안내',
                 stores: '매장 리스트', storeDtl: '매장 상세', provDtl: '프로필', menu: '코스', time: '시간', loc: '위치', confirm: '확인(후불)', done: '완료',
-                myBookings: '내 예약', applyForm: '제공자 등록',
+                myBookings: '내 예약', myDash: '내 이용 현황', applyForm: '제공자 등록',
                 location: '지역 선택', account: '계정 정보', profileInfo: '개인 정보', notifications: '알림', map: '지도 검색', favorites: '즐겨찾기', coupons: '쿠폰함', chat: '채팅' };
 let stack = ['home'];
 
@@ -2066,6 +2090,68 @@ async function loadMyBookings() {
   }).join('') || '';
 }
 window.loadMyBookings = loadMyBookings;
+
+// ── 대시보드 공용 ──────────────────────────────────────────────
+// index.html 에는 전역 esc 가 없다. 서비스명·표시이름은 사람이 넣는 값이라 그대로 꽂으면 안 된다.
+function dshEsc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// ── 고객용 대시보드 ────────────────────────────────────────────
+// 원칙: 없는 것은 0 으로 적고, 0 이면 0 이라고 말한다. 비어 있는 화면이 가짜 숫자보다 낫다.
+async function loadMyDash() {
+  if (!SESSION) { openAuth(); return; }
+  const box = document.getElementById('myDashBody');
+  box.innerHTML = '<div class="hint">불러오는 중…</div>';
+
+  const uid = SESSION.user.id;
+  const [bk, rv, cp] = await Promise.all([
+    sb.from('bookings')
+      .select('id,status,amount_vnd,is_paid,scheduled_at,provider_id,services(name),providers(display_name)')
+      .eq('customer_id', uid).order('scheduled_at', { ascending: true }),
+    sb.from('reviews').select('id', { count: 'exact', head: true }).eq('customer_id', uid),
+    sb.from('user_coupons').select('id', { count: 'exact', head: true }).eq('customer_id', uid).eq('is_used', false),
+  ]);
+  if (bk.error) { box.innerHTML = `<div class="notice">불러오기 실패: ${bk.error.message}</div>`; return; }
+
+  const all  = bk.data || [];
+  const done = all.filter(b => b.status === 'completed');
+  const now  = Date.now();
+  // '다가오는' 은 취소·완료가 아니면서 시간이 아직 지나지 않은 것
+  const soon = all.filter(b => !['cancelled', 'completed', 'no_show'].includes(b.status)
+                            && new Date(b.scheduled_at).getTime() >= now);
+  // 실제로 낸 돈만 더한다. 예약했다고 쓴 돈이 아니다.
+  const paid = all.filter(b => b.is_paid).reduce((s, b) => s + (b.amount_vnd || 0), 0);
+
+  const next = soon[0];
+  const nextHtml = next
+    ? `<div class="dsh-next">
+         <div class="w">다음 예약</div>
+         <div class="t">${dshEsc(next.services?.name || '서비스')}</div>
+         <div class="d">${dshEsc(next.providers?.display_name || '담당 미배정')} ·
+           ${new Date(next.scheduled_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit' })}</div>
+       </div>`
+    : `<div class="dsh-next" style="background:var(--accent);color:var(--text)">
+         <div class="w" style="color:var(--muted)">다음 예약</div>
+         <div class="t">예정된 예약이 없습니다</div>
+         <div class="d" style="color:var(--muted)">홈에서 원하는 시간에 불러보세요.</div>
+       </div>`;
+
+  box.innerHTML = nextHtml + `
+    <div class="dsh">
+      <div class="k"><div class="lab">전체 예약</div><div class="val">${all.length}</div><div class="sub">건</div></div>
+      <div class="k"><div class="lab">받은 서비스</div><div class="val">${done.length}</div><div class="sub">완료된 예약</div></div>
+      <div class="k"><div class="lab">결제한 금액</div><div class="val sm">${paid.toLocaleString()}₫</div><div class="sub">결제 완료분만</div></div>
+      <div class="k"><div class="lab">쓸 수 있는 쿠폰</div><div class="val">${cp.count ?? 0}</div><div class="sub">장</div></div>
+    </div>
+    <div class="dsh-sec">내가 남긴 후기 ${rv.count ?? 0}건</div>
+    <div class="card" style="cursor:pointer" onclick="window.go('myBookings');loadMyBookings()">
+      <div class="trow1"><span class="t">예약 내역 전체 보기</span><span style="color:var(--muted)">›</span></div>
+      <div class="d">취소·결제·후기 작성은 예약 내역에서 합니다.</div>
+    </div>`;
+}
+window.loadMyDash = loadMyDash;
 
 // ── 토스 선불 결제 ────────────────────────────────────────────
 // 금액은 서버가 bookings 에서 직접 읽어 계산한다. 여기서 보내는 값은 표시용일 뿐이다.

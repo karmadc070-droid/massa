@@ -398,6 +398,21 @@
   .tsep { font-size: 13px; color: var(--muted); }
   .tview { margin-left: auto; background: var(--navy); color: #fff; border-radius: 10px; padding: 10px 16px; font-size: 16px; font-weight: bold; letter-spacing: 1px; }
   .summary { background: var(--accent); border: 1.5px solid var(--teal); border-radius: 14px; padding: 14px; font-size: 13px; line-height: 1.8; }
+
+  /* ── 파트너 대시보드 ──────────────────────────────────────────
+     매출 관리 화면과 겹치지 않게, 여기는 '지금 뭘 해야 하나' 만 본다. */
+  .dsh { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .dsh .k { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+  .dsh .k .lab { font-size: 11.5px; color: var(--muted); }
+  .dsh .k .val { font-size: 26px; font-weight: bold; color: var(--navy); line-height: 1.2; margin-top: 2px; }
+  .dsh .k .val.sm { font-size: 19px; }
+  .dsh .k .val.warn { color: #B23A5B; }
+  .dsh .k .sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .dsh-sec { font-size: 12px; color: var(--muted); margin: 16px 2px 7px; }
+  .dsh-next { background: var(--navy); color: #fff; border-radius: 14px; padding: 15px; margin-bottom: 14px; }
+  .dsh-next .w { font-size: 11.5px; color: #9FC3CE; }
+  .dsh-next .t { font-size: 16px; font-weight: bold; margin: 3px 0 2px; }
+  .dsh-next .d { font-size: 12.5px; color: #CFE2E7; }
   .summary b { color: var(--navy); }
   .cta { position: absolute; bottom: 16px; left: 16px; right: 16px; background: var(--navy); color: #fff; border: none; border-radius: 14px; padding: 15px; font-size: 15px; font-weight: bold; cursor: pointer; }
   .done-wrap { text-align: center; padding-top: 50px; }
@@ -848,6 +863,11 @@
     <button class="cta" id="applyBtn">신청 제출</button>
   </div>
 
+  <!-- 파트너 대시보드 — 지금 뭘 해야 하나 -->
+  <div class="screen" id="partnerDash" data-title="내 현황">
+    <div id="partnerDashBody"><div class="hint">불러오는 중…</div></div>
+  </div>
+
   <!-- 파트너 예약 관리 -->
   <div class="screen" id="partnerBookings" data-title="예약 관리 (파트너)">
     <div class="notice">들어온 예약을 수락·거절하고, 완료 처리합니다.</div>
@@ -907,6 +927,7 @@
       <div class="mp-row" onclick="window.go('safety');loadSafety()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#E5484D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.4-3 8-7 10-4-2-7-5.6-7-10V6l7-3z"/><path d="M12 9v4M12 16h.01"/></svg></span><span class="mp-name">안전 센터</span><span class="mp-chev">›</span></div>
       <div class="mp-row" onclick="window.go('terms');loadAgreements()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h7"/></svg></span><span class="mp-name">약관 및 개인정보</span><span class="mp-chev">›</span></div>
       <div class="mp-row" id="mpAbout"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5"/><circle cx="12" cy="8" r=".7" fill="#4A5A61" stroke="none"/></svg></span><span class="mp-name">회사 소개</span><span class="mp-chev">›</span></div>
+      <div class="mp-row" id="mpPartnerDash" style="display:none" onclick="window.go('partnerDash');loadPartnerDash()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#2E8B8B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M7 15l4-5 3 3 5-7"/></svg></span><span class="mp-name">내 현황</span><span class="mp-chev">›</span></div>
       <div class="mp-row" id="mpPartnerBookings" style="display:none" onclick="window.go('partnerBookings');loadPartnerBookings()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A5A61" stroke-width="1.8" stroke-linecap="round"><path d="M4 20v-1a4 4 0 014-4h1"/><circle cx="8.5" cy="8" r="3"/><path d="M14 13l2 2 4-4"/></svg></span><span class="mp-name">예약 관리 (파트너)</span><span class="mp-chev">›</span></div>
       <div class="mp-row" id="mpPriceRow" style="display:none" onclick="window.go('partnerPrice');loadMyPrices()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#3E7C4F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9-9 9-9-9z"/><path d="M12 8.5v7M10 10.5h3a1.5 1.5 0 010 3h-2a1.5 1.5 0 000 3h3"/></svg></span><span class="mp-name">내 가격</span><span class="mp-chev">›</span></div>
       <div class="mp-row" id="mpPriceAdminRow" style="display:none" onclick="window.go('adminPrice');loadPriceRequests()"><span class="mp-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#B23A5B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9-9 9-9-9z"/><path d="M9 12l2 2 4-4"/></svg></span><span class="mp-name">가격 승인 (관리자)</span><span class="mp-chev">›</span></div>
@@ -1188,7 +1209,7 @@ if (window.DEV_FORCED) document.body.classList.add('devmode');
 const MAIN_FLOW = ['home', 'thList', 'menu', 'time', 'loc', 'confirm', 'done'];
 const NAMES = { home: '홈', thList: '마사지 홈서비스', therapy: '홈 뷰티', spa: '스파 안내',
                 stores: '매장 리스트', storeDtl: '매장 상세', provDtl: '프로필', menu: '코스', time: '시간', loc: '위치', confirm: '확인(후불)', done: '완료',
-                myBookings: '내 예약', applyForm: '제공자 등록', partnerBookings: '예약 관리', adminApps: '관리자 승인',
+                myBookings: '내 예약', applyForm: '제공자 등록', partnerBookings: '예약 관리', partnerDash: '내 현황', adminApps: '관리자 승인',
                 location: '지역 선택', account: '계정 정보', profileInfo: '개인 정보', notifications: '알림', map: '지도 검색', favorites: '즐겨찾기', coupons: '쿠폰함', adminStats: '관리자 통계', adminReports: '신고 관리', adminMembers: '회원 관리', partnerRevenue: '매출 관리', partnerSchedule: '스케줄 관리', chat: '채팅', partnerEvents: '이벤트 관리', adminSettlement: '정산 관리', adminAds: '광고 관리', partnerStaff: '직원 관리' };
 // 운영 콘솔은 계정(운영 메뉴) 화면에서 시작한다
 let stack = ['account'];
@@ -2303,7 +2324,7 @@ async function loadAccount() {
     } catch (e) {}
   }
   const rowVis = {
-    mpPartnerBookings: isPartner, mpMySettleRow: isPartner, mpRevenueRow: isPartner, mpScheduleRow: isPartner, mpEventsRow: isPartner, mpStaffRow: isPartner,
+    mpPartnerDash: isPartner, mpPartnerBookings: isPartner, mpMySettleRow: isPartner, mpRevenueRow: isPartner, mpScheduleRow: isPartner, mpEventsRow: isPartner, mpStaffRow: isPartner,
     mpChatRow: isPartner, mpGpsRow: isPartner, mpAiRow: isPartner, mpAiBizRow: isPartner, mpFraudRow: isAdm,
     mpPriceRow: isPartner, mpPriceAdminRow: isAdm,
     mpAdminBkRow: isAdm, mpProvRow: isAdm, mpFeeRow: isAdm, mpCouponRow: isAdm, mpSalesRow: isAdm, mpCountryRow: isAdm,
@@ -2905,6 +2926,78 @@ async function loadAdminMembers() {
 }
 window.loadAdminMembers = loadAdminMembers;
 window.unblockCustomer = async (id) => { await sb.from('profiles').update({ booking_blocked_until: null, cancel_count: 0, no_show_count: 0 }).eq('id', id); loadAdminMembers(); };
+// ── 파트너 대시보드 ────────────────────────────────────────────
+// 매출 관리 화면이 이미 숫자를 다 보여준다. 여기서 또 보여주면 두 화면이 서로 베낀 꼴이 된다.
+// 그래서 이 화면은 '지금 손이 필요한 것' 만 세고, 나머지는 각 화면으로 넘긴다.
+async function loadPartnerDash() {
+  if (!SESSION) { openAuth(); return; }
+  const box = document.getElementById('partnerDashBody'); if (!box) return;
+  box.innerHTML = '<div class="hint">불러오는 중…</div>';
+
+  const mine = await myProviders();
+  const ids = mine.map(p => p.id);
+  if (!ids.length) { box.innerHTML = '<div class="notice">등록된 제공자 정보가 없습니다.</div>'; return; }
+
+  const { data, error } = await sb.from('bookings')
+    .select('id,status,amount_vnd,is_paid,scheduled_at,completed_at,services(name)')
+    .in('provider_id', ids).order('scheduled_at', { ascending: true }).limit(500);
+  if (error) { box.innerHTML = '<div class="notice">불러오기 실패: ' + error.message + '</div>'; return; }
+
+  const rows = data || [];
+  const now = new Date();
+  const sameDay = (d) => { const x = new Date(d); return x.getFullYear() === now.getFullYear()
+    && x.getMonth() === now.getMonth() && x.getDate() === now.getDate(); };
+  const thisMonth = (d) => { const x = new Date(d); return x.getFullYear() === now.getFullYear() && x.getMonth() === now.getMonth(); };
+
+  const waiting = rows.filter(b => b.status === 'requested');
+  const today   = rows.filter(b => sameDay(b.scheduled_at) && !['cancelled', 'no_show'].includes(b.status));
+  const upcoming = rows.filter(b => !['cancelled', 'completed', 'no_show'].includes(b.status)
+                                 && new Date(b.scheduled_at).getTime() >= now.getTime());
+  const doneMo = rows.filter(b => b.status === 'completed' && b.completed_at && thisMonth(b.completed_at));
+  // 받은 돈만 센다. 완료했는데 아직 결제가 안 된 건은 매출로 치지 않는다.
+  const paidMo = rows.filter(b => b.is_paid && thisMonth(b.completed_at || b.scheduled_at))
+                     .reduce((s, b) => s + (b.amount_vnd || 0), 0);
+
+  const next = upcoming[0];
+  const nextHtml = next
+    ? `<div class="dsh-next">
+         <div class="w">다음 방문</div>
+         <div class="t">${dshEsc(next.services?.name || '서비스')}</div>
+         <div class="d">${new Date(next.scheduled_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit' })}</div>
+       </div>`
+    : `<div class="dsh-next" style="background:var(--accent);color:var(--text)">
+         <div class="w" style="color:var(--muted)">다음 방문</div>
+         <div class="t">예정된 일정이 없습니다</div>
+       </div>`;
+
+  box.innerHTML = nextHtml + `
+    <div class="dsh">
+      <div class="k"><div class="lab">수락 대기</div>
+        <div class="val${waiting.length ? ' warn' : ''}">${waiting.length}</div>
+        <div class="sub">${waiting.length ? '답을 기다리는 손님이 있습니다' : '밀린 요청 없음'}</div></div>
+      <div class="k"><div class="lab">오늘 일정</div><div class="val">${today.length}</div><div class="sub">건</div></div>
+      <div class="k"><div class="lab">이번 달 완료</div><div class="val">${doneMo.length}</div><div class="sub">건</div></div>
+      <div class="k"><div class="lab">이번 달 입금</div><div class="val sm">${paidMo.toLocaleString()}₫</div><div class="sub">결제 완료분만</div></div>
+    </div>
+    <div class="dsh-sec">바로가기</div>
+    <div class="card" style="cursor:pointer" onclick="window.go('partnerBookings');loadPartnerBookings()">
+      <div class="trow1"><span class="t">예약 관리</span><span style="color:var(--muted)">›</span></div>
+      <div class="d">수락·거절·완료 처리</div></div>
+    <div class="card" style="cursor:pointer" onclick="window.go('partnerRevenue');loadPartnerRevenue()">
+      <div class="trow1"><span class="t">매출 관리</span><span style="color:var(--muted)">›</span></div>
+      <div class="d">기간별 매출과 수수료</div></div>
+    <div class="card" style="cursor:pointer" onclick="window.go('partnerSettle');loadMySettle()">
+      <div class="trow1"><span class="t">내 입금 현황</span><span style="color:var(--muted)">›</span></div>
+      <div class="d">선입금 잔액과 입금 내역</div></div>`;
+}
+window.loadPartnerDash = loadPartnerDash;
+
+// admin.html 에도 전역 esc 가 없다. 서비스명은 사람이 넣는 값이라 그대로 꽂으면 안 된다.
+function dshEsc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
 async function loadPartnerRevenue() {
   if (!SESSION) { openAuth(); return; }
   const wrap = document.getElementById('revenueList'); if (!wrap) return;
