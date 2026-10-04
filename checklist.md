@@ -1701,13 +1701,33 @@ supabase-js 는 주소의 `#access_token=…` 을 **비동기로** 처리한다.
       주소가 지워지기 전에 동기로 읽어 둔다
 - [x] 실제 로그인 왕복으로 검증 — 세션 생성 · 로그인 창 닫힘 · 계정 탭에 `계정 정보` 표시
 
-### 덤으로 잡은 것
+### 같이 잡은 것 — 운영 콘솔 비밀번호 재설정
 
 `admin.html` 의 `RESET_REDIRECT` 가 아직 **학원 도메인**(`massa.moahagwon.com`)이었다.
-`admin.massaviet.com/reset.html` 로 바꾸려다 **404 인 걸 확인하고 되돌렸다** —
-운영 콘솔 배포 스크립트는 admin.html 한 장만 올리고 reset.html 은 올리지 않는다.
-실제로 200 인 곳은 `app.massaviet.com/reset.html` 뿐이라 그쪽으로 맞췄다.
-**바꾸기 전에 네 주소를 다 찔러본 게 404 배포를 막았다.**
+
+처음엔 `app.massaviet.com/reset.html`(이미 200 인 곳)로 돌렸는데,
+**사용자 지적이 맞았다 — 콘솔 재설정은 콘솔 도메인에서 끝나야 한다.** 고객 앱으로 보낼 일이 아니다.
+그래서 배포 쪽을 고쳤다.
+
+- [x] `vps-deploy-admin.sh` 가 `reset.html` 도 올리도록 수정.
+      **이게 빠져 있어서** `admin.massaviet.com/reset.html` 이 404 였다 (admin.html 한 장만 올리고 있었다)
+- [x] `RESET_REDIRECT` → `https://admin.massaviet.com/reset.html`
+- [x] 배포 후 200 확인. GoTrue 가 그 주소로 실제로 돌려보내는지까지 확인 (`vps-verify-admin-reset.sh`)
+
+### reset.html 에도 똑같은 경주 버그가 있었다
+
+`reset.html` 도 `getSession()` 을 **한 번만** 읽고 있었다.
+복구 토큰 처리가 끝나기 전에 읽으면 null → **멀쩡한 링크에도 "만료되었습니다"** 가 떴다.
+앱 로그인이 안 되던 것과 같은 원인이다. 사장님이 전에 겪은 재설정 문제도 이것일 가능성이 높다.
+→ 이벤트를 듣고, 놓쳤을 때를 대비해 0.3초 간격으로 10번(약 3초) 더 확인하도록 고쳤다.
+
+### 검증 스크립트가 거짓말을 한 건
+
+열린 리다이렉트 점검에서 `evil.example.com` 이 **"허용(정상)"** 으로 찍혔다.
+실제로는 차단이 맞았다 — 차단되면 GoTrue 가 SITE_URL(`app.massaviet.com`)로 떨어뜨리는데,
+내 분기가 `*app.massaviet.com*` 을 '허용' 으로 읽어버렸다.
+Location 을 그대로 찍어보고 확인한 뒤 스크립트를 고쳤다 (요청한 호스트로 돌아왔는지로 판정).
+**패턴 매칭으로 합격·불합격을 가를 때는 두 결과가 같은 문자열을 포함하지 않는지 봐야 한다.**
 
 ## Z-20. 중복 신청 차단 + Thanh hà 정리 — 2026-10-04
 
