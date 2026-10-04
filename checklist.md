@@ -1666,6 +1666,49 @@ Play Console 알림 센터에 2026-09-09 자로 뜬 "심각" 등급 알림:
       (en/safety.html 에 'hygiene mark' 1건 남지만 "위생 표시를 붙이지 않습니다" 라는 부정문이다)
 - [x] Z-12-6. 앱 i18n 5개 언어 문구 추가 (신원 확인 / 자격 확인 / 아직 확인 전)
 
+## Z-21. 소셜 로그인이 "안 되는" 것처럼 보이던 문제 — 2026-10-05
+
+### 증상과 실제
+
+사용자: "로그인이 안 된다. 계속 이런 문제가 생긴다."
+화면에는 `로그인 창을 여는 중…` 이 떠 있고, 계정을 누르면 로그인 창이 다시 떴다.
+
+**그런데 로그인은 매번 성공하고 있었다.** localStorage 의 `sb-api-auth-token` 에
+`karmadc070@gmail.com` 세션이 멀쩡히 들어 있었다. 화면만 로그아웃 상태였다.
+
+### 원인
+
+`onAuthStateChange` 리스너가 **index.html·admin.html 양쪽 다 없었다.**
+
+supabase-js 는 주소의 `#access_token=…` 을 **비동기로** 처리한다.
+앱은 부팅 때 `refreshSession()` 으로 `getSession()` 을 **한 번만** 읽는다.
+→ 토큰 처리보다 먼저 null 을 받아 `SESSION` 이 빈 채로 굳는다.
+→ `openAccount()` 의 `if (!SESSION) openAuth()` 가 로그인 창을 다시 띄운다.
+
+### 배제한 것 (여기에 시간을 썼다 — 다시 가지 않도록 적어 둔다)
+
+- OAuth 허용 목록 — `app.massaviet.com/*`, `/**` 둘 다 등록돼 있다
+- 구글·카카오·애플 세 공급자 전부 `/auth/v1/authorize` 정상 302
+- 구글 OAuth 설정 — 리다이렉트 사슬을 홉별로 추적해 로그인 화면까지 정상 도달 확인.
+  `redirect_uri_mismatch` 없음
+- `IS_NATIVE_APP` 분기 — TWA 는 https 라 false. 그 경로가 아니다
+
+### 고침
+
+- [x] 양쪽에 `onAuthStateChange` 추가. 세션이 생기는 순간 `refreshSession()` 하고 화면을 맞춘다
+- [x] **콜백 안에서 supabase 호출을 await 하지 않는다** — supabase-js 가 잠긴다. `setTimeout(…,0)` 으로 미룸
+- [x] 새로고침마다 계정 화면으로 튀지 않도록 `CAME_FROM_OAUTH` 로 OAuth 복귀일 때만 이동.
+      주소가 지워지기 전에 동기로 읽어 둔다
+- [x] 실제 로그인 왕복으로 검증 — 세션 생성 · 로그인 창 닫힘 · 계정 탭에 `계정 정보` 표시
+
+### 덤으로 잡은 것
+
+`admin.html` 의 `RESET_REDIRECT` 가 아직 **학원 도메인**(`massa.moahagwon.com`)이었다.
+`admin.massaviet.com/reset.html` 로 바꾸려다 **404 인 걸 확인하고 되돌렸다** —
+운영 콘솔 배포 스크립트는 admin.html 한 장만 올리고 reset.html 은 올리지 않는다.
+실제로 200 인 곳은 `app.massaviet.com/reset.html` 뿐이라 그쪽으로 맞췄다.
+**바꾸기 전에 네 주소를 다 찔러본 게 404 배포를 막았다.**
+
 ## Z-20. 중복 신청 차단 + Thanh hà 정리 — 2026-10-04
 
 ### 왜 v1 이 안 먹었나
