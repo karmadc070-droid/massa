@@ -40,10 +40,39 @@ const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 const msg = document.getElementById('msg');
 const btn = document.getElementById('save');
 
-// 메일 링크의 토큰으로 세션이 만들어지기를 기다린다. 없으면 링크가 만료됐거나 잘못 열린 것이다
-const { data } = await sb.auth.getSession();
-if (!data.session) {
-  msg.textContent = '재설정 링크가 만료되었거나 올바르지 않습니다. 앱에서 다시 요청해 주세요.';
+// 메일 링크의 토큰으로 세션이 만들어지기를 기다린다.
+// 2026-10-05: 예전엔 getSession() 을 한 번만 읽었다. supabase-js 는 주소의 복구 토큰을
+// **비동기로** 처리하므로, 처리되기 전에 읽으면 null 이 와서 멀쩡한 링크에도
+// "만료되었습니다" 가 떴다. 앱 쪽 로그인이 안 되던 것과 똑같은 원인이다.
+// 그래서 이벤트를 듣고, 혹시 놓쳤을 때를 대비해 짧게 다시 확인한다.
+btn.disabled = true;
+msg.style.color = '#7A8C94';
+msg.textContent = '링크를 확인하는 중…';
+
+const ready = await new Promise((resolve) => {
+  let done = false;
+  const finish = (ok) => { if (!done) { done = true; resolve(ok); } };
+
+  // 복구 토큰이 처리되는 순간
+  sb.auth.onAuthStateChange((_e, session) => { if (session) finish(true); });
+
+  // 이미 처리가 끝났을 수도 있다. 그리고 이벤트를 놓쳤을 때를 대비해 몇 번 더 본다.
+  let tries = 0;
+  const tick = async () => {
+    const { data } = await sb.auth.getSession();
+    if (data.session) return finish(true);
+    if (++tries >= 10) return finish(false);   // 약 3초
+    setTimeout(tick, 300);
+  };
+  tick();
+});
+
+if (ready) {
+  msg.textContent = '';
+  btn.disabled = false;
+} else {
+  msg.style.color = '#B23A5B';
+  msg.textContent = '재설정 링크가 만료되었거나 올바르지 않습니다. 다시 요청해 주세요.';
   btn.disabled = true;
 }
 

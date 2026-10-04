@@ -12,8 +12,12 @@ TMP=$(mktemp -d)
 curl -s --location codeload.github.com/karmadc070-droid/massa/tar.gz/refs/heads/main -o "$TMP/m.tgz"
 tar -xzf "$TMP/m.tgz" -C "$TMP"
 cp "$TMP"/massa-main/admin.html "$DIR/index.html"
+# 비밀번호 재설정 페이지도 같이 올린다.
+# 2026-10-05: 이게 빠져 있어서 admin.massaviet.com/reset.html 이 404 였고,
+# 콘솔의 재설정 메일 링크가 죽어 있었다. 콘솔 재설정은 콘솔 도메인에서 끝나야 한다.
+cp "$TMP"/massa-main/reset.html "$DIR/reset.html"
 rm -rf "$TMP"
-ls -la "$DIR/index.html"
+ls -la "$DIR/index.html" "$DIR/reset.html"
 
 # 권한 검사 코드가 모듈 스코프에 있는지까지 확인한다
 grep -q "window.guardConsole" "$DIR/index.html" || { echo "권한 검사 코드가 없다 — 중단"; exit 1; }
@@ -64,6 +68,7 @@ fi
 echo "=== 인증서 발급 대기 ==="
 sleep 20
 curl -s -o /dev/null -w "admin     : %{http_code}\n" https://admin.massaviet.com/ || echo "실패"
+curl -s -o /dev/null -w "reset     : %{http_code} (200 이어야 한다)\n" https://admin.massaviet.com/reset.html || echo "실패"
 curl -s -o /dev/null -w "옛 주소   : %{http_code} (301 이어야 한다)\n" https://admin.moahagwon.com/ || echo "실패"
 curl -s -o /dev/null -w "api   : %{http_code}\n" https://api.moahagwon.com/auth/v1/settings || echo "실패"
 echo "=== DEPLOY DONE ==="
