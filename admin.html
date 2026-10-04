@@ -1403,17 +1403,13 @@ const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 // 부팅 때 getSession() 을 한 번만 읽어서, 토큰은 저장됐는데 SESSION 은 빈 채로 굳는다.
 // 그 상태로는 로그인이 됐는데도 로그인 창이 계속 뜬다.
 // 콜백 안에서 supabase 호출을 await 하면 supabase-js 가 잠기므로 바깥으로 미룬다.
-const CAME_FROM_OAUTH = /[#&]access_token=/.test(location.hash) || /[#&]error=/.test(location.hash);
+// 화면 이동은 하지 않는다 — index.html 과 같은 이유다. 부팅이 끝나면서 덮어쓴다.
 sb.auth.onAuthStateChange((event) => {
   if (event !== 'SIGNED_IN' && event !== 'SIGNED_OUT') return;
   setTimeout(async () => {
     await refreshSession();
     const ov = document.getElementById('authOv');
     if (ov) ov.style.display = 'none';
-    if (event === 'SIGNED_IN' && CAME_FROM_OAUTH) {
-      window.go('account');
-      if (window.loadAccount) loadAccount();
-    }
   }, 0);
 });
 
