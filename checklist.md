@@ -1666,6 +1666,58 @@ Play Console 알림 센터에 2026-09-09 자로 뜬 "심각" 등급 알림:
       (en/safety.html 에 'hygiene mark' 1건 남지만 "위생 표시를 붙이지 않습니다" 라는 부정문이다)
 - [x] Z-12-6. 앱 i18n 5개 언어 문구 추가 (신원 확인 / 자격 확인 / 아직 확인 전)
 
+## Z-22. 안드로이드에서만 구글 로그인이 멈추던 진짜 원인 — 2026-10-05
+
+Z-21 을 고치고 데스크톱 시험 9개를 전부 통과시켰는데 **사장님 폰에서는 그대로였다.**
+내 시험 환경이 문제를 재현할 수 없는 환경이었다.
+
+### 원인 — 한 줄
+
+```js
+window.IS_NATIVE_APP = location.protocol === 'capacitor:' || ...
+  || window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+```
+
+**안드로이드 TWA 도 `display-mode: standalone` 이다.** 그래서 폰에서는 이 값이 `true` 다.
+그러면 `socialLogin()` 이 네이티브 경로를 탄다:
+
+- `skipBrowserRedirect: true` → supabase 가 이동을 **안 한다**
+- 대신 `window.openExternal(...)` 을 부르는데, 이건 **Capacitor(iOS) 전용 브리지**다.
+  `capacitor/native-src/native.js` 에만 있고 TWA 엔 없다
+- 조건이 `&& window.openExternal` 이라 **조용히 아무 일도 안 일어난다**
+
+→ `로그인 창을 여는 중…` 에서 영원히 멈춤. 폰 화면 그대로다.
+
+**코드 주석이 나를 속였다.** 461번 줄에 "안드로이드는 TWA 라 IS_NATIVE_APP 이 false 다"
+라고 적혀 있었다. 그 뒤 누군가 목업 테두리를 고치려고 standalone 조건을 넣으면서
+전제가 뒤집혔는데 주석은 그대로였다. 나는 그 줄을 **끝까지 읽지 않고** 주석을 믿었다.
+
+### 고침 — 두 개념을 가른다
+
+`IS_NATIVE_APP`(standalone 이냐)과 `hasNativeBridge()`(브리지가 있느냐)는 다른 질문이다.
+
+- 목업 테두리 벗기기 → `IS_NATIVE_APP` 이 맞다. TWA 도 꽉 채워야 하니까. **안 건드림**
+- OAuth·결제 → **`hasNativeBridge()`** 로 바꿈. 호출 시점에 `typeof window.openExternal` 확인
+- 결제의 `native:'1'` 도 같이 고침. standalone 이라고 1 을 보내면 결제 후 `massa://pay` 로
+  돌아오려 하는데 TWA 는 그 스킴을 못 받는다 (아직 터지진 않았지만 같은 지뢰였다)
+- **8초 뒤에도 '여는 중' 이면 실패 안내로 바꾼다.** 조용히 굳는 바람에 두 번이나 원인을 놓쳤다
+
+### 시험 (양쪽 분기 다)
+
+| | 내용 | 결과 |
+|---|---|---|
+| T10 | 가짜 `openExternal` 심어 둠 (iOS 경로) | 통과 · openExternal 호출됨, 페이지 안 떠남 |
+| T11 | 브리지 없음 (TWA·웹 경로) | 통과 · 이동 후 로그인됨 |
+
+**이제 내 브라우저 시험이 TWA 를 대표한다.** 전에는 standalone 여부가 경로를 갈랐는데
+이제는 브리지 유무만 가르고, 내 브라우저도 TWA 도 똑같이 브리지가 없다.
+
+### 교훈
+
+- 환경이 다르면 통과한 시험도 아무 의미가 없다. "데스크톱에서 통과" 는 "안드로이드에서 통과" 가 아니다
+- **주석을 믿지 말고 코드를 끝까지 읽자.** 잘린 grep 출력으로 결론 내린 게 화근이었다
+- 조용히 멈추는 코드는 두 번 비싸다. 실패하면 말하게 만들 것
+
 ## Z-21. 소셜 로그인이 "안 되는" 것처럼 보이던 문제 — 2026-10-05
 
 ### 증상과 실제
