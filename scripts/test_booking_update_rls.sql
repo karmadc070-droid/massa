@@ -17,6 +17,9 @@ create temp table t_b as
 select b.id as booking_id, b.provider_id
 from bookings b where b.provider_id is not null limit 1;
 
+-- 역할을 authenticated 로 바꾼 뒤에도 이 임시 표를 읽어야 한다 (안 주면 permission denied)
+grant select on t_ids, t_b to authenticated;
+
 \echo ''
 \echo '--- A. owner_id 로 연결된 경우 ---'
 update providers set owner_id = (select me from t_ids), profile_id = null
