@@ -229,17 +229,26 @@ section.soft .faq details { border-color: transparent; }
 
 /* ── 앱 다운로드 ────────────────────────────── */
 .stores { display: flex; gap: 12px; flex-wrap: wrap; }
+/* 스토어 버튼은 애플·구글 공식 배지와 같은 먹색으로 간다. 손님이 수없이 본 모양이라
+   흰 버튼보다 '진짜 다운로드 버튼' 으로 바로 읽힌다. 광택 대신 깊은 검정과 금빛 실선으로
+   격을 낸다 — 사이트의 금색(--gold)과 같은 색이라 따로 노는 느낌이 없다. */
 .store {
-  display: flex; align-items: center; gap: 13px; text-decoration: none; color: var(--teal);
-  border: 1px solid var(--line-cool); background: var(--white);
+  display: flex; align-items: center; gap: 13px; text-decoration: none; color: #FFF;
+  border: 1px solid #0B0B0C; background: #0B0B0C;
   border-radius: 14px; padding: 15px 24px; min-width: 216px;
-  box-shadow: var(--shadow); transition: transform .18s ease, box-shadow .2s;
+  box-shadow: 0 6px 18px rgba(11, 11, 12, .22);
+  transition: transform .18s ease, box-shadow .2s, border-color .2s, background .2s;
 }
-.store:hover { transform: translateY(-2px); box-shadow: var(--shadow-up); }
+.store:hover {
+  transform: translateY(-2px); background: #000; border-color: var(--gold);
+  box-shadow: 0 12px 28px rgba(11, 11, 12, .32);
+}
 .store svg { flex: 0 0 auto; }
-.store b { display: block; font-size: 15px; font-weight: 500; }
-.store small { display: block; color: var(--ink-soft); font-size: 12.5px; }
-.store.off { opacity: .45; box-shadow: none; }
+.store b { display: block; font-size: 15px; font-weight: 500; letter-spacing: .01em; }
+/* 흰색을 그대로 쓰면 두 줄이 같은 무게로 읽힌다. 아랫줄만 눌러서 위계를 만든다 */
+.store small { display: block; color: rgba(255, 255, 255, .62); font-size: 12.5px; }
+/* 아직 안 열린 스토어 — 검정은 유지하되 눌러서 '지금은 못 누른다' 를 보이게 한다 */
+.store.off { background: #33353A; border-color: #33353A; box-shadow: none; opacity: .6; }
 
 /* 모바일에서만 뜨는 앱 설치 띠 */
 .smartbar {
