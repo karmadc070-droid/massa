@@ -273,6 +273,10 @@ footer.site .legal { border-top: 1px solid #27505E; padding-top: 22px; color: #7
 @media (max-width: 640px) {
   header.site .wrap { height: 62px; gap: 14px; }
   nav.main { gap: 14px; }
+  /* 히어로 사진이 좁은 화면에서 첫 화면을 통째로 먹었다 (850x992 를 폭 100% 로 깔면 450px 쯤 된다).
+     폭은 그대로 두고 높이만 절반으로 잘라 띠처럼 보이게 한다. 사람이 가운데 아래쪽에 있어서
+     자르는 기준점을 조금 위로(35%) 올려야 얼굴과 손이 남는다. */
+  .hero-img img { max-height: 240px; object-fit: cover; object-position: 50% 35%; }
   /* 좁은 화면에선 메뉴를 접고 언어 전환과 CTA 만 남긴다.
      .langs a 를 빼지 않으면 언어 전환이 통째로 사라진다 — 모바일이 주 사용 환경이라 치명적이다.
      접힌 메뉴는 푸터에 전부 있다. */
