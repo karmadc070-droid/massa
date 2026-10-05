@@ -13,9 +13,19 @@ begin;
 alter table providers disable trigger user;
 
 -- 시험용 사용자 두 명
+-- 아무 계정이나 쓰면 안 된다. 이미 마사지사 행이 붙어 있는 계정을 골랐다가
+-- '계정 하나당 살아 있는 신청 하나' 유니크 인덱스(Z-19)에 걸렸다.
+-- 마사지사 행이 하나도 없는 계정 두 개를 고른다.
 create temp table t_ids as
-select (select id from auth.users order by created_at limit 1) as me,
-       (select id from auth.users order by created_at desc limit 1) as other;
+with free as (
+  select u.id, row_number() over (order by u.created_at) as rn
+  from auth.users u
+  where not exists (
+    select 1 from providers p where p.owner_id = u.id or p.profile_id = u.id
+  )
+)
+select (select id from free where rn = 1) as me,
+       (select id from free where rn = 2) as other;
 
 create temp table t_b as
 select b.id as booking_id, b.provider_id
