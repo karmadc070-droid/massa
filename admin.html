@@ -2728,7 +2728,13 @@ async function loadPartnerBookings() {
 }
 window.loadPartnerBookings = loadPartnerBookings;
 window.setBookingStatus = async (id, st) => {
-  await sb.from('bookings').update(Object.assign({ status: st }, st === 'completed' ? { completed_at: new Date().toISOString() } : {})).eq('id', id);
+  // 결과를 반드시 확인한다. RLS 가 막으면 오류 없이 0행이 바뀌고 끝나서,
+  // 마사지사는 눌렀는데 아무 일도 안 일어나는 걸 그냥 보고만 있게 된다.
+  const { data, error } = await sb.from('bookings')
+    .update(Object.assign({ status: st }, st === 'completed' ? { completed_at: new Date().toISOString() } : {}))
+    .eq('id', id).select('id');
+  if (error) { alert('처리하지 못했습니다: ' + error.message); return; }
+  if (!data || !data.length) { alert('처리 권한이 없습니다. 본인 예약이 맞는지 확인하고, 계속 안 되면 운영팀에 알려 주세요.'); return; }
   loadPartnerBookings();
 };
 // 파트너: 고객 노쇼 처리 (고객 페널티 누적)
