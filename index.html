@@ -4020,7 +4020,11 @@ async function load() {
   if (_tabs[2]) _tabs[2].onclick = () => { openAccount(); _setTab(2); };
   try {
     const { data: providers, error } = await sb.from('providers')
-      .select('*').eq('is_active', true).eq('application_status', 'approved').order('rating', { ascending: false });
+      // sort_priority 로 먼저 줄을 세운다. 전에는 rating 순이었는데 후기가 0건이라
+      // 전원 0.0 이었고, 그래서 순서가 사실상 무작위였다. 운영에서 올리고 싶은 사람을
+      // 올릴 수 있게 하되 표시되는 정보 자체는 건드리지 않는다.
+      .select('*').eq('is_active', true).eq('application_status', 'approved')
+      .order('sort_priority', { ascending: false }).order('rating', { ascending: false });
     if (error) throw error;
     CACHE.providers = providers;
     fillList('thList', providers.filter(p => p.kind === 'masseur'));
