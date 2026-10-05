@@ -10,7 +10,10 @@ ENVF=/root/massa/.env
 KEY=$(grep -E '^SERVICE_ROLE_KEY=' "$ENVF" | cut -d= -f2-)
 API=https://api.moahagwon.com
 BUCKET=provider-photos
-SQL() { docker exec -i massa-db psql -U postgres -d postgres "$@"; }
+# ★ docker exec -i 는 표준입력을 통째로 삼킨다. 목록을 while 로 돌리는 중에 부르면
+# 남은 줄을 전부 먹어 버려서 루프가 첫 번째에서 끝난다 (실제로 한 번 당했다).
+# 그래서 SQL 은 항상 /dev/null 에서 읽게 못 박고, 루프는 fd 3 으로 따로 읽는다.
+SQL() { docker exec -i massa-db psql -U postgres -d postgres "$@" < /dev/null; }
 
 echo '=== 0. 도구 준비 ==='
 python3 -c 'import PIL' 2>/dev/null || pip3 install --quiet --break-system-packages Pillow
@@ -33,7 +36,7 @@ echo "  $(wc -l < /tmp/plist.txt) 명"
 mkdir -p /tmp/thumbs && rm -f /tmp/thumbs/*
 BEFORE=0; AFTER=0; N=0
 
-while IFS='|' read -r PID URL; do
+while IFS='|' read -r PID URL <&3; do
   [ -z "$PID" ] && continue
   N=$((N+1))
   SRC=/tmp/thumbs/src_$N
@@ -72,7 +75,7 @@ PY
   NEW="$API/storage/v1/object/public/$BUCKET/thumb/$PID.webp?v=$STAMP"
   SQL -c "update providers set photo_url='$NEW' where id='$PID';" > /dev/null
   printf '  [%2d] %7d KB -> %4d KB\n' "$N" $((B/1024)) $((A/1024))
-done < /tmp/plist.txt
+done 3< /tmp/plist.txt
 
 echo ''
 echo "=== 3. 합계 ==="
