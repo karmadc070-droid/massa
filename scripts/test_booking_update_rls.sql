@@ -8,6 +8,10 @@
 
 begin;
 
+-- 시험이 providers 를 이리저리 바꾸는데, 중복 신청 방지 트리거(Z-19)가 그걸 막는다.
+-- 트리거가 제 일을 한 것이지 버그가 아니다. 시험 동안만 끄고, rollback 이면 같이 되돌아간다.
+alter table providers disable trigger user;
+
 -- 시험용 사용자 두 명
 create temp table t_ids as
 select (select id from auth.users order by created_at limit 1) as me,
