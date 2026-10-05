@@ -1666,6 +1666,44 @@ Play Console 알림 센터에 2026-09-09 자로 뜬 "심각" 등급 알림:
       (en/safety.html 에 'hygiene mark' 1건 남지만 "위생 표시를 붙이지 않습니다" 라는 부정문이다)
 - [x] Z-12-6. 앱 i18n 5개 언어 문구 추가 (신원 확인 / 자격 확인 / 아직 확인 전)
 
+## Z-24. Kun·Trang 두 분 상단 노출 (별점·인증마크는 붙이지 않음) — 2026-10-05
+
+사장님이 "Kun, Trang 에게 별점과 인증마크를 붙여달라" 고 하셨다. **거절하고 근거를 보여드렸다.**
+
+| | 승인 | 서류 | 완료 시술 | 후기 |
+|---|---|---|---|---|
+| Kun | approved | 신청서 1건 — **URL 칸 전부 빈칸** | 0 | 0 |
+| Trang B. | **pending** | 없음 | 0 | 0 |
+| Trang N. | approved | 없음 | 0 | 0 |
+
+Kun 의 `provider_kyc` 1행은 `reg_type=freelancer` 와 전화번호뿐이고 `id_front_url`,
+`id_back_url`, `business_license_url`, `cert_url` 이 모두 비어 있다. 확인할 서류 자체가 없다.
+거절 이유 세 가지 — ① 지금 심사 중인 1.0.9 가 바로 이 허위 표기를 걷어낸 업데이트다
+② 손님은 모르는 사람을 집에 들이는 결정을 그 표시를 보고 내린다 ③ 완료 시술 0건이라
+어떤 별점도 만들어낸 숫자다.
+
+### 대신 한 것 — 거짓이 아닌 방법
+
+- `providers.sort_priority int not null default 0` 추가, 세 명을 100 으로
+- `index.html` 목록을 `sort_priority desc → rating desc` 순으로
+  **전에는 rating 순이었는데 전원 0.0 이라 사실상 무작위였다.** 이제 운영이 순서를 정할 수 있다
+- 배포 후 실제 화면 확인 — 1위 Kun, 2위 Trang N., 둘 다 `신규 도착` 배지, 별점 자리는 `아직 후기 없음`
+- `신규 도착` 배지는 `review_count < 20` 조건이라 이미 자동으로 붙어 있었다. 손댈 것 없었다
+
+### 사장님 결정이 필요한 것
+
+- **Trang B. 는 pending 이라 손님 화면에 아예 안 뜬다.** 목록 쿼리가 `application_status='approved'`
+  로 거른다. `is_active=t` 만 보고 보인다고 착각하기 쉽다
+- Trang B. 의 `photo_url` 이 `https://example.com/trang.jpg` — 깨진 자리표시자다
+- Kun 의 소개글은 베트남어 한 줄, 담당 구역(`base_district`)이 비어 있다
+
+### 환경 메모 — 반복되는 PowerShell 문제의 해법
+
+한글이 든 .sh 를 `Get-Content | ssh` 로 보내면 PowerShell 이 인코딩을 깨뜨린다(네 번째 발생).
+**해법: 스크립트를 먼저 push 한 뒤 VPS 에서 raw.githubusercontent.com 으로 받아 실행한다.**
+PowerShell 을 거치지 않으므로 바이트가 그대로다. 그리고 배포 스크립트는 `sh` 가 아니라
+`bash` 로 돌려야 한다 (`sh` 로는 71행에서 Syntax error).
+
 ## Z-23. iOS 1.0.9 빌드·제출 — 2026-10-05
 
 안드로이드는 사이트를 실시간으로 불러와서 고치면 바로 반영되는데, iOS 는 빌드 시점에
