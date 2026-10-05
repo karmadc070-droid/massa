@@ -286,8 +286,10 @@ footer.site .legal { border-top: 1px solid #27505E; padding-top: 22px; color: #7
      버튼 안에서는 줄을 바꾸지 않고, 대신 여백과 글자를 줄여 한 줄에 들어가게 한다. */
   .brand, .navlogin, .navcta, .langs a { white-space: nowrap; }
   .brand { font-size: 19px; }
-  header.site .wrap { gap: 6px; }
-  nav.main { gap: 10px; }
+  /* 헤더만 좌우 여백을 줄인다. 베트남어 기준으로 16px 이 모자랐다 (측정값).
+     본문 .wrap 은 그대로 둔다 — 글 읽는 여백까지 좁히면 답답해진다. */
+  header.site .wrap { gap: 6px; padding-left: 12px; padding-right: 12px; }
+  nav.main { gap: 8px; }
   /* 베트남어는 'Đăng nhập' + 'Tải ứng dụng' 이라 한국어보다 훨씬 길다. 알약 두 개를
      나란히 두면 375px 를 46px 넘겼다. 로그인은 테두리를 벗겨 글자 링크로 둔다. */
   .navlogin { padding: 0; border: 0; font-size: 13px; }
