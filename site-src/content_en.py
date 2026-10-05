@@ -8,6 +8,7 @@ LABELS = {
             "about": "About", "download": "Get the app", "contact": "Contact",
             "terms": "Terms", "privacy": "Privacy"},
     "langname": {"ko": "KO", "en": "EN", "vi": "VI"},
+    "login": "Log in",
     "cta": "Get the app",
     "footer_tag": "Massage and home beauty, booked to your door in Vietnam.",
     "f_service": "Service", "f_company": "massa", "f_support": "Support",

@@ -8,6 +8,7 @@ LABELS = {
             "partner": "파트너", "faq": "자주 묻는 질문", "about": "회사 소개",
             "download": "앱 다운로드", "contact": "문의", "terms": "이용약관", "privacy": "개인정보처리방침"},
     "langname": {"ko": "KO", "en": "EN", "vi": "VI"},
+    "login": "로그인",
     "cta": "앱 받기",
     "footer_tag": "베트남에서 집과 호텔로 찾아가는 마사지·홈뷰티 방문 예약.",
     "f_service": "서비스", "f_company": "massa", "f_support": "고객 지원",

@@ -10,6 +10,7 @@ LABELS = {
             "about": "Giới thiệu", "download": "Tải ứng dụng", "contact": "Liên hệ",
             "terms": "Điều khoản", "privacy": "Quyền riêng tư"},
     "langname": {"ko": "KO", "en": "EN", "vi": "VI"},
+    "login": "Đăng nhập",
     "cta": "Tải ứng dụng",
     "footer_tag": "Massage và làm đẹp tại nhà, đặt lịch tận nơi ở Việt Nam.",
     "f_service": "Dịch vụ", "f_company": "massa", "f_support": "Hỗ trợ",

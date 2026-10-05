@@ -3,7 +3,9 @@
    이제 앱과 같은 틸을 기준색으로 쓰고, 따뜻함은 종이빛 바탕과 금빛 강조로 남긴다.
    원칙: 물처럼 차분한 바탕, 손길처럼 둥근 모서리, 그림자는 아주 얕게. 장식보다 여백. */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Noto+Serif+KR:wght@300;400;500&family=Inter:wght@300;400;500;600&display=swap');
+/* 폰트는 여기서 @import 하지 않는다. @import 는 이 파일을 다 받은 '뒤에야' 발견되어
+   요청이 직렬로 이어지고, 실측 1462ms 동안 화면이 비어 있었다.
+   build.py 가 <head> 에 <link> 로 넣어 style.css 와 나란히 받게 한다. */
 
 :root {
   /* 앱(index.html)의 theme_color 와 같은 틸에서 뽑은 계열 */
@@ -84,6 +86,12 @@ nav.main a:hover, nav.main a[aria-current="page"] { color: var(--teal); }
   transition: background .2s, transform .18s ease;
 }
 .navcta:hover { background: var(--teal-deep); transform: translateY(-1px); }
+/* 로그인 — 앱으로 보내는 링크. '앱 받기'(채운 알약)와 구별되게 테두리만 쓴다 */
+.navlogin {
+  font-size: 13.5px; padding: 10px 18px; border: 1px solid var(--line);
+  border-radius: 999px; color: var(--teal) !important; transition: border-color .2s, background .2s;
+}
+.navlogin:hover { border-color: var(--teal); background: var(--teal-pale); }
 
 /* 언어 전환 */
 .langs { display: flex; gap: 2px; align-items: center; font-size: 12.5px; }
@@ -268,7 +276,9 @@ footer.site .legal { border-top: 1px solid #27505E; padding-top: 22px; color: #7
   /* 좁은 화면에선 메뉴를 접고 언어 전환과 CTA 만 남긴다.
      .langs a 를 빼지 않으면 언어 전환이 통째로 사라진다 — 모바일이 주 사용 환경이라 치명적이다.
      접힌 메뉴는 푸터에 전부 있다. */
-  nav.main > a:not(.navcta) { display: none; }
+  /* 로그인은 좁은 화면에서도 남긴다 — 접으면 손님이 들어올 입구가 없어진다 */
+  nav.main > a:not(.navcta):not(.navlogin) { display: none; }
+  .navlogin { padding: 8px 13px; font-size: 12.5px; }
   .langs { margin-left: auto; }
   .langs a { padding: 4px 6px; }
   .card { padding: 24px 22px; }

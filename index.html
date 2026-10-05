@@ -1306,7 +1306,9 @@ function priceOf(svc, prov) {
 }
 
 const AVATARS = ['11.jpg','22.jpg','33.jpg','44.jpg','55.jpg','66.jpg','77.jpg','88.jpg','99.jpg'];
-function avatarImg(src) { return '<img src="' + src + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px">'; }
+// loading=lazy: 목록에 23장이 깔리는데 전부 즉시 받으면 화면 밖 사진까지 기다리게 된다.
+// decoding=async: 큰 사진을 푸는 동안 화면이 멎지 않게 한다.
+function avatarImg(src) { return '<img src="' + src + '" alt="" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;border-radius:12px">'; }
 
 // ── 사진 확대 보기 ──────────────────────────────────────────
 // 프로필 사진은 120px 라 얼굴과 유니폼이 잘 안 보인다. 눌러서 크게 볼 수 있게 한다.
@@ -4144,7 +4146,15 @@ function trackVisit() {
 }
 // 로그인 여부까지 기록해야 하므로 load() 안의 refreshSession() 이 끝난 뒤에 부른다.
 // 위치는 목록이 그려진 뒤에 붙인다. 이미 허용해 둔 사람만 조용히 처리되고, 나머지에게는 권한창이 뜨지 않는다.
-load().then(() => { trackVisit(); initMyPos(); }, () => { trackVisit(); initMyPos(); });
+// massaviet.com 의 '로그인' 버튼이 ?login=1 로 보낸다.
+// 부팅이 끝난 뒤에 불러야 한다 — 그 전에는 세션을 아직 모르고, 부팅이 화면을 덮어쓴다
+// (전에 OAuth 복귀 처리를 부팅 전에 뒀다가 아무 일도 안 일어난 적이 있다).
+function openLoginIfAsked() {
+  if (!/[?&]login=1\b/.test(location.search)) return;
+  if (window.openAccount) openAccount();   // 이미 로그인돼 있으면 계정 화면, 아니면 로그인 창
+}
+load().then(() => { trackVisit(); initMyPos(); openLoginIfAsked(); },
+            () => { trackVisit(); initMyPos(); openLoginIfAsked(); });
 </script>
 </body>
 </html>

@@ -15,6 +15,16 @@ SUPPORT = "support@massaviet.com"
 # 2026-09-30 공개 확인하고 켰다. 로그아웃 상태 베트남에서 200, 앱 이름 노출까지 확인함.
 PLAY_LIVE = True
 PLAY = "https://play.google.com/store/apps/details?id=app.massa.hanoi"
+# 사이트의 '로그인' 은 앱으로 보낸다. 로그인 코드를 사이트에 다시 만들면 두 군데가 되고,
+# 이번 같은 로그인 버그가 생기면 두 번 고쳐야 한다. ?login=1 은 앱이 로그인 창을 여는 신호다.
+APP_LOGIN = "https://app.massaviet.com/?login=1"
+# 폰트는 <link> 로 받는다 (style.css 의 @import 를 걷어냈다 — 직렬 로딩으로 1.4초를 잡아먹었다).
+# 굵기도 줄였다. 쓰지 않는 300 과 이탤릭을 빼서 받아야 할 폰트 파일 수를 줄인다.
+FONTS = ("https://fonts.googleapis.com/css2"
+         # Cormorant 의 이탤릭은 남긴다. em 이 제목(세리프)에서도 쓰여서 빼면 글자가 눌린 듯 보인다.
+         "?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400"
+         "&family=Noto+Serif+KR:wght@400;500"
+         "&family=Inter:wght@400;500;600&display=swap")
 
 # 페이지 순서 = 네비게이션 순서. (파일명, 네비 노출 여부)
 PAGES = [
@@ -193,6 +203,8 @@ def chrome(lang, name, L, body, page):
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/style.css?v={CSSV}">
+<link rel="stylesheet" href="{FONTS}" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="{FONTS}"></noscript>
 {ld}
 </head>
 <body>
@@ -202,6 +214,7 @@ def chrome(lang, name, L, body, page):
     <a class="brand" href="{url(lang,'index')}">m<span>ㅏ</span>ss<span>ㅏ</span></a>
     <nav class="main">{nav}
       <span class="langs">{langsw}</span>
+      <a class="navlogin" href="{APP_LOGIN}">{esc(L["login"])}</a>
       <a class="navcta" href="{url(lang,'download')}">{esc(L["cta"])}</a>
     </nav>
   </div>
