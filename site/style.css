@@ -112,6 +112,16 @@ nav.main a:hover, nav.main a[aria-current="page"] { color: var(--teal); }
 .hero .lead { margin-bottom: 30px; }
 .hero-img { position: relative; }
 .hero-img img { width: 100%; border-radius: var(--r); box-shadow: var(--shadow-up); }
+/* 넓은 화면에서는 사진이 글 기둥보다 훨씬 길어서 위아래로 삐져나왔다.
+   두 칸의 높이를 맞추고(stretch), 사진은 절대 배치로 그 높이를 그대로 채운다.
+   절대 배치를 쓰는 이유: 그냥 height:100% 만 주면 사진의 원래 높이가 줄 높이를
+   끌어올려서 결국 똑같이 길어진다. 높이를 정하는 쪽은 글이어야 한다. */
+@media (min-width: 901px) {
+  .hero .wrap { align-items: stretch; }
+  .hero-img img {
+    position: absolute; inset: 0; height: 100%; object-fit: cover; object-position: 50% 30%;
+  }
+}
 /* 사진 위에 얹는 얇은 캡션 */
 .hero-cap {
   position: absolute; left: -22px; bottom: 28px; background: var(--white);
