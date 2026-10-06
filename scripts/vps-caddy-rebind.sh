@@ -15,8 +15,10 @@ printf '  리다이렉트 들어있나 — host=%s container=%s\n' \
   "$(docker exec caddy grep -c 'massa-old-retired' /etc/caddy/Caddyfile || echo 0)"
 
 echo ''
-echo '=== 컨테이너가 보는 파일로 복사 ==='
-docker cp /root/Caddyfile caddy:/etc/caddy/Caddyfile
+echo '=== 컨테이너가 보는 파일에 써 넣기 ==='
+# docker cp 는 파일을 '교체' 하려 들어서 바인드 마운트에서는 device busy 로 거부당한다.
+# 컨테이너 안에서 리다이렉션으로 쓰면 같은 inode 를 '자르고 덮어쓰는' 것이라 통과한다.
+docker exec -i caddy sh -c 'cat > /etc/caddy/Caddyfile' < /root/Caddyfile
 printf '  복사 후 container 안에 리다이렉트: %s\n' \
   "$(docker exec caddy grep -c 'massa-old-retired' /etc/caddy/Caddyfile)"
 
