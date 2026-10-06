@@ -2,7 +2,7 @@
 # 찍은 스크린샷이 등록정보 슬롯 크기와 맞는지 확인한다.
 python3 - <<'PY'
 import glob, os, struct
-want = {'1206x2622': (1206, 2622), '1398x2034': (1398, 2034)}
+want = {'2064x2752': (2064, 2752)}
 files = sorted(glob.glob('/root/shots-vi/*/*.png'))
 bad = 0
 for p in files:
