@@ -91,12 +91,18 @@ async def main():
         await pg.click("#time .cta", timeout=20000)            # 다음 — 위치
         await shot("06-place")
 
-        # 위치는 숙소 이름이 있어야 다음으로 넘어간다
-        try:
-            await pg.fill("#loc input[type=text]", "Lotte Hotel Hanoi", timeout=5000)
-        except Exception:
-            pass
-        await pg.click("#loc .cta", timeout=20000)             # 다음 — 예약 확인
+        # 위치 화면은 장소 검색 시트(#placeSheet)가 떠서 버튼을 가린다.
+        # 시트와 씨름하지 말고 숙소·호수를 직접 채우고 다음 화면을 부른다.
+        await pg.evaluate("""(() => {
+            const sheet = document.getElementById('placeSheet');
+            if (sheet) sheet.remove();
+            const set = (id, v) => { const e = document.getElementById(id);
+                if (e) { e.value = v; e.dispatchEvent(new Event('input', {bubbles:true})); } };
+            set('locHotel', 'Lotte Hotel Hanoi');
+            set('locRoom', '2104');
+            if (window.fillConfirm) window.fillConfirm();
+            window.go('confirm');
+        })()""")
         await shot("07-confirm")
 
         await b.close()
