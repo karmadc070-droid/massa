@@ -24,16 +24,14 @@ from playwright.async_api import async_playwright
 OUT = sys.argv[1]
 URL = "https://app.massaviet.com/"
 
-# 고를 화면과 파일 이름. 손님이 예약까지 가는 길을 순서대로 보여준다.
-SHOTS = [
-    ("01-home",    "home",    None),
-    ("02-massage", "thList",  None),
-    ("03-beauty",  "therapy", None),
-    ("04-course",  "menu",    None),
-    ("05-time",    "time",    None),
-    ("06-place",   "loc",     None),
-    ("07-confirm", "confirm", None),
-    ("08-mydash",  "myDash",  None),
+# 그냥 go() 로 건너뛰면 안 되는 화면이 있다. 예약 확인 화면은 코스·시간을 고른
+# 상태라야 내용이 차고, 안 그러면 빈 상자만 찍힌다 (처음에 그렇게 찍었다).
+# 그래서 앞 네 장은 바로 띄우고, 뒤 네 장은 실제로 눌러서 흐름을 타고 간다.
+JUMP = [
+    ("01-home",    "home"),
+    ("02-massage", "thList"),
+    ("03-beauty",  "therapy"),
+    ("08-mydash",  "myDash"),
 ]
 
 async def main():
@@ -56,21 +54,51 @@ async def main():
         lang = await pg.evaluate("localStorage.getItem('massa_lang')")
         print("  언어:", lang)
 
-        for name, sid, _ in SHOTS:
-            try:
-                await pg.evaluate(f"window.go({sid!r})")
-            except Exception as e:
-                print(f"  [{name}] go() 실패: {e}")
-                continue
+        async def shot(name):
             await pg.wait_for_timeout(2500)
             # 한국어가 남아 있으면 바로 알 수 있게 센다
             ko = await pg.evaluate(
                 "(()=>{const s=document.querySelector('.screen.on')||document.body;"
                 "return (s.innerText.match(/[\\uAC00-\\uD7A3]/g)||[]).length})()"
             )
-            path = f"{OUT}/{name}.png"
-            await pg.screenshot(path=path, full_page=False)
-            print(f"  {name:12s} 한글글자수={ko}")
+            won = await pg.evaluate(
+                "document.querySelectorAll('.wonhint').length && "
+                "[...document.querySelectorAll('.wonhint')].some(e=>e.offsetParent)"
+            )
+            await pg.screenshot(path=f"{OUT}/{name}.png", full_page=False)
+            print(f"  {name:12s} 한글={ko}  원화표시={won}")
+
+        for name, sid in JUMP:
+            await pg.evaluate(f"window.go({sid!r})")
+            await shot(name)
+
+        # --- 실제 예약 흐름을 타고 간다 ---
+        await pg.evaluate("window.go('thList')")
+        await pg.wait_for_timeout(1500)
+        await pg.click(".tcard .bookbtn", timeout=20000)       # 마사지사 예약 누르기 → 코스
+        await shot("04-course")
+
+        await pg.click("#menu .card", timeout=20000)           # 코스 하나 고르기
+        await pg.wait_for_timeout(800)
+        await pg.click("#menu .cta", timeout=20000)            # 다음 — 시간
+        await shot("05-time")
+
+        # 시간 칩이 있으면 하나 고른다. 없으면 그대로 찍는다.
+        try:
+            await pg.click("#time .chip:not(.off)", timeout=5000)
+        except Exception:
+            print("  (시간 칩을 못 찾아 그대로 간다)")
+        await pg.click("#time .cta", timeout=20000)            # 다음 — 위치
+        await shot("06-place")
+
+        # 위치는 숙소 이름이 있어야 다음으로 넘어간다
+        try:
+            await pg.fill("#loc input[type=text]", "Lotte Hotel Hanoi", timeout=5000)
+        except Exception:
+            pass
+        await pg.click("#loc .cta", timeout=20000)             # 다음 — 예약 확인
+        await shot("07-confirm")
+
         await b.close()
 
 asyncio.run(main())
