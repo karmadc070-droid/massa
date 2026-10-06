@@ -33,6 +33,9 @@
   h1 { text-align: center; color: var(--navy); font-size: 22px; margin-bottom: 4px; }
   .sub { text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 20px; }
 
+  /* 원화 환산(약 32,400원)은 한국 손님에게만 쓸모가 있다.
+     베트남어로 보면 '(khoảng 32.400₩)' 라는 남의 나라 돈이 떠서 가격을 헷갈리게 한다. */
+  body:not([data-lang="ko"]) .wonhint { display: none; }
   .flow { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 24px; }
   .flow .node { background: var(--card); border: 1.5px solid var(--line); border-radius: 20px; padding: 6px 14px; font-size: 12.5px; cursor: pointer; }
   .flow .node.on { background: var(--navy); color: #fff; border-color: var(--navy); }
@@ -1759,7 +1762,7 @@ function fillConfirm() {
   const place = [hotel, room].filter(Boolean).join(' · ');
   if (place) rows.push(place);
   rows.push('<b><span>예상 금액</span> ' + price.toLocaleString() + '₫</b> '
-    + '<span style="color:var(--muted)">(<span>약</span> ' + won + '<span>원</span>)</span>');
+    + '<span class="wonhint" style="color:var(--muted)">(<span>약</span> ' + won + '<span>원</span>)</span>');
   box.innerHTML = rows.join('<br>');
 }
 window.fillConfirm = fillConfirm;
@@ -2070,7 +2073,7 @@ function renderMenu() {
       return '<div class="card' + (x.id === SEL.serviceId ? ' sel' : '') + '" data-svc="' + x.id + '">'
         + '<span class="t">' + x.name + '</span>'
         + '<div class="p">' + px.toLocaleString() + '₫ '
-        + '<span style="color:var(--muted);font-weight:normal">(<span>약</span> ' + won + '<span>원</span>)</span></div></div>';
+        + '<span class="wonhint" style="color:var(--muted);font-weight:normal">(<span>약</span> ' + won + '<span>원</span>)</span></div></div>';
     }).join('');
     box.querySelectorAll('.card').forEach(c => c.onclick = () => {
       box.querySelectorAll('.card').forEach(x => x.classList.remove('sel'));
@@ -2102,7 +2105,7 @@ function renderMenu() {
       + (r.badge ? '<span class="badge">' + r.badge + '</span>' : '')
       + '<div class="d">' + r.desc + '</div>'
       + '<div class="p">' + px.toLocaleString() + '₫ '
-      + '<span style="color:var(--muted);font-weight:normal">(<span>약</span> ' + won + '<span>원</span>)</span>'
+      + '<span class="wonhint" style="color:var(--muted);font-weight:normal">(<span>약</span> ' + won + '<span>원</span>)</span>'
       + ' · ' + SEL.duration + '<span>분</span></div></div>';
   }).join('');
 
@@ -2284,7 +2287,7 @@ window.openPayment = function (bookingId, amount) {
     return '<div class="pay-panel"><div class="hint">서비스 완료 시 현장에서 카드·현금으로 결제합니다.</div></div>';
   };
   const render = () => {
-    ov.innerHTML = '<div class="pay-sheet"><div class="svc-grip"></div><div class="svc-title">결제 · ' + amount.toLocaleString() + '₫ <span style="font-size:13px;color:#7A8C94">(<span>약</span> ' + won + '<span>원</span>)</span></div>'
+    ov.innerHTML = '<div class="pay-sheet"><div class="svc-grip"></div><div class="svc-title">결제 · ' + amount.toLocaleString() + '₫ <span class="wonhint" style="font-size:13px;color:#7A8C94">(<span>약</span> ' + won + '<span>원</span>)</span></div>'
       + '<div class="pay-methods">' + methods.map(m => '<div class="pay-m' + (m[0] === sel ? ' on' : '') + '" data-m="' + m[0] + '"><span>' + m[2] + ' ' + m[1] + '</span><span class="pay-radio"></span></div>').join('') + '</div>'
       + (applicable.length ? '<div class="pay-coupon"><span>쿠폰</span><select id="payCoupon"><option value="">선택 안 함</option>' + applicable.map(m => '<option value="' + m.coupon_id + '"' + (m.coupon_id === couponId ? ' selected' : '') + '>' + m.coupons.title + '</option>').join('') + '</select></div>' : '')
       + panel()
@@ -3571,6 +3574,9 @@ new MutationObserver(() => {
 function applyLang(lang) {
   LANG = lang;
   try { localStorage.setItem('massa_lang', lang); } catch (e) {}   // 다음 실행에도 유지
+  // 원화 환산은 한국어일 때만 보여준다. CSS 로 끄는 이유는 언어를 바꿔도
+  // 목록을 다시 그리지 않기 때문이다 — 마크업은 그대로 두고 보이기만 끈다.
+  document.body.dataset.lang = lang;
   document.querySelectorAll('.langsw').forEach(s => s.classList.toggle('on', s.dataset.lang === lang));
   const _lb = document.getElementById('langBtn'); if (_lb) { const _m = { ko: '🇰🇷 KO', vi: '🇻🇳 VI', en: '🇺🇸 EN', zh: '🇨🇳 中', ja: '🇯🇵 日' }; _lb.textContent = _m[lang] || lang; }
   translateTree(document.body, lang);
