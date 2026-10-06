@@ -178,6 +178,26 @@ def chrome(lang, name, L, body, page):
         f'<link rel="alternate" hreflang="{l}" href="{SITE}{url(l,name)}">' for l in LANGS
     ) + f'<link rel="alternate" hreflang="x-default" href="{SITE}{url("ko",name)}">'
     verify = '<meta name="msvalidate.01" content="0B78D4CC15B1549A5F90A122DD123EAC">' if (lang=="ko" and name=="index") else ""
+    # 손님 대부분이 베트남 분들인데 루트(massaviet.com)는 한국어다. 처음 들어온 사람을
+    # 자기 언어로 보내 준다. 한국어 기기는 그대로 두고, 영어 기기는 /en/, 나머지는 전부 /vi/.
+    #
+    # 조심한 것 세 가지.
+    #  · ko 페이지에서만 판단한다. /vi/·/en/ 에서 또 튕기면 무한 왕복이 된다
+    #  · 검색 로봇은 건드리지 않는다. 구글이 한국어 루트를 영어로 색인해 버리면 손해다
+    #  · 한 번 정해지면 기억한다. 언어 전환을 누른 사람을 다시 튕기면 바꿀 수가 없다
+    # <head> 안에서 먼저 돌려야 한국어 화면이 깜빡였다가 넘어가는 꼴을 안 본다.
+    langredir = "" if lang != "ko" else (
+        '<script>(function(){try{'
+        'var K="massa_site_lang";'
+        'if(/bot|crawl|spider|slurp|yeti|daum|facebookexternalhit|preview/i.test(navigator.userAgent))return;'
+        'if(localStorage.getItem(K))return;'
+        'var l=(navigator.language||"").slice(0,2).toLowerCase();'
+        'var t=l==="ko"?null:(l==="en"?"en":"vi");'
+        'if(!t){localStorage.setItem(K,"ko");return;}'
+        'localStorage.setItem(K,t);'
+        'location.replace(t==="en"?' + repr(url("en", name)) + ':' + repr(url("vi", name)) + ');'
+        '}catch(e){}})();</script>'
+    )
     ld = page.get("jsonld") or auto_faq_ld(page)
     ld = f'<script type="application/ld+json">{ld}</script>' if ld else ""
     return f'''<!DOCTYPE html>
@@ -205,6 +225,7 @@ def chrome(lang, name, L, body, page):
 <link rel="stylesheet" href="/style.css?v={CSSV}">
 <link rel="stylesheet" href="{FONTS}" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="{FONTS}"></noscript>
+{langredir}
 {ld}
 </head>
 <body>
@@ -250,6 +271,13 @@ def chrome(lang, name, L, body, page):
     es.forEach(function(e){{ if(e.isIntersecting){{ e.target.classList.add('in'); io.unobserve(e.target); }} }});
   }}, {{rootMargin:'0px 0px -8% 0px'}});
   document.querySelectorAll('.rv').forEach(function(e){{ io.observe(e); }});
+  // 언어를 직접 고른 사람은 그 선택을 기억한다.
+  // 안 그러면 한국어를 보려고 KO 를 눌러도 <head> 의 자동 이동이 다시 베트남어로 튕겨낸다.
+  document.querySelectorAll('.langs a[hreflang]').forEach(function(a){{
+    a.addEventListener('click', function(){{
+      try {{ localStorage.setItem('massa_site_lang', a.getAttribute('hreflang')); }} catch(e) {{}}
+    }});
+  }});
   // 앱 설치 띠는 한 번 닫으면 다시 띄우지 않는다
   var bar = document.getElementById('smartbar');
   try {{ if (localStorage.getItem('massa_sb') === 'off') bar.style.display = 'none'; }} catch(e) {{}}

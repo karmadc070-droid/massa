@@ -24,6 +24,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Noto+Serif+KR:wght@400;500&family=Inter:wght@400;500;600&display=swap" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Noto+Serif+KR:wght@400;500&family=Inter:wght@400;500;600&display=swap"></noscript>
 
+
 </head>
 <body>
 
@@ -87,6 +88,13 @@
     es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
   }, {rootMargin:'0px 0px -8% 0px'});
   document.querySelectorAll('.rv').forEach(function(e){ io.observe(e); });
+  // 언어를 직접 고른 사람은 그 선택을 기억한다.
+  // 안 그러면 한국어를 보려고 KO 를 눌러도 <head> 의 자동 이동이 다시 베트남어로 튕겨낸다.
+  document.querySelectorAll('.langs a[hreflang]').forEach(function(a){
+    a.addEventListener('click', function(){
+      try { localStorage.setItem('massa_site_lang', a.getAttribute('hreflang')); } catch(e) {}
+    });
+  });
   // 앱 설치 띠는 한 번 닫으면 다시 띄우지 않는다
   var bar = document.getElementById('smartbar');
   try { if (localStorage.getItem('massa_sb') === 'off') bar.style.display = 'none'; } catch(e) {}

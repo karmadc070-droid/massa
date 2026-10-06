@@ -4112,12 +4112,15 @@ async function load() {
     };
     const logoutRow = document.getElementById('acLogoutRow');
     if (logoutRow) logoutRow.onclick = async () => { await sb.auth.signOut(); await refreshSession(); window.go('home'); };
-    // 지난번에 고른 언어를 그대로 이어 쓴다. 없으면 기기 언어를 따르고, 그것도 아니면 한국어
+    // 지난번에 고른 언어를 그대로 이어 쓴다. 없으면 기기 언어를 따른다.
+    // 기기 언어를 모를 때는 베트남어로 간다 — 손님 대부분이 베트남 분들이다.
+    // (전에는 한국어로 떨어졌다. 태국어 폰이든 프랑스어 폰이든 한국어가 떠서 가입이 끊겼다.)
+    // 베트남 폰은 vi, 한국 폰은 ko 로 그대로 맞춰 준다. 바꾸고 싶으면 계정 화면에서 바꾼다.
     let _saved = null;
     try { _saved = localStorage.getItem('massa_lang'); } catch (e) {}
     if (!_saved) {
-      const _dev = (navigator.language || 'ko').slice(0, 2).toLowerCase();
-      _saved = ['ko', 'vi', 'en', 'zh', 'ja'].includes(_dev) ? _dev : 'ko';
+      const _dev = (navigator.language || 'vi').slice(0, 2).toLowerCase();
+      _saved = ['ko', 'vi', 'en', 'zh', 'ja'].includes(_dev) ? _dev : 'vi';
     }
     applyLang(_saved);
     setStatus('● DB 연결됨 · 제공자 ' + providers.length + ' · 매장 ' + stores.length, true);
