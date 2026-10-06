@@ -803,8 +803,10 @@
     <div class="done-wrap">
       <div class="done-ico">✓</div>
       <div style="font-size:18px;font-weight:bold;color:var(--navy)">예약이 확정되었습니다</div>
+      <!-- 윗줄은 예약할 때마다 채운다. 전에는 'Linh N. ... 6월 7일 19:40' 이 그대로 박혀 있어서
+           누가 무엇을 예약하든 남의 예약 내용이 떴다. 비워 두고 submitBooking 이 채운다. -->
       <div style="font-size:13px;color:var(--muted);margin-top:8px;line-height:1.7">
-        Linh N. 테라피스트가 6월 7일(일) 19:40에 출발합니다.<br>
+        <span id="doneLead"></span>
         출발·도착 시 푸시 알림을 보내드립니다.
       </div>
       <div class="summary" style="text-align:left;margin-top:22px">
@@ -2024,7 +2026,18 @@ async function submitBooking() {
     if (done) done.innerHTML = `예약 저장 실패: ${error.message}`;
   } else if (done) {
     const won = Math.round(data.amount_vnd * 0.054).toLocaleString();
-    done.innerHTML = `<span>예약번호</span> <b>${data.booking_no}</b><br>${svc.name} · ${data.amount_vnd.toLocaleString()}₫ <b>(<span>후불</span> · <span>${({card_onsite:'현장 카드',qr_onsite:'QR',cash:'현금'})[data.payment_method]}</span>)</b><br>${row.hotel_name || '롯데호텔 하노이'} ${row.room_number} · ${time}`;
+    // 장소가 없을 때 '롯데호텔 하노이' 를 끼워 넣고 있었다. 집으로 부른 손님에게
+    // 가 본 적도 없는 호텔 이름이 뜬다. 없으면 주소를, 그것도 없으면 아무것도 안 쓴다.
+    const place = [row.hotel_name, row.room_number].filter(Boolean).join(' ') || row.address || '';
+    done.innerHTML = `<span>예약번호</span> <b>${data.booking_no}</b><br>${svc.name} · ${data.amount_vnd.toLocaleString()}₫ <b>(<span>후불</span> · <span>${({card_onsite:'현장 카드',qr_onsite:'QR',cash:'현금'})[data.payment_method]}</span>)</b>${place ? '<br>' + place + ' · ' + time : '<br>' + time}`;
+  }
+  // 윗줄 안내도 실제 예약으로 채운다. 번역문에 자리표시자를 두고 값만 끼운다 —
+  // 조각을 이어 붙이면 언어마다 어순이 달라 문장이 깨진다.
+  const lead = document.getElementById('doneLead');
+  if (lead) {
+    const nm = (SEL.provider && SEL.provider.display_name) || '';
+    lead.textContent = error ? '' :
+      T('{name} 테라피스트가 {time}에 출발합니다.').replace('{name}', nm).replace('{time}', time) + ' ';
   }
   // 예약이 잡힌 뒤부터 담당 테라피스트와 채팅할 수 있다
   const chatBtn = document.getElementById('doneChatBtn');
@@ -2984,7 +2997,7 @@ const TITLE_I18N = {
   '스파 안내': ['Spa','Spa','水疗','スパ'], '매장 찾기': ['Tìm cửa hàng','Find Stores','找店铺','店舗を探す'], '매장 상세': ['Cửa hàng','Store','店铺','店舗'],
   '프로필': ['Hồ sơ','Profile','个人资料','プロフィール'], '코스 선택': ['Chọn liệu trình','Choose Course','选择套餐','コース選択'], '언제 받을까요?': ['Chọn thời gian','Pick a time','选择时间','時間を選ぶ'],
   '어디로 갈까요?': ['Địa điểm','Location','选择地点','場所'], '예약 확인': ['Xác nhận đặt chỗ','Confirm','确认预约','予約確認'], '예약 완료': ['Hoàn tất','Completed','预约完成','予約完了'],
-  '내 예약': ['Đặt chỗ của tôi','My Bookings','我的预约','マイ予約'], '홈 뷰티 등록 신청': ['Đăng ký Home Beauty','Beauty Registration','美容入驻申请','ビューティー登録'],
+  '내 예약': ['Đặt chỗ của tôi','My Bookings','我的预约','マイ予約'], '내 이용 현황': ['Hoạt động của tôi','My Activity','我的使用情况','利用状況'], '홈 뷰티 등록 신청': ['Đăng ký Home Beauty','Beauty Registration','美容入驻申请','ビューティー登録'],
   '예약 관리 (파트너)': ['Quản lý đặt chỗ','Manage Bookings','预约管理','予約管理'], '홈 뷰티 신청 (관리자)': ['Duyệt đăng ký','Approvals','入驻审核','登録審査'],
   '즐겨찾기': ['Yêu thích','Favorites','收藏','お気に入り'], '쿠폰함': ['Ví coupon','Coupons','优惠券','クーポン'], '내 입금 현황': ['Khoản phải nộp','My Payments','我的应缴','入金状況'],
   '고객 채팅': ['Chat khách','Customer Chat','客户聊天','顧客チャット'], '근무 위치 (GPS)': ['Vị trí làm việc (GPS)','Work Location (GPS)','工作位置（GPS）','勤務位置（GPS）'], 'AI 일정 추천': ['Gợi ý lịch AI','AI Schedule Tips','AI日程推荐','AIスケジュール提案'], '스케줄 관리': ['Lịch làm việc','Schedule','日程管理','スケジュール管理'],
@@ -3011,6 +3024,19 @@ const TITLE_I18N = {
   '채팅': ['Trò chuyện', 'Chat', '聊天', 'チャット'],
 };
 const DICT = {
+  // 베트남어를 앞세우고 25개 화면을 전부 훑었더니 여기 세 군데만 한국어로 남아 있었다.
+  // 하필 예약의 마지막 화면과 마사지사 모집 화면이었다.
+  '{name} 테라피스트가 {time}에 출발합니다.': [
+    'Chuyên viên {name} sẽ khởi hành lúc {time}.',
+    '{name} will set out at {time}.',
+    '理疗师 {name} 将于 {time} 出发。',
+    'セラピスト {name} が {time} に出発します。'],
+  '표시는 모두 채워야 신청할 수 있습니다. 신청 후 관리자가 서류를 확인하고 승인하면 목록에 노출됩니다. 민감정보는 비공개로 저장됩니다.': [
+    'Bạn cần điền đủ các mục có dấu này. Sau khi gửi, quản trị viên kiểm tra giấy tờ và duyệt thì hồ sơ của bạn sẽ hiển thị trong danh sách. Thông tin nhạy cảm được lưu riêng tư.',
+    'All marked fields are required. After you apply, an administrator checks your documents and approves you before your profile appears in the list. Sensitive information is stored privately.',
+    '带此标记的项目均为必填。提交后管理员核验证件并通过审核，您的资料才会显示在列表中。敏感信息将保密存储。',
+    'この印の項目はすべて必須です。申請後、管理者が書類を確認し承認するとリストに掲載されます。機微な情報は非公開で保管します。'],
+  '내 이용 현황': ['Hoạt động của tôi', 'My Activity', '我的使用情况', '利用状況'],
   // 필터
   // 라벨
   // 버튼(.cta)
