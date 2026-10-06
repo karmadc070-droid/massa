@@ -9,7 +9,7 @@
 set -e
 
 OUT=/root/shots-vi
-mkdir -p "$OUT" && rm -f "$OUT"/*.png
+rm -rf "$OUT" && mkdir -p "$OUT"
 
 echo '=== 0. 준비 ==='
 python3 -c 'import playwright' 2>/dev/null || pip3 install --quiet --break-system-packages playwright
@@ -24,6 +24,15 @@ from playwright.async_api import async_playwright
 OUT = sys.argv[1]
 URL = "https://app.massaviet.com/"
 
+# 기존 한국어 스크린샷이 올라가 있는 슬롯 크기에 맞춘다. 처음에 1242x2688(옛 6.5")로
+# 찍었는데 지금 쓰는 슬롯은 1290x2796 이라 안 맞았다. 세 규격을 다 만들어 둔다.
+#   뷰포트 x 배율 = 최종 픽셀
+DEVICES = [
+    ("1290x2796", 430, 932, 3),    # Dynamic Island iPhone (중형) — 지금 쓰는 슬롯
+    ("1284x2778", 428, 926, 3),    # 6.5형
+    ("2064x2752", 1032, 1376, 2),  # iPad 33.0cm
+]
+
 # 그냥 go() 로 건너뛰면 안 되는 화면이 있다. 예약 확인 화면은 코스·시간을 고른
 # 상태라야 내용이 차고, 안 그러면 빈 상자만 찍힌다 (처음에 그렇게 찍었다).
 # 그래서 앞 네 장은 바로 띄우고, 뒤 네 장은 실제로 눌러서 흐름을 타고 간다.
@@ -34,14 +43,17 @@ JUMP = [
     ("08-mydash",  "myDash"),
 ]
 
-async def main():
-    async with async_playwright() as p:
-        b = await p.chromium.launch(args=["--no-sandbox", "--font-render-hinting=none"])
+async def run(p, tag, vw, vh, dsf):
+    import os
+    d = f"{OUT}/{tag}"
+    os.makedirs(d, exist_ok=True)
+    b = await p.chromium.launch(args=["--no-sandbox", "--font-render-hinting=none"])
+    if True:
         ctx = await b.new_context(
-            viewport={"width": 414, "height": 896},
-            device_scale_factor=3,           # 414x896 x3 = 1242x2688 (애플 6.5")
+            viewport={"width": vw, "height": vh},
+            device_scale_factor=dsf,
             locale="vi-VN",
-            is_mobile=True, has_touch=True,
+            is_mobile=(vw < 800), has_touch=True,
         )
         # 앱이 읽기 전에 언어를 심어 둔다
         await ctx.add_init_script(
@@ -65,8 +77,8 @@ async def main():
                 "document.querySelectorAll('.wonhint').length && "
                 "[...document.querySelectorAll('.wonhint')].some(e=>e.offsetParent)"
             )
-            await pg.screenshot(path=f"{OUT}/{name}.png", full_page=False)
-            print(f"  {name:12s} 한글={ko}  원화표시={won}")
+            await pg.screenshot(path=f"{d}/{name}.png", full_page=False)
+            print(f"  [{tag}] {name:12s} 한글={ko}  원화표시={won}")
 
         for name, sid in JUMP:
             await pg.evaluate(f"window.go({sid!r})")
@@ -107,21 +119,28 @@ async def main():
 
         await b.close()
 
+async def main():
+    async with async_playwright() as p:
+        for tag, vw, vh, dsf in DEVICES:
+            print(f"=== {tag} ({vw}x{vh} x{dsf}) ===")
+            await run(p, tag, vw, vh, dsf)
+
 asyncio.run(main())
 PY
 
 echo ''
 echo '=== 2. 결과 ==='
-ls -la "$OUT"
-python3 - "$OUT" <<'PY'
-import sys, os, struct
+python3 - "$OUT" <<'PY2'
+import sys, os, struct, glob
 d = sys.argv[1]
-for f in sorted(os.listdir(d)):
-    p = os.path.join(d, f)
-    with open(p, 'rb') as fh:
-        head = fh.read(24)
+want = {'1290x2796': (1290, 2796), '1284x2778': (1284, 2778), '2064x2752': (2064, 2752)}
+bad = 0
+for p in sorted(glob.glob(d + '/*/*.png')):
+    tag = os.path.basename(os.path.dirname(p))
+    head = open(p, 'rb').read(24)
     w, h = struct.unpack('>II', head[16:24])
-    print(f"  {f:16s} {w}x{h}  {os.path.getsize(p)//1024} KB")
-PY
-echo ''
-echo '  ※ 1242x2688 이어야 애플 6.5인치 규격에 맞는다'
+    ok = 'OK' if want.get(tag) == (w, h) else 'MISMATCH'
+    if ok != 'OK': bad += 1
+    print('  %-10s %-14s %dx%d  %4d KB  %s' % (tag, os.path.basename(p), w, h, os.path.getsize(p)//1024, ok))
+print('  어긋난 파일:', bad)
+PY2
