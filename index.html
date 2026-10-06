@@ -809,11 +809,10 @@
         <span id="doneLead"></span>
         출발·도착 시 푸시 알림을 보내드립니다.
       </div>
-      <div class="summary" style="text-align:left;margin-top:22px">
-        예약번호 <b>MS-260607-0142</b><br>
-        아로마테라피 90분 · 600,000₫ <b>(후불 · 현장 카드)</b><br>
-        롯데호텔 하노이 2104호 · 20:00
-      </div>
+      <!-- 여기도 예약할 때마다 submitBooking 이 통째로 채운다.
+           예시 값(MS-260607-0142 · 아로마테라피 · 롯데호텔 2104호)을 박아 두면,
+           부팅이 실패해 이 화면이 그냥 열릴 때 남의 예약표가 뜬다. 비워 둔다. -->
+      <div class="summary" style="text-align:left;margin-top:22px"></div>
       <div class="notice" style="text-align:left">🆘 서비스 중 문제가 생기면 앱 내 <b>안전 버튼</b>으로 즉시 연결됩니다. (Phase 1.5)</div>
     </div>
     <button class="cta" id="doneChatBtn" style="display:none;background:#2E8B8B;margin-bottom:8px">💬 테라피스트와 채팅하기</button>
