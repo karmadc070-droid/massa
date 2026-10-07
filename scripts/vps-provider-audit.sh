@@ -1,13 +1,15 @@
 #!/bin/bash
 # 걷어내기 전에 '무엇이 있는지' 부터 본다. 읽기만 한다 - 아무것도 바꾸지 않는다.
-#
-# 알아야 할 것 -
-#  1) providers 가 몇 명이고 어떤 상태인가
-#  2) 서류(provider_kyc)가 있는 사람은 누구인가
-#  3) 어느 것이 시드(가짜)이고 어느 것이 실제 가입자인가 - 로그인 계정 유무로 가른다
-#  4) 예약/후기 같은 실제 기록이 달려 있는 행이 있는가 (있으면 지우면 안 된다)
 set -e
 Q() { docker exec -i massa-db psql -U postgres -d postgres -c "$1" < /dev/null; }
+
+echo '=== 0. provider_kyc 컬럼 (앞서 status 를 가정했다가 틀렸다) ==='
+Q "select column_name, data_type from information_schema.columns
+    where table_name='provider_kyc' order by ordinal_position;"
+
+echo '=== 0-2. providers 컬럼 ==='
+Q "select column_name from information_schema.columns
+    where table_name='providers' order by ordinal_position;"
 
 echo '=== 1. 전체 현황 ==='
 Q "select count(*) total,
@@ -17,35 +19,16 @@ Q "select count(*) total,
           count(*) filter (where profile_id is null) no_login
      from providers;"
 
-echo '=== 2. 서류 보유 현황 (provider_kyc) ==='
-Q "select coalesce(k.status,'(서류 없음)') kyc, count(*)
-     from providers p
-     left join provider_kyc k on k.provider_id = p.id
-    group by 1 order by 2 desc;"
+echo '=== 2. provider_kyc 에 행이 있는 provider 수 ==='
+Q "select count(distinct provider_id) from provider_kyc;"
 
-echo '=== 3. 한 줄씩 - 누가 시드이고 누가 실제인가 ==='
+echo '=== 3. 한 줄씩 ==='
 Q "select p.id, left(p.display_name,16) name,
           p.is_active act, p.is_verified ver, p.application_status st,
           (p.profile_id is not null) has_login,
-          coalesce(k.status,'-') kyc,
+          (select count(*) from provider_kyc k where k.provider_id=p.id) kyc,
           (select count(*) from bookings b where b.provider_id=p.id) bk,
           (select count(*) from reviews r where r.provider_id=p.id) rv,
           to_char(p.created_at,'MM-DD HH24:MI') created
      from providers p
-     left join provider_kyc k on k.provider_id=p.id
     order by has_login desc, p.created_at;"
-
-echo '=== 4. 걷어낼 후보 (로그인 계정 없음 + 서류 없음) ==='
-Q "select count(*) 걷어낼_후보
-     from providers p
-     left join provider_kyc k on k.provider_id=p.id
-    where p.profile_id is null
-      and (k.status is null or k.status <> 'approved');"
-
-echo '=== 5. 그 후보에 실제 기록이 달려 있는가 (있으면 지우면 안 된다) ==='
-Q "select count(*) 예약있는_후보
-     from providers p
-     left join provider_kyc k on k.provider_id=p.id
-    where p.profile_id is null
-      and (k.status is null or k.status <> 'approved')
-      and exists (select 1 from bookings b where b.provider_id=p.id);"
