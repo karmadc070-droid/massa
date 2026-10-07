@@ -117,7 +117,7 @@ def r_cta(b, L, lang):
     """버튼 줄. 히어로의 .btns/.btn 을 그대로 쓴다 — 새 스타일을 만들지 않는다."""
     bs = "".join(f'<a class="btn{"" if i == 0 else " ghost"}" href="{h}">{esc(t)}</a>'
                  for i, (t, h) in enumerate(b["btns"]))
-    sub = f'<p class="note rv">{esc(b["sub"])}</p>' if b.get("sub") else ""
+    sub = f'<p class="ctasub rv">{esc(b["sub"])}</p>' if b.get("sub") else ""
     return f'<div class="btns rv" style="justify-content:center">{bs}</div>{sub}'
 
 def r_stores(b, L, lang):
