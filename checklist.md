@@ -2626,3 +2626,34 @@ Codemagic 은 저장소 루트의 `index.html` 을 그대로 `www/` 로 복사�
 Kun 님 행은 **빈 껍데기**였다(파일 0개). 정작 신분증을 낸 Thanh hà 님은 pending 이라 노출도 안 됐다.
 기준을 '레코드 유무' 가 아니라 **'신분증 파일이 실제로 있는가'** 로 바꿔 다시 돌렸고,
 그 결과 인증 마크는 현재 **0개**다. 앞으로도 파일 존재를 기준으로 판단할 것.
+
+---
+
+## Z-31. api.massaviet.com 추가 (2026-10-07)
+
+앱이 쓰는 API 주소가 아직 `api.moahagwon.com` 이다. massa 와 상관없는 도메인이라
+자체 도메인으로 옮기는 중인데, **한 번에 갈아끼우면 안 된다.**
+
+- 이미 설치된 iOS 1.0.8 / 1.0.9 는 `api.moahagwon.com` 을 코드에 박은 채 돌아간다.
+  끊으면 그 사용자들 로그인이 전부 깨진다.
+- DB 안에 절대 URL 이 74개 박혀 있다 (providers.photo_url 23, photo_urls 29, photo_url_orig 22).
+- 주소가 바뀌면 저장된 세션이 무효가 되어 전원 로그아웃된다.
+
+그래서 **둘 다 열어두는 단계**를 먼저 둔다.
+
+1. Cloudflare — `api` A 레코드 `141.164.46.88`, 프록시 끔(DNS only).
+   기존 `admin.massaviet.com` 과 같은 형태로 맞췄다. 프록시를 켜면 Caddy 의 자동 인증서
+   (HTTP-01) 가 막힌다.
+2. Caddy — 파일 끝에 블록 추가. 기존 api 블록을 그대로 베꼈다.
+   ```
+   api.massaviet.com {
+       reverse_proxy localhost:8002
+   }
+   ```
+   `scripts/vps-caddy-add-api-massaviet.sh`. 중괄호를 파싱할 필요가 없는 '끝에 추가' 라
+   지난번 정규식 사고 같은 위험은 없다. 그래도 validate 통과 후에만 적용했다.
+3. 확인 — 새 주소 401(정상), 기존 api 401, app/admin/massaviet/vi/emoi 전부 200,
+   옛 주소 301 유지.
+
+**남은 것 (다음 빌드 때 한꺼번에)** — 앱의 `SUPABASE_URL` 기본값 교체, DB 절대 URL 74개
+치환, iOS 재빌드. 옛 주소는 그 뒤로도 몇 달 더 살려둬야 한다.
