@@ -16,6 +16,8 @@ LABELS = {
     "f_service": "Dịch vụ", "f_company": "massa", "f_support": "Hỗ trợ",
     "legal": ("© 2026 massa. Nền tảng đặt lịch massage và làm đẹp tại nhà ở Việt Nam. Hiện đang hoạt động tại Hà Nội.<br>"
               "massa là nền tảng kết nối khách hàng với nhà cung cấp đã được xác minh; dịch vụ cung cấp không phải là điều trị y tế."),
+    "rbar": 'Tuyển 30 Thành viên sáng lập · 20 ca đầu bạn giữ 100%',
+    "rbar_cta": 'Xem chi tiết',
     "smart": "Đặt lịch nhanh hơn trên ứng dụng",
     "smart_cta": "Tải ngay",
 }
@@ -286,42 +288,83 @@ PAGES = {
  ]},
 
 "partner": {
- "title": "Tuyển đối tác — chuyên viên massage & làm đẹp | massa",
- "desc": "massa đang tuyển đối tác massage và làm đẹp tại nhà ở Việt Nam, bắt đầu từ Hà Nội. Không phí gia nhập, không phí hàng tháng, chỉ tính hoa hồng trên lịch đã hoàn thành.",
+ "title": "Tuyển KTV massage & làm đẹp tại nhà — Thành viên sáng lập | massa",
+ "desc": "massa tuyển 30 Thành viên sáng lập tại Hà Nội. 20 ca đầu bạn giữ 100% tiền khách trả. Không phí gia nhập, không phí đào tạo. Làm thêm vào ngày nghỉ, không cần nghỉ việc hiện tại.",
  "blocks": [
   {"type": "section",
-   "kicker": "Đối tác",
-   "h2": "Bạn tự quyết<br>giờ làm việc",
-   "lead": "Làm việc mà không bị buộc vào một cửa hàng. Bạn chọn khung giờ và khu vực mình nhận lịch.",
+   "kicker": "Tuyển đối tác",
+   "h2": "Không cần nghỉ việc.<br><em>Chỉ cần ngày nghỉ.</em>",
+   "lead": "massa là nền tảng đặt lịch massage tại nhà. Bạn bật ứng dụng khi rảnh, tắt khi bận. Không ràng buộc với cửa hàng nào.",
    "blocks": [
-    {"type": "table", "rows": [
-      ("Phí gia nhập", "Không có."),
-      ("Phí hàng tháng", "Không có."),
-      ("Hoa hồng", "Chỉ tính trên những lịch được nhận và hoàn thành."),
-      ("Hạn nộp", "Trong thời hạn quy định tính từ ngày làm dịch vụ. Nộp trễ sẽ có nhắc nhở."),
-      ("Giờ làm", "Bạn tự bật tắt trạng thái nhận lịch. Ngoài khung đó sẽ không có yêu cầu nào đến."),
-    ]}]},
+    {"type": "cta", "btns": [("Đăng ký làm đối tác", "https://app.massaviet.com/?login=1")],
+     "sub": "Đăng ký trong ứng dụng. Miễn phí hoàn toàn."}]},
 
   {"type": "section", "soft": True,
+   "kicker": "Nói thẳng",
+   "h2": "Bạn đang nghi ngờ.<br>Chúng tôi hiểu.",
+   "lead": "Tin tuyển KTV massage trên mạng phần lớn là lừa đảo hoặc trá hình. Nên đây là những gì bạn có thể tự kiểm chứng.",
+   "blocks": [
+    {"type": "grid", "items": [
+      {"n": "01", "t": "Chúng tôi đòi giấy tờ",
+       "d": "Bắt buộc có CCCD mặt trước và mặt sau. Chúng tôi xem từng hồ sơ rồi mới duyệt. Lừa đảo thì không ai đòi giấy tờ cả."},
+      {"n": "02", "t": "Không thu của bạn một đồng nào",
+       "d": "Không phí gia nhập, không phí đào tạo, không tiền cọc, không phí hàng tháng. Nếu ai đó bảo bạn nộp tiền trước, đó không phải chúng tôi."},
+      {"n": "03", "t": "Ứng dụng có thật, công ty có thật",
+       "d": "massa có trên App Store và Google Play. Bạn tải về xem trước khi quyết định cũng được."},
+      {"n": "04", "t": "Chúng tôi ghi đúng sự thật",
+       "d": "Hồ sơ chưa kiểm tra thì không có dấu xác minh, và chúng tôi ghi đúng như vậy với khách. Chúng tôi không tô vẽ cho ai cả."},
+    ]}]},
+
+  {"type": "section",
+   "kicker": "Thành viên sáng lập",
+   "h2": "30 người đầu tiên",
+   "lead": "Chúng tôi đang mở tại Hà Nội và cần khoảng 30 chuyên viên để phủ các quận. Đủ 30 là đóng.",
+   "blocks": [
+    {"type": "table", "rows": [
+      ("20 ca đầu tiên", "<b>Bạn giữ 100% tiền khách trả.</b> Không tính hoa hồng. <b>Không giới hạn thời gian</b> \u2014 tính theo số ca, không theo tháng."),
+      ("Sau 20 ca", "Hoa hồng 5% trong 3 tháng. Mức thường là 10%."),
+      ("Hiển thị", "30 ngày đầu danh sách, kèm nhãn chuyên viên mới."),
+      ("Huy hiệu", "Huy hiệu Thành viên sáng lập, giữ vĩnh viễn trên hồ sơ."),
+      ("Giới thiệu bạn bè", "Người bạn giới thiệu hoàn thành 5 ca \u2014 bạn được hoa hồng 5% trong 3 tháng."),
+      ("Chi phí tham gia", "0 đồng. Không phí gia nhập, đào tạo, cọc hay phí tháng."),
+    ]},
+    {"type": "note", "text": "Vì sao tính theo ca mà không theo tháng: chúng tôi mới bắt đầu, khách chưa nhiều. Ưu đãi theo tháng sẽ hết hạn trong lúc bạn còn đang chờ khách. Tính theo ca thì không."}]},
+
+  {"type": "section", "soft": True,
+   "kicker": "Cách vận hành",
+   "h2": "Bạn tự quyết",
+   "blocks": [
+    {"type": "table", "rows": [
+      ("Giờ làm", "Bạn tự bật tắt trạng thái nhận lịch. Ngoài khung đó sẽ không có yêu cầu nào đến."),
+      ("Khu vực", "Bạn chọn quận mình nhận lịch."),
+      ("Giá dịch vụ", "Bạn tự đặt giá, trong khoảng cho phép, quản trị viên duyệt."),
+      ("Nhận hay từ chối", "Từng yêu cầu một, quyền ở bạn."),
+      ("Thanh toán", "Khách trả tận tay bạn sau khi xong. Bạn không phải chờ đối soát."),
+      ("Hoa hồng", "Bạn nộp lại sau, theo hạn quy định tính từ ngày làm dịch vụ."),
+    ]}]},
+
+  {"type": "section",
    "kicker": "Đăng ký",
    "h2": "Các bước",
    "blocks": [
     {"type": "steps", "items": [
-      {"t": "Đăng ký trong ứng dụng", "d": "Tài khoản → Trở thành đối tác, chọn cá nhân hoặc cửa hàng."},
-      {"t": "Nộp hồ sơ", "d": "Giấy tờ tùy thân, tài khoản nhận tiền, chứng chỉ và ảnh hồ sơ."},
-      {"t": "Kiểm tra giấy tờ", "d": "Chúng tôi kiểm tra giấy tờ tùy thân và chứng chỉ bạn đã tải lên."},
-      {"t": "Bắt đầu", "d": "Được duyệt là bắt đầu nhận yêu cầu đặt lịch. Các dấu xác minh được cấp riêng, theo từng giấy tờ đã kiểm tra."},
-    ]}]},
+      {"t": "Tải ứng dụng massa", "d": "App Store hoặc Google Play. Miễn phí."},
+      {"t": "Tài khoản → Trở thành đối tác", "d": "Chọn cá nhân hoặc cửa hàng."},
+      {"t": "Nộp hồ sơ", "d": "CCCD mặt trước và mặt sau (bắt buộc), tài khoản nhận tiền, ảnh hồ sơ. Chứng chỉ là tùy chọn \u2014 có thì được thêm dấu."},
+      {"t": "Chờ duyệt", "d": "Chúng tôi xem từng hồ sơ. Được duyệt là bắt đầu nhận lịch."},
+    ]},
+    {"type": "cta", "btns": [("Đăng ký làm đối tác", "https://app.massaviet.com/?login=1"),
+                              ("Tải ứng dụng", "/vi/download.html")],
+     "sub": "Có thắc mắc? support@massaviet.com"}]},
 
-  {"type": "section",
+  {"type": "section", "soft": True,
    "kicker": "Điều chúng tôi mong",
    "h2": "Cam kết",
    "body": [
     "Lịch đã nhận thì phải làm đến nơi. Từ chối nhiều lần sẽ giảm mức hiển thị, và tích lũy đủ sẽ tạm dừng khả năng nhận lịch một thời gian.",
     "Bộ vệ sinh dùng một lần là tiêu chuẩn. Đưa ra yêu cầu không phù hợp với khách, hoặc dẫn khách ra ngoài ứng dụng, sẽ bị khóa ngay.",
-    "Ngược lại cũng vậy: nếu khách đưa ra yêu cầu không phù hợp, hãy từ chối và báo cáo. Chuẩn mực áp dụng cho cả hai bên."]},
+    "Ngược lại cũng vậy: nếu khách đưa ra yêu cầu không phù hợp, hãy từ chối và báo cáo. Trong ứng dụng có nút an toàn \u2014 một chạm là vị trí của bạn được gửi cho đội ngũ chúng tôi. Chuẩn mực áp dụng cho cả hai bên."]},
  ]},
-
 "faq": {
  "title": "Câu hỏi thường gặp — massa",
  "desc": "Giải đáp về đặt lịch, thanh toán, hủy lịch, an toàn và cách đăng ký làm đối tác.",

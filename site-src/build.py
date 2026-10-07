@@ -113,6 +113,13 @@ def r_pull(b, L, lang):
 def r_note(b, L, lang):
     return f'<p class="note rv">{esc(b["text"])}</p>'
 
+def r_cta(b, L, lang):
+    """버튼 줄. 히어로의 .btns/.btn 을 그대로 쓴다 — 새 스타일을 만들지 않는다."""
+    bs = "".join(f'<a class="btn{"" if i == 0 else " ghost"}" href="{h}">{esc(t)}</a>'
+                 for i, (t, h) in enumerate(b["btns"]))
+    sub = f'<p class="note rv">{esc(b["sub"])}</p>' if b.get("sub") else ""
+    return f'<div class="btns rv" style="justify-content:center">{bs}</div>{sub}'
+
 def r_stores(b, L, lang):
     ios = f'''<a class="store" href="{APPLE}" rel="noopener">
       <svg width="22" height="26" viewBox="0 0 22 26" fill="currentColor" aria-hidden="true"><path d="M18.1 13.8c0-3 2.4-4.4 2.5-4.5-1.4-2-3.5-2.3-4.2-2.3-1.8-.2-3.5 1-4.4 1-.9 0-2.3-1-3.8-1-2 0-3.8 1.1-4.8 2.9-2 3.5-.5 8.8 1.5 11.7 1 1.4 2.1 3 3.6 2.9 1.4-.1 2-.9 3.7-.9 1.7 0 2.2.9 3.7.9 1.5 0 2.5-1.4 3.4-2.9 1.1-1.6 1.5-3.2 1.5-3.3-.1 0-2.9-1.1-2.9-4.4zM15.3 4.9c.8-1 1.3-2.3 1.2-3.7-1.2 0-2.6.8-3.4 1.8-.7.9-1.4 2.2-1.2 3.6 1.3.1 2.6-.7 3.4-1.7z"/></svg>
@@ -129,7 +136,7 @@ def r_stores(b, L, lang):
 
 R = {"hero": r_hero, "section": r_section, "grid": r_grid, "pcards": r_pcards,
      "steps": r_steps, "table": r_table, "faq": r_faq, "pull": r_pull,
-     "note": r_note, "stores": r_stores}
+     "note": r_note, "stores": r_stores, "cta": r_cta}
 
 def render(b, L, lang): return R[b["type"]](b, L, lang)
 
@@ -200,6 +207,11 @@ def chrome(lang, name, L, body, page):
     )
     ld = page.get("jsonld") or auto_faq_ld(page)
     ld = f'<script type="application/ld+json">{ld}</script>' if ld else ""
+    # 테라피스트 모집 띠. 지금은 공급이 병목이라 전 페이지에 둔다.
+    # 모집 페이지 자신에는 안 붙인다 — 이미 와 있는 사람에게 또 권할 이유가 없다.
+    rbar = "" if name == "partner" else (
+        f'<a class="rbar" href="{url(lang,"partner")}">'
+        f'<b>{esc(L["rbar"])}</b><span>{esc(L["rbar_cta"])}</span></a>')
     return f'''<!DOCTYPE html>
 <!-- 자동 생성 파일이다. 고치려면 site-src/content_{lang}.py 를 고치고 build.py 를 다시 돌린다 -->
 <html lang="{lang}">
@@ -240,7 +252,7 @@ def chrome(lang, name, L, body, page):
     </nav>
   </div>
 </header>
-
+{rbar}
 {body}
 
 <footer class="site">

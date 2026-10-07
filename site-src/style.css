@@ -328,3 +328,15 @@ footer.site .legal { border-top: 1px solid #27505E; padding-top: 22px; color: #7
   .smartbar { display: flex; }
   body { padding-bottom: 62px; }
 }
+
+/* 테라피스트 모집 띠 — 헤더 바로 아래. 지금은 공급이 병목이라 전 페이지에 둔다.
+   고객용 사이트에 끼어드는 요소라 금색 한 줄로만 눌러 둔다. */
+.rbar{display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:9px 16px;background:var(--gold-pale);border-bottom:1px solid var(--line);
+  color:var(--ink);text-decoration:none;font-family:var(--sans);font-size:13.5px;
+  line-height:1.4;text-align:center;flex-wrap:wrap}
+.rbar b{font-weight:600}
+.rbar span{color:var(--gold);font-weight:600;white-space:nowrap}
+.rbar span::after{content:' →'}
+.rbar:hover{background:#F7E9CF}
+@media (max-width:560px){.rbar{font-size:12.5px;padding:8px 12px;gap:6px}}

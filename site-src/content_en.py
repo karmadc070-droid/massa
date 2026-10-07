@@ -14,6 +14,8 @@ LABELS = {
     "f_service": "Service", "f_company": "massa", "f_support": "Support",
     "legal": ("© 2026 massa. Home massage and beauty booking in Vietnam. Currently operating in Hanoi.<br>"
               "massa is a platform connecting customers with verified providers. The care offered is not a medical treatment."),
+    "rbar": 'Recruiting 30 founding therapists · keep 100% on your first 20 jobs',
+    "rbar_cta": 'See details',
     "smart": "Book faster in the app",
     "smart_cta": "Get it",
 }
@@ -284,42 +286,83 @@ PAGES = {
  ]},
 
 "partner": {
- "title": "Become a partner — therapists & beauty professionals | massa",
- "desc": "massa is recruiting massage and home beauty partners in Vietnam, starting in Hanoi. No joining fee, no monthly fee, and commission only on completed bookings.",
+ "title": "Hiring home massage & beauty therapists — founding members | massa",
+ "desc": "massa is hiring 30 founding therapists in Hanoi. Keep 100% of what the customer pays on your first 20 jobs. No joining fee, no training fee. Work your days off without leaving your current job.",
  "blocks": [
   {"type": "section",
-   "kicker": "Partners",
-   "h2": "You set your<br>own hours",
-   "lead": "Work without being tied to a venue. You choose the hours and districts you are available in.",
+   "kicker": "Join as a partner",
+   "h2": "Keep your job.<br><em>Use your days off.</em>",
+   "lead": "massa is a home massage booking platform. Switch on when you are free, off when you are not. You are not tied to any shop.",
    "blocks": [
-    {"type": "table", "rows": [
-      ("Joining fee", "None."),
-      ("Monthly fee", "None."),
-      ("Commission", "Charged only on bookings that are accepted and completed."),
-      ("Settlement", "Due within the set period from the service date. Late settlement triggers a reminder."),
-      ("Working hours", "You switch your availability on and off yourself. No requests arrive outside it."),
-    ]}]},
+    {"type": "cta", "btns": [("Apply as a partner", "https://app.massaviet.com/?login=1")],
+     "sub": "Apply in the app. It costs nothing."}]},
 
   {"type": "section", "soft": True,
-   "kicker": "Applying",
-   "h2": "How to register",
+   "kicker": "Straight talk",
+   "h2": "You are suspicious.<br>You should be.",
+   "lead": "Most massage therapist ads online are scams or something else entirely. So here is only what you can check for yourself.",
    "blocks": [
-    {"type": "steps", "items": [
-      {"t": "Apply in the app", "d": "Account → Become a partner, then choose freelancer or venue."},
-      {"t": "Submit documents", "d": "ID, settlement account, qualifications and profile photos."},
-      {"t": "Document check", "d": "We check the ID and credentials you uploaded."},
-      {"t": "Start working", "d": "Once approved, requests start coming in. Marks appear separately, as each document is checked."},
+    {"type": "grid", "items": [
+      {"n": "01", "t": "We ask for documents",
+       "d": "Both sides of your ID are required. We review every application by hand before approving. Scammers never ask for paperwork."},
+      {"n": "02", "t": "We take nothing from you",
+       "d": "No joining fee, no training fee, no deposit, no monthly fee. If anyone asks you to pay first, that is not us."},
+      {"n": "03", "t": "The app and the company are real",
+       "d": "massa is on the App Store and Google Play. Download it and look before you decide."},
+      {"n": "04", "t": "We write what is true",
+       "d": "Unchecked documents get no verification mark, and we say so to customers. We do not inflate anyone."},
     ]}]},
 
   {"type": "section",
-   "kicker": "What we ask",
+   "kicker": "Founding members",
+   "h2": "The first thirty",
+   "lead": "We are opening in Hanoi and need around thirty therapists to cover the districts. We close at thirty.",
+   "blocks": [
+    {"type": "table", "rows": [
+      ("First 20 jobs", "<b>You keep 100% of what the customer pays.</b> No commission. <b>No time limit</b> \u2014 it counts jobs, not months."),
+      ("After 20 jobs", "5% commission for three months. The usual rate is 10%."),
+      ("Visibility", "Top of the list for 30 days, with a new-therapist label."),
+      ("Badge", "A founding member badge that stays on your profile for good."),
+      ("Referrals", "When someone you bring completes 5 jobs, you get 5% for three months."),
+      ("Cost to join", "Zero. No joining, training, deposit or monthly fees."),
+    ]},
+    {"type": "note", "text": "Why jobs rather than months: we are new and customers are still few. A monthly offer would expire while you are still waiting for your first booking. A job-based one does not."}]},
+
+  {"type": "section", "soft": True,
+   "kicker": "How it works",
+   "h2": "You decide",
+   "blocks": [
+    {"type": "table", "rows": [
+      ("Hours", "You switch availability on and off. Nothing reaches you while you are off."),
+      ("Area", "You pick the districts you take bookings in."),
+      ("Your price", "You set it within an allowed range, subject to review."),
+      ("Accept or decline", "Every request is your call."),
+      ("Payment", "The customer pays you in person when the session ends. No waiting for a payout."),
+      ("Commission", "You send it afterwards, within the set period from the service date."),
+    ]}]},
+
+  {"type": "section",
+   "kicker": "Applying",
+   "h2": "The steps",
+   "blocks": [
+    {"type": "steps", "items": [
+      {"t": "Install the massa app", "d": "App Store or Google Play. Free."},
+      {"t": "Account to Become a partner", "d": "Choose individual or shop."},
+      {"t": "Upload documents", "d": "Both sides of your ID (required), payout account, profile photo. A certificate is optional and earns an extra mark."},
+      {"t": "Wait for approval", "d": "We review each one by hand. Once approved you start receiving bookings."},
+    ]},
+    {"type": "cta", "btns": [("Apply as a partner", "https://app.massaviet.com/?login=1"),
+                              ("Get the app", "/en/download.html")],
+     "sub": "Questions? support@massaviet.com"}]},
+
+  {"type": "section", "soft": True,
+   "kicker": "What we expect",
    "h2": "The commitment",
    "body": [
-    "Bookings you accept must be honoured. Repeated declines reduce your visibility, and enough of them pause your ability to take bookings for a period.",
-    "Single-use hygiene kits are the standard. Making inappropriate requests of a customer, or steering them off the app, ends access immediately.",
-    "The same holds the other way: if a customer makes an inappropriate request, refuse and report it. The standard applies to both sides."]},
+    "A booking you accept is a booking you finish. Repeated declines lower your visibility, and enough of them pause your ability to take bookings for a while.",
+    "Single-use hygiene kits are the standard. Making inappropriate requests of a customer, or taking a customer off the app, means immediate suspension.",
+    "It runs both ways. If a customer makes an inappropriate request, refuse and report it. The app has a safety button \u2014 one tap sends your location to our team. The standard applies to both sides."]},
  ]},
-
 "faq": {
  "title": "Frequently asked questions — massa",
  "desc": "Answers on booking, payment, cancellation, safety and applying as a partner.",
