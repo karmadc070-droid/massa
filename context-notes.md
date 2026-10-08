@@ -565,3 +565,42 @@ filesystem 단계에서 그게 먼저 잡혀 프록시가 조용히 무력화된
 `scripts/vps-test-vercel-proxy.sh <host>` — 200·리다이렉트 0·새 문구·assetlinks 지문·
 하위 경로 7개·비밀 파일 404 를 한 번에 본다. 미리보기에서 먼저 돌리고 별칭을 붙였다.
 
+
+## 아이폰 푸시를 어떻게 붙였나 (2026-10-08)
+
+### 구조
+예약 트리거 / 공지 RPC → `notifications` 행 → (문장 단위 트리거가 pg_net 으로) `send-push` 호출
+→ `claim_unpushed_notifications()` 가 `pushed_at` 을 찍으며 한 번만 내줌 → 그 사람의 `push_tokens` 로 APNs.
+pg_net 호출이 빠질 때를 대비해 VPS 크론이 1분마다 같은 함수를 부른다(`/root/massa_push.sh`, 로그는 보낼 게 있을 때만 `/var/log/massa_push.log`).
+**알림함과 푸시가 같은 행을 쓴다** — 푸시만 따로 쌓는 테이블을 만들지 않았다. 앱 알림함·실시간 토스트가 그대로 같이 동작한다.
+
+### 어떤 이벤트에 보내나 — 실제 코드 흐름을 보고 정했다
+- 앱은 예약을 `status: 'confirmed'` 로 **바로 넣는다**(index.html submitBooking). 그래서 "새 예약" 알림은 상태와 무관하게 INSERT 에 건다.
+- 손님에게: 확정(requested→confirmed, 파트너 수락), 출발(on_the_way — 지금 UI 엔 버튼이 없지만 요청 범위라 넣음),
+  **완료**(평가 요청 — 지금 흐름에서 실제로 일어나는 몇 안 되는 변화라 넣음), 취소 중 `cancelled_by <> 'customer'`
+  (파트너 거절은 cancelled_by 가 비어 있고, 노쇼는 'provider', 관리자 취소도 비어 있다).
+- 손님 본인 취소는 손님에게 안 보낸다. 손님이 취소했을 때 마사지사에게 알리는 것은 요청 범위 밖이라 넣지 않았다.
+- 새 예약 수신자: `providers.owner_id` 와 `profile_id` 둘 다(RLS 가 둘 다 마사지사로 인정한다) + 관리자 전원. UNION 으로 중복 제거.
+
+### 문구·언어
+- DB 의 제목은 **index.html DICT 에 이미 있는 한국어 문장**을 그대로 쓴다 → 알림함에서 translateTree 가 그 사람 언어로 바꾼다.
+  본문은 `예약번호 · MM/DD HH24:MI(하노이)` 라 언어와 무관하다.
+- 푸시 제목은 토큰에 저장한 화면 언어(`push_tokens.lang`)로 send-push 가 고른다. vi·ko 외(en·zh·ja)는 영어.
+  `profiles.preferred_language` 는 앱이 갱신하지 않아 쓸 수 없었다.
+- 공지는 관리자가 쓴 문장 그대로 보낸다(번역 없음).
+
+### 시크릿
+send-push 는 notify-admin 과 같은 `NOTIFY_SECRET` 을 쓴다. 트리거는 `app_settings('push')` 에서 URL·시크릿을 읽고,
+그 값은 스키마가 `app_settings('notify')` 에서 서버 안에서 복사한다 — 시크릿이 화면이나 저장소에 나오지 않는다.
+APNs 키는 VIBI 와 같은 팀 키(HS4BHJFLR2, Sandbox & Production)라 `/root/vibi/.env` 의 세 줄을 그대로 복사했다.
+
+### 시험 방법
+- DB: `scripts/test_push.sql` — 전부 트랜잭션 안, 끝에 rollback. pg_net 대기열 행도 같이 사라진다.
+- APNs: 실제 손님 토큰은 절대 쓰지 않는다. 관리자 계정에 **가짜 토큰**을 넣고 알림 한 건 → `BadDeviceToken` 이면
+  키·팀 인증은 통과한 것(키가 틀리면 403 InvalidProviderToken 이 난다). 토픽까지의 최종 확인은 실기기 수신으로 한다.
+
+### 주의
+- 한 시간 넘게 묵은 알림은 푸시하지 않는다(서버가 오래 멈췄다 살아났을 때 철 지난 푸시 폭탄 방지). 알림함에는 남는다.
+- 세션 만료로 로그아웃되면(사용자가 로그아웃을 누르지 않으면) 토큰이 옛 계정에 남는다. 다음 로그인 때 새 계정으로 옮겨진다.
+- `scripts/test_fee_tier.sh` 처럼 실제 예약 행을 넣는 시험은 이제 관리자에게 "새 예약" 알림을 만든다.
+- 별건 발견(손대지 않음): `submitBooking()` 이 날짜를 `2026-06-${day}` 로 만든다 — 달이 6월로 박혀 있다. 확인 필요.

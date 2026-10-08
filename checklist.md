@@ -2756,3 +2756,35 @@ api 401. 모바일 화면 눈으로 확인 — 띠·CTA·보조문구 정상.
 ### 교훈
 또 기억으로 쓰다가 틀렸다. **결제 방식 같은 건 코드를 열어보면 10초면 확인된다.**
 이번엔 영상을 찍기 전에 봐서 잡혔지만, 찍고 나서 알았으면 다시 찍어야 했다.
+
+## Z-35. 아이폰 푸시 알림 (2026-10-08)
+
+목표: 예약 상태 변경은 손님에게, 새 예약은 마사지사·관리자에게, 관리자 공지는 전 회원에게 아이폰 푸시로 보낸다.
+지금까지는 index.html 이 `MassaNative.registerPush` 를 한 번도 부르지 않아 토큰이 0개였다.
+
+### 서버 (VPS, 적용 완료)
+- [x] `scripts/push_schema.sql` — `push_tokens`(RLS 잠금, RPC 로만 등록·해제), `notifications.pushed_at·booking_id`,
+      예약 트리거 2개, `send_notice` RPC, `claim_unpushed_notifications`, 알림 INSERT 시 pg_net 으로 send-push 호출
+- [x] 기존 알림 3건은 `pushed_at = created_at` 으로 "보낸 것" 처리
+- [x] `functions/send-push/index.ts` — APNs(ES256, production → sandbox), 410/BadDeviceToken 이면 토큰 삭제, x-notify-secret 인증
+- [x] `scripts/vps-apply-push.sh` — .env·compose 백업(`*.bak-push-20261008-101205`) → VIBI 의 APNs 키 3줄 복사 →
+      compose functions 환경변수 추가 → 함수 배포·재기동 → 스키마 → 크론 `* * * * * /root/massa_push.sh`
+- [x] verify: 시크릿 없이 호출 401, 시크릿으로 호출 `{"ok":true,"claimed":0}`
+- [x] verify: `scripts/test_push.sql`(롤백) **ALL PASS** — 토큰 RPC 권한·주인 이동, 이벤트별 알림, 공지 권한, claim 1회
+- [x] verify: 관리자 계정에 가짜 토큰 + 시험 알림 → 트리거가 send-push 호출 → 두 호스트 모두 `400 BadDeviceToken`
+      (키·팀·토픽 `app.massa.hanoi` 인증 통과) → 토큰 자동 삭제 → 시험 알림 삭제(알림 수 3 그대로)
+
+### 앱 (index.html — 다음 iOS 빌드부터 적용)
+- [x] 로그인 시 토큰 등록(화면 언어 포함), 언어 바꾸면 갱신, 로그아웃 전 해제
+- [x] 알림 탭: 손님 예약 알림 → 내 예약, 그 밖 → 알림함. 부팅 중 탭은 부팅 끝난 뒤 처리
+- [x] 알림함 제목 번역 2건 (`새 예약이 들어왔습니다`, `테라피스트가 출발했습니다`) — 나머지 제목은 DICT 에 이미 있는 문장을 썼다
+- [x] `capacitor/package.json` 1.0.10 → **1.0.11**
+- [x] `scripts/check_syntax.js` 오류 0
+
+### 운영 콘솔 (admin.html)
+- [x] 회원 관리 화면 위에 "전체 공지 보내기" (제목·내용 → `send_notice`)
+- [x] admin.massaviet.com 배포 (`scripts/vps-deploy-admin.sh`)
+
+### 남은 것 (사장님)
+- [ ] Codemagic 으로 1.0.11 빌드 → TestFlight 실기기에서: 로그인 → 알림 허용 → 운영 콘솔에서 본인 계정 예약 상태를 바꿔 푸시 수신 확인
+- [ ] 1.0.10 심사가 끝난 뒤 1.0.11 심사 제출 (앱당 편집 가능한 버전은 하나)
