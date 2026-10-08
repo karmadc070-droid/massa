@@ -1006,6 +1006,12 @@
     <div class="chat-input"><input id="chatInput" placeholder="메시지를 입력하세요" onkeydown="if(event.key==='Enter')sendChat()"><button onclick="sendChat()">전송</button></div>
   </div>
   <div class="screen" id="adminMembers" data-title="회원 관리">
+    <div class="pf-sec">전체 공지 보내기</div>
+    <div class="hint">전 회원의 알림함에 들어가고, 아이폰 앱에 로그인해 알림을 허용한 회원에게는 푸시로도 갑니다. 쓴 그대로 보내므로 언어를 골라 쓰세요.</div>
+    <input class="tx" id="ntTitle" type="text" placeholder="제목">
+    <textarea class="tx" id="ntBody" rows="3" placeholder="내용 (선택)"></textarea>
+    <button class="cta" style="position:static;margin-top:12px" onclick="sendNotice()">공지 보내기</button>
+    <div class="pf-sec">회원 목록</div>
     <div id="membersList"></div>
   </div>
   <div class="screen" id="partnerRevenue" data-title="매출 관리">
@@ -2950,6 +2956,17 @@ async function loadAdminMembers() {
   }).join('') : '<div class="notice">회원이 없습니다.</div>';
 }
 window.loadAdminMembers = loadAdminMembers;
+// 전체 공지 — 서버(send_notice)가 관리자인지 확인하고 전 회원 알림함에 넣는다. 푸시는 send-push 가 이어서 보낸다
+window.sendNotice = async () => {
+  const title = (document.getElementById('ntTitle').value || '').trim();
+  const body = (document.getElementById('ntBody').value || '').trim();
+  if (!title) { alert('제목을 입력하세요.'); return; }
+  if (!confirm('전 회원에게 공지를 보냅니다. 되돌릴 수 없습니다. 보낼까요?')) return;
+  const { data, error } = await sb.rpc('send_notice', { p_title: title, p_body: body });
+  if (error) { alert('실패: ' + error.message); return; }
+  document.getElementById('ntTitle').value = ''; document.getElementById('ntBody').value = '';
+  alert(data + '명에게 공지를 보냈습니다.');
+};
 window.unblockCustomer = async (id) => { await sb.from('profiles').update({ booking_blocked_until: null, cancel_count: 0, no_show_count: 0 }).eq('id', id); loadAdminMembers(); };
 // ── 파트너 대시보드 ────────────────────────────────────────────
 // 매출 관리 화면이 이미 숫자를 다 보여준다. 여기서 또 보여주면 두 화면이 서로 베낀 꼴이 된다.
