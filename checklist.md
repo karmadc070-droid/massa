@@ -2808,4 +2808,7 @@ api 401. 모바일 화면 눈으로 확인 — 띠·CTA·보조문구 정상.
 - [x] admin.massaviet.com 배포
 - [x] iOS 버전 그대로 1.0.11 — Codemagic 이 빌드 번호를 자동으로 올린다(build 26 다음은 27). package.json 은 손대지 않음
 - [ ] (사장님) Codemagic 빌드 → TestFlight 에서 날짜 칩이 오늘부터인지, 예약 후 운영 콘솔에 같은 날짜로 보이는지 확인
-- [ ] (결정 필요) 오늘 날짜에 이미 지난 시각을 고르면 그대로 저장된다 — 시간대 제한 코드가 원래 없어 새로 넣지 않았다
+- [x] (사장님 승인) 지난 시각·30분 이내 예약 차단 — `isBookable()` + submitBooking 알림창(DICT 5개 언어), index·admin 둘 다
+- [x] verify: `test_hanoi_week.js` 경계 5건(지남·지금·25분 뒤·30분 뒤·내일) 포함 ALL PASS
+- [x] 웹앱 배포 `vps-deploy-app.sh` + 콘솔 재배포 — app·admin 둘 다 200, `function isBookable`·`hanoiWeek` 있음, `2026-06-` 0건
+      (웹·안드로이드 TWA 는 지금부터 날짜 수정 적용. 아이폰은 다음 빌드부터)
