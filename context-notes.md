@@ -687,3 +687,20 @@ APNs 키는 VIBI 와 같은 팀 키(HS4BHJFLR2, Sandbox & Production)라 `/root/
   user_coupons 는 손님이 자기 행을 자유롭게 쓴다(is_used 되돌리기 가능).
 - 시험: `scripts/test_bookings_providers_lock.sql`(롤백, 예약 INSERT 알림도 롤백으로 사라짐),
   REST: `scripts/vps-test-bookings-providers-lock.sh`(임시 계정, 시험 예약은 session_replication_role=replica 로 넣어 알림 없음).
+
+## 거절 제재 자동 회복 + 쿠폰함 잠금 (2026-10-08, 사용자 결정)
+
+- 위 절의 '단계는 올리기만' 은 바뀌었다. 이제 단계 = greatest(최근 30일 거절 수로 계산한 단계, `providers.penalty_floor`).
+  오래된 거절이 30일을 넘기면 내려가고, 관리자·신고 제재로 준 단계 아래로는 내려가지 않는다.
+- `penalty_floor` 는 따로 쓰지 않는다. 관리자·심사자가 앱에서 `penalty_level` 을 바꾸면 트리거(`keep_penalty_floor`)가
+  같은 값으로 맞춘다(submitResolve 1~3, clearPenalty 0). 서버 함수(postgres)가 바꿀 때는 하한을 건드리지 않는다.
+  적용 당시 penalty_level>0 인 제공자는 0명이라 백필 대상 없음.
+- 3단계 정지(3일)는 '새로 3단계에 들어설 때' 또는 `p_after_reject=true`(파트너가 방금 거절)일 때만 건다.
+  화면 열기·매일 재계산으로 정지가 늘어나지 않게 하려는 것. 정지가 끝나도 is_active 는 마사지사가 다시 켠다(기존과 같음).
+- 회복은 마사지사가 아무것도 안 해도 된다: 매일 호스트 crontab(00:17 UTC) `refresh_all_provider_penalties()`,
+  그리고 파트너 예약 화면을 열 때 재계산. 앱 문구 '거절을 줄이면 회복됩니다' 는 이제 사실이라 고치지 않았다(번역 사전에도 없는 문장).
+- 쿠폰함: 받기 = 활성·기한 내 쿠폰을 미사용으로만(어떤 쿠폰이든 1인 1회 — 기존 규칙, 신규 가입 전용 제한 같은 건 원래 없다),
+  수정 = is_used false→true 만(used_at 은 서버 시각), 삭제 금지. 관리자가 user_coupons 를 직접 발급하는 경로는 없다.
+- 쿠폰 사용 처리는 예약에 coupon_id 가 붙는 순간 `trg_booking_coupon_used`(보안정의자)가 한다. 구 앱의 사용 처리 호출은 0행으로 오류 없이 지나간다.
+  예약 취소 때 쿠폰 복원 규칙은 기존 코드에 없다 → 만들지 않았다(취소해도 쿠폰은 사용됨으로 남는다).
+- 시험: `scripts/test_penalty_recovery_coupon_lock.sql`(롤백), REST: `scripts/vps-test-penalty-coupon-lock.sh`(임시 계정 3개, 관리자 포함).

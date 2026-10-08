@@ -2723,7 +2723,12 @@ async function loadPartnerBookings() {
   // 내 제재 상태 배너
   let penaltyBanner = '';
   try {
-    const mine = await myProviders();
+    let mine = await myProviders();
+    // 30일이 지난 거절은 빠진다 — 화면을 열 때 서버가 다시 세서 회복된 단계를 보여 준다
+    if (mine.some(p => (p.penalty_level || 0) > 0 || (p.reject_count || 0) > 0)) {
+      await Promise.all(mine.map(p => sb.rpc('refresh_provider_penalty', { p_provider: p.id })));
+      mine = await myProviders();
+    }
     const worst = mine.sort((a, b) => (b.penalty_level || 0) - (a.penalty_level || 0))[0];
     if (worst) {
       const sus = worst.suspended_until && new Date(worst.suspended_until) > new Date();
@@ -2813,7 +2818,8 @@ window.submitReject = async function (bookingId, providerId) {
 async function applyRejectPenalty(providerId) {
   if (!providerId) return '';
   // 제재 칸은 마사지사가 직접 못 고친다 — 서버 함수가 예약 기록으로 다시 세서 저장한다(규칙은 PENALTY_RULES 와 같다)
-  const { data: pen } = await sb.rpc('refresh_provider_penalty', { p_provider: providerId });
+  // p_after_reject: 방금 거절했으니 12회 이상이면 정지를 새로 건다(화면 열기·매일 재계산은 정지를 늘리지 않는다)
+  const { data: pen } = await sb.rpc('refresh_provider_penalty', { p_provider: providerId, p_after_reject: true });
   const n = (pen && pen.count) || 0;
   const level = (pen && pen.level) || 0;
   let note = '';

@@ -21,6 +21,8 @@ insert into public.providers (id, profile_id, owner_id, display_name, applicatio
   ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-0000000000e3', null, '시험P', 'approved', true, 2, now() - interval '1 day'),
   ('00000000-0000-0000-0000-0000000000f2', null, '00000000-0000-0000-0000-0000000000e3', '시험P2', 'rejected', false, 0, null);
 update public.providers set reject_reason = '사진 부족' where id = '00000000-0000-0000-0000-0000000000f2';
+-- P 의 2단계는 관리자가 준 제재로 둔다(하한 2) — 거절 1건으로 재계산해도 내려가지 않아야 한다
+update public.providers set penalty_floor = 2 where id = '00000000-0000-0000-0000-0000000000f1';
 
 insert into public.coupons (id, code, title, discount_type, discount_value, min_amount_vnd, is_active) values
   ('00000000-0000-0000-0000-0000000000c1', 'LOCKTEST', '시험쿠폰', 'percent', 10, 0, true);
@@ -157,7 +159,7 @@ begin
   update public.bookings set status = 'cancelled', no_show_at = now(), cancelled_by = 'provider', cancel_reason = '고객 노쇼'
    where id = '00000000-0000-0000-0000-0000000000b4';
   if (select no_show_at from public.bookings where id = '00000000-0000-0000-0000-0000000000b4') is null then raise exception 'FAIL: 노쇼 처리 안 됨'; end if;
-  -- 정상: 거절 누적 재계산은 서버 함수로(거절 1건 → 0단계, 기존 2단계는 낮추지 않는다)
+  -- 정상: 거절 누적 재계산은 서버 함수로(거절 1건 → 0단계, 관리자 하한 2단계 아래로는 낮추지 않는다)
   j := public.refresh_provider_penalty('00000000-0000-0000-0000-0000000000f1');
   select reject_count, penalty_level into r from public.providers where id = '00000000-0000-0000-0000-0000000000f1';
   if r.reject_count <> 1 or r.penalty_level <> 2 or (j->>'count')::int <> 1 then raise exception 'FAIL: 거절 재계산 % %', r, j; end if;

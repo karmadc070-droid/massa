@@ -2843,4 +2843,15 @@ api 401. 모바일 화면 눈으로 확인 — 띠·CTA·보조문구 정상.
 - [x] app·admin 웹 배포
 - [ ] (사장님) 아이폰 1.0.11(29) — 결제창의 QR·이체·카드(가짜 결제) 버튼과 '쿠폰+현장 결제'는 오류 안내가 뜬다(쿠폰 없는 현장 결제는 정상). 현장 결제·카드 미리 결제(토스)·취소·예약은 그대로. 다음 빌드에 새 index.html 포함 권장(필수 아님)
 - [ ] (결정 필요) 비토스 결제의 '결제 확인'을 누가 할지 — 관리자 화면에 결제 확인 버튼이 아직 없다
-- [ ] (보고만) user_coupons 는 손님이 is_used 를 되돌리거나 아무 쿠폰이나 받을 수 있다 — 이번에 손대지 않음
+- [x] (보고만) user_coupons 는 손님이 is_used 를 되돌리거나 아무 쿠폰이나 받을 수 있다 → Z-40 에서 해결
+
+## Z-40. 거절 제재 자동 회복(관리자 하한 유지) + 쿠폰함 잠금 (2026-10-08, 사용자 결정 반영)
+- [x] `scripts/penalty_recovery_coupon_lock.sql` — `providers.penalty_floor` 추가, 관리자·심사자가 penalty_level 을 바꾸면 하한도 같이(`trg_provider_penalty_floor`), `refresh_provider_penalty(uuid, p_after_reject default false)` 는 greatest(30일 자동 단계, 하한), 정지는 새로 3단계 진입·방금 거절 때만
+- [x] `refresh_all_provider_penalties()` (postgres 전용) + 호스트 crontab 매일 00:17 UTC(하노이 07:17) — `scripts/vps-penalty-cron-install.sh`, 로그 `/root/massa_penalty_refresh.log`
+- [x] admin.html 파트너 예약 화면을 열 때 재계산, 거절 직후 호출은 `p_after_reject: true`
+- [x] 쿠폰함 `trg_user_coupon_guard` — 받기는 활성·기한 내 쿠폰을 미사용으로만, 수정은 is_used false→true 만, 삭제 금지
+- [x] 예약에 쿠폰이 붙으면 서버가 사용 처리(`trg_booking_coupon_used`) — 토스 경로도 이제 사용 처리됨. 취소 시 복원은 기존 규칙에 없어 만들지 않음
+- [x] verify: `scripts/test_penalty_recovery_coupon_lock.sql` 적용 전 FAIL(쿠폰 미사용 되돌리기 성공) → 적용 후 ALL PASS, Z-39 시험도 ALL PASS
+- [x] verify: `scripts/vps-test-penalty-coupon-lock.sh` 실제 REST 임시 계정 3개 — 전부 PASS, 실제 사용자 알림 0, 정리 후 0건
+- [x] admin 웹 배포 (index.html 변경 없음 → 아이폰 영향 없음)
+- [ ] (결정 대기) Z-39 의 '결제 확인' 관리자 버튼 — 사용자 답 없음, 만들지 않음
