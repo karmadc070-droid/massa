@@ -608,6 +608,9 @@ ADD.update({
 '서버 응답이 없습니다. 네트워크 상태를 확인해 주세요.': [
   'Máy chủ không phản hồi. Vui lòng kiểm tra kết nối mạng.', 'The server is not responding. Please check your connection.',
   '服务器无响应，请检查网络连接。', 'サーバーから応答がありません。ネットワーク状態をご確認ください。'],
+# 푸시·알림함 제목 (scripts/push_schema.sql 이 이 한국어 문장으로 알림을 만든다)
+'새 예약이 들어왔습니다': ['Có lịch đặt mới', 'New booking received', '收到新预约', '新しい予約が入りました'],
+'테라피스트가 출발했습니다': ['Kỹ thuật viên đang trên đường đến', 'Your therapist is on the way', '理疗师已出发', 'セラピストが出発しました'],
 })
 
 # 화면 제목

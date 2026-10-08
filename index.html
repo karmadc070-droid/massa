@@ -1780,6 +1780,7 @@ async function refreshSession() {
   refreshNotiDot();
   subscribeNotifications();
   loadBlocks();
+  setupPush();
 }
 // 제공자 연락처는 앱을 거치지 않는 직거래를 막기 위해 관리자에게만 보인다
 function isAdminUser() { return !!(CUR_PROFILE && CUR_PROFILE.role === 'admin'); }
@@ -1827,6 +1828,41 @@ async function refreshNotiDot() {
   } catch (e) { dot.style.display = 'none'; }
 }
 window.refreshNotiDot = refreshNotiDot;
+// ── 아이폰 푸시 ──
+// 로그인하면 이 기기 토큰을 지금 계정·화면 언어로 등록한다(서버가 그 언어로 제목을 쓴다).
+// registerPush 는 리스너를 붙이므로 앱 실행당 한 번만 부르고, 계정이 바뀌면 받아 둔 토큰으로 다시 등록한다.
+let PUSH_TOKEN = null, PUSH_ASKED = false, PUSH_TAP = null, BOOTED = false;
+function savePushToken() {
+  if (!SESSION || !PUSH_TOKEN) return;
+  Promise.resolve(sb.rpc('register_push_token', { p_token: PUSH_TOKEN, p_platform: 'ios', p_lang: LANG }))
+    .then(function () {}, function () {});
+}
+function setupPush() {
+  const N = window.MassaNative;
+  if (!SESSION || !N || N.platform !== 'ios') return;
+  if (PUSH_TOKEN) return savePushToken();
+  if (PUSH_ASKED) return;
+  PUSH_ASKED = true;
+  N.registerPush((t) => { PUSH_TOKEN = t; savePushToken(); }, onPushEvent).catch((e) => console.warn('푸시 등록 실패', e));
+}
+// 로그아웃 전에 부른다 — 나간 계정의 알림이 이 기기로 오지 않게. 지우려면 아직 로그인 상태여야 한다.
+async function removePushToken() {
+  if (!SESSION || !PUSH_TOKEN) return;
+  try { await sb.rpc('unregister_push_token', { p_token: PUSH_TOKEN }); } catch (e) {}
+}
+// 알림을 눌렀을 때만 화면을 옮긴다(앱을 보고 있을 때 온 알림은 실시간 구독이 토스트로 보여 준다).
+// 부팅 중에 눌린 알림은 부팅이 끝난 뒤 연다 — 부팅이 화면을 홈으로 덮어쓰기 때문이다.
+function onPushEvent(e) {
+  if (!e || !e.actionId) return;
+  PUSH_TAP = (e.notification && e.notification.data) || {};
+  if (BOOTED) openPushTap();
+}
+function openPushTap() {
+  const d = PUSH_TAP; PUSH_TAP = null;
+  if (!d) return;
+  if (SESSION && /^booking_(confirmed|on_the_way|completed|cancelled)$/.test(d.kind)) { window.go('myBookings'); loadMyBookings(); }
+  else openNotifications();
+}
 
 // ── 소셜 로그인 ──
 // 서버(/auth/v1/settings)가 켜졌다고 알려준 provider 만 버튼을 만든다.
@@ -2979,7 +3015,7 @@ async function openMenu() {
     ov.style.display = 'none';
     if (a === 'close') return;
     if (a === 'login') return openAuth();
-    if (a === 'logout') { await sb.auth.signOut(); await refreshSession(); return; }
+    if (a === 'logout') { await removePushToken(); await sb.auth.signOut(); await refreshSession(); return; }
     window.go(a);
     if (a === 'myBookings') loadMyBookings();
   });
@@ -3500,6 +3536,8 @@ const DICT = {
   '처리 중…': ['Đang xử lý…', 'Processing…', '处理中…', '処理中…'],
   '로그인 완료!': ['Đăng nhập thành công!', 'Signed in!', '登录成功！', 'ログインしました！'],
   '서버 응답이 없습니다. 네트워크 상태를 확인해 주세요.': ['Máy chủ không phản hồi. Vui lòng kiểm tra kết nối mạng.', 'The server is not responding. Please check your connection.', '服务器无响应，请检查网络连接。', 'サーバーから応答がありません。ネットワーク状態をご確認ください。'],
+  '새 예약이 들어왔습니다': ['Có lịch đặt mới', 'New booking received', '收到新预约', '新しい予約が入りました'],
+  '테라피스트가 출발했습니다': ['Kỹ thuật viên đang trên đường đến', 'Your therapist is on the way', '理疗师已出发', 'セラピストが出発しました'],
 };
 function trOne(ko, lang) {
   if (lang === 'ko') return ko;
@@ -3574,6 +3612,7 @@ new MutationObserver(() => {
 function applyLang(lang) {
   LANG = lang;
   try { localStorage.setItem('massa_lang', lang); } catch (e) {}   // 다음 실행에도 유지
+  savePushToken();   // 푸시 제목도 바뀐 언어로 받게
   // 원화 환산은 한국어일 때만 보여준다. CSS 로 끄는 이유는 언어를 바꿔도
   // 목록을 다시 그리지 않기 때문이다 — 마크업은 그대로 두고 보이기만 끈다.
   document.body.dataset.lang = lang;
@@ -4142,7 +4181,7 @@ async function load() {
       alert('계정이 삭제되었습니다. 이용해 주셔서 감사합니다.');
     };
     const logoutRow = document.getElementById('acLogoutRow');
-    if (logoutRow) logoutRow.onclick = async () => { await sb.auth.signOut(); await refreshSession(); window.go('home'); };
+    if (logoutRow) logoutRow.onclick = async () => { await removePushToken(); await sb.auth.signOut(); await refreshSession(); window.go('home'); };
     // 지난번에 고른 언어를 그대로 이어 쓴다. 없으면 기기 언어를 따른다.
     // 기기 언어를 모를 때는 베트남어로 간다 — 손님 대부분이 베트남 분들이다.
     // (전에는 한국어로 떨어졌다. 태국어 폰이든 프랑스어 폰이든 한국어가 떠서 가입이 끊겼다.)
@@ -4187,8 +4226,8 @@ function openLoginIfAsked() {
   if (!/[?&]login=1\b/.test(location.search)) return;
   if (window.openAccount) openAccount();   // 이미 로그인돼 있으면 계정 화면, 아니면 로그인 창
 }
-load().then(() => { trackVisit(); initMyPos(); openLoginIfAsked(); },
-            () => { trackVisit(); initMyPos(); openLoginIfAsked(); });
+load().then(() => { trackVisit(); initMyPos(); openLoginIfAsked(); BOOTED = true; openPushTap(); },
+            () => { trackVisit(); initMyPos(); openLoginIfAsked(); BOOTED = true; openPushTap(); });
 </script>
 </body>
 </html>
