@@ -709,15 +709,7 @@
   <!-- 시간 설정 -->
   <div class="screen" id="time" data-title="언제 받을까요?">
     <div class="label">날짜</div>
-    <div class="grid7">
-      <div class="day" onclick="pick(this)"><span class="dow">토</span>6</div>
-      <div class="day sel" onclick="pick(this)"><span class="dow">일</span>7</div>
-      <div class="day" onclick="pick(this)"><span class="dow">월</span>8</div>
-      <div class="day" onclick="pick(this)"><span class="dow">화</span>9</div>
-      <div class="day" onclick="pick(this)"><span class="dow">수</span>10</div>
-      <div class="day" onclick="pick(this)"><span class="dow">목</span>11</div>
-      <div class="day" onclick="pick(this)"><span class="dow">금</span>12</div>
-    </div>
+    <div class="grid7" id="dayGrid"></div>
     <div class="label">시작 시간 — 원하는 시간과 분을 직접 선택하세요</div>
     <div class="timepick">
       <select id="selHour" onchange="updateTime()"></select>
@@ -1247,6 +1239,7 @@ function render() {
 }
 
 function go(id) {
+  if (id === 'time') renderDays();
   if (id === 'home') stack = ['home'];
   else stack.push(id);
   render();
@@ -1389,6 +1382,27 @@ function pick(el) {
   el.classList.add('sel');
 }
 function toggleKind(el) { el.classList.toggle('sel'); const box = el.parentElement; if (!box.querySelector('.chip.sel')) el.classList.add('sel'); }
+
+// 날짜 칩 — 하노이 기준 오늘부터 7일 (index.html 과 같은 코드). 예약 저장은 칩의 data-date(YYYY-MM-DD)로 한다.
+// 이전에는 2026년 6월 6~12일이 마크업에 박혀 있어 언제 예약해도 6월 날짜로 저장됐다.
+function hanoiWeek(now) {
+  const t = new Date(now.getTime() + 7 * 3600 * 1000);   // UTC+7 (하노이는 서머타임이 없다)
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), t.getUTCDate() + i));
+    return { ymd: d.toISOString().slice(0, 10), day: d.getUTCDate(), dow: '일월화수목금토'[d.getUTCDay()] };
+  });
+}
+// 시간 화면에 들어갈 때마다 다시 그린다. 고른 날이 아직 범위 안이면 유지한다.
+function renderDays() {
+  const grid = document.getElementById('dayGrid');
+  if (!grid) return;
+  const keep = grid.querySelector('.day.sel')?.dataset.date;
+  const week = hanoiWeek(new Date());
+  const sel = week.some(w => w.ymd === keep) ? keep : week[0].ymd;
+  grid.innerHTML = week.map(w => '<div class="day' + (w.ymd === sel ? ' sel' : '') + '" data-date="' + w.ymd
+    + '" onclick="pick(this)"><span class="dow">' + w.dow + '</span>' + w.day + '</div>').join('');
+}
+renderDays();
 
 render();
 </script>
@@ -2006,9 +2020,10 @@ async function submitBooking() {
   const svc = currentService();
   // 코스를 못 찾으면 예전에는 850,000₫ 을 임의로 물렸다. 고르지 않은 금액이 청구된다.
   if (!svc) { alert('코스를 다시 골라 주세요.'); window.go('menu'); return; }
-  const day = document.querySelector('#time .day.sel')?.textContent.replace(/\D/g, '') || '7';
+  // 고른 칩의 실제 연-월-일(하노이)로 만든다. 칩이 없으면 하노이 오늘
+  const ymd = document.querySelector('#time .day.sel')?.dataset.date || hanoiWeek(new Date())[0].ymd;
   const time = document.getElementById('timeView')?.textContent || '20:00';
-  const scheduled = new Date(`2026-06-${day.padStart(2,'0')}T${time}:00+07:00`).toISOString();
+  const scheduled = new Date(`${ymd}T${time}:00+07:00`).toISOString();
   const row = {
     customer_id: SESSION.user.id,
     provider_id: SEL.provider?.id || null,
