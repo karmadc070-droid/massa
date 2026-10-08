@@ -2984,7 +2984,7 @@ window.sendNotice = async () => {
   document.getElementById('ntTitle').value = ''; document.getElementById('ntBody').value = '';
   alert(data + '명에게 공지를 보냈습니다.');
 };
-window.unblockCustomer = async (id) => { await sb.from('profiles').update({ booking_blocked_until: null, cancel_count: 0, no_show_count: 0 }).eq('id', id); loadAdminMembers(); };
+window.unblockCustomer = async (id) => { const { error } = await sb.rpc('admin_unblock_customer', { p_customer: id }); if (error) { alert('해제 실패: ' + error.message); return; } loadAdminMembers(); };
 // ── 파트너 대시보드 ────────────────────────────────────────────
 // 매출 관리 화면이 이미 숫자를 다 보여준다. 여기서 또 보여주면 두 화면이 서로 베낀 꼴이 된다.
 // 그래서 이 화면은 '지금 손이 필요한 것' 만 세고, 나머지는 각 화면으로 넘긴다.

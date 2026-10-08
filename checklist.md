@@ -2821,5 +2821,14 @@ api 401. 모바일 화면 눈으로 확인 — 띠·CTA·보조문구 정상.
 - [x] verify: 실제 REST 임시 계정 — role·cancel_count·no_show_count·booking_blocked_until PATCH 403, full_name 204, RPC 200, 계정 삭제 후 0건
 - [x] app·admin 웹 배포
 - [ ] (사장님) 아이폰은 다음 빌드부터 RPC 호출 — 그 전 빌드에서는 손님 자기 취소 페널티 기록이 조용히 실패한다(예약·취소 자체는 정상)
-- [ ] (사장님 결정) auth.users 가입 트리거가 VPS 에 없음 — 8/27 이후 가입 9명이 profiles 행 없음 (context-notes 참고)
-- [ ] (사장님 결정) 관리자 `unblockCustomer` 는 원래부터 RLS 로 막혀 동작 안 함 — 필요하면 관리자용 RPC 추가
+- [x] auth.users 가입 트리거 없음 → Z-38 에서 복구·백필
+- [x] 관리자 `unblockCustomer` 동작 안 함 → Z-38 에서 관리자 RPC 로 교체
+
+## Z-38. 가입 트리거 복구 + profiles 백필 + 관리자 예약 제한 해제 (2026-10-08, 버그 수정)
+- [x] 원래 함수 확인: DB 의 `handle_new_user()` (full_name·phone 만, role 은 기본값) — 트리거만 없었다. 앱 signUp 은 메타데이터를 안 보낸다
+- [x] `scripts/profiles_signup_trigger.sql` — 함수 재생성(role 은 메타데이터에서 절대 안 읽음, full_name→name 순), `on_auth_user_created` AFTER INSERT 트리거, 백필, `admin_unblock_customer(uuid)` RPC
+- [x] verify: `scripts/test_profiles_signup_trigger.sql` (롤백) ALL PASS — 메타데이터 admin 가입자도 customer, 백필 후 0명, admin 수·알림 수 불변, 일반 회원 RPC 거부·관리자 해제 성공
+- [x] 운영 적용: profiles 없는 회원 9 → 0, admin 1 → 1, notifications 3 → 3, 트리거 활성(O), 스키마 리로드
+- [x] admin.html `unblockCustomer` → `sb.rpc('admin_unblock_customer')` (실패 시 알림창)
+- [x] admin 배포 `vps-deploy-admin.sh`
+- [ ] (보고만) `bookings_customer_update`·`providers_owner_update` 컬럼 제한 없음 — 이번에 손대지 않음

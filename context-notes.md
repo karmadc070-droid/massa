@@ -641,9 +641,26 @@ APNs 키는 VIBI 와 같은 팀 키(HS4BHJFLR2, Sandbox & Production)라 `/root/
 ### 남은 것 (손대지 않음)
 - **auth.users 에 가입 트리거가 없다.** `handle_new_user()` 함수는 있는데 걸린 트리거가 0개.
   VPS 이전 때 auth 스키마 트리거가 안 따라온 것으로 보인다. 8/27 이후 가입 9명이 profiles 행이 없어
-  프로필 수정·약관 동의 저장·제재 기록이 전부 0행 처리된다. 트리거 복구 + 9명 백필이 필요하다.
+  프로필 수정·약관 동의 저장·제재 기록이 전부 0행 처리된다. → 아래에서 트리거 복구 + 9명 백필 완료
 - 아이폰 앱은 index.html 을 내장하므로 RPC 호출은 다음 빌드부터. 옛 빌드의 자기 취소 페널티 기록은 403 으로 조용히 실패한다.
 - 예약 제한은 여전히 앱에서만 검사한다(`ensureNotBlocked`). bookings INSERT 정책은 제재를 보지 않는다.
 - `bookings_customer_update` 가 손님에게 자기 예약의 모든 컬럼(no_show_at·cancelled_at·amount_vnd·is_paid 등) 수정을 허용한다.
 - `providers_owner_update` 가 마사지사에게 자기 행의 모든 컬럼(is_verified·fee_tier·penalty_level·suspended_until·application_status 등) 수정을 허용한다.
-- 관리자 `unblockCustomer` 는 profiles 에 관리자 UPDATE 정책이 없어 원래부터 동작하지 않는다.
+- 관리자 `unblockCustomer` 는 profiles 에 관리자 UPDATE 정책이 없어 원래부터 동작하지 않는다. → 아래에서 해결
+
+## 가입 트리거 복구 + 백필 + 관리자 예약 제한 해제 (2026-10-08)
+
+- 원인: `handle_new_user()` 함수는 남아 있고 `auth.users` 트리거만 없었다(VPS 이전 때 auth 스키마 트리거 누락).
+  `scripts/profiles_signup_trigger.sql` 이 함수를 다시 만들고 `on_auth_user_created` AFTER INSERT 트리거를 건 뒤,
+  같은 매핑으로 빠진 회원을 백필한다(on conflict do nothing — 몇 번 돌려도 같다).
+- 매핑: `full_name` = 메타데이터 full_name → name → '' , `phone` = auth.users.phone → ''. `preferred_language` 등은 기본값.
+- **role 은 메타데이터에서 절대 읽지 않는다.** 항상 컬럼 기본값 customer. 앱 signUp 은 메타데이터를 보내지 않고,
+  마사지사 여부는 `providers.profile_id/owner_id` 로 판단하며, admin·reviewer 는 서버에서만 바꾼다.
+  화이트리스트로 provider 를 허용할 이유도 없어서 아예 매핑하지 않았다.
+- profiles 에는 트리거가 하나도 없다 → 백필은 notifications 를 만들지 않는다. `push_outbox` 테이블은 이 DB 에 없다.
+  운영 적용 결과: profiles 없는 회원 9 → 0, admin 1 → 1, notifications 3 → 3.
+- 관리자 해제는 `admin_unblock_customer(p_customer)` (security definer, `is_admin()` 아니면 42501) 가
+  `booking_blocked_until=null, cancel_count=0, no_show_count=0` 으로 지운다. 기존 unblockCustomer 와 같은 의미.
+  주의: 이후 `refresh_customer_penalty` 가 돌면 30일 예약 기록으로 횟수를 다시 센다(5회 이상이면 다시 7일 제한).
+- 시험: `scripts/test_profiles_signup_trigger.sql` — 마이그레이션의 begin/commit 줄을 sed 로 지운 본문을
+  컨테이너 `/tmp/profiles_signup_body.sql` 로 넣고 돌린다(전체 롤백).
