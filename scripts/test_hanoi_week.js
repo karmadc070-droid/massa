@@ -31,4 +31,19 @@ for (const [ymd, time, want] of [['2026-11-01', '00:30', '2026-10-31T17:30:00.00
   const got = iso(ymd, time); const ok = got === want;
   console.log((ok ? 'OK  ' : 'FAIL') + ` ${ymd} ${time} 하노이 → ${got}`); if (!ok) bad++;
 }
+// 지난 시각·30분 안쪽은 막고, 30분 뒤부터는 받는다 (isBookable — 두 파일이 같아야 한다)
+const g = f => fs.readFileSync(path.join(root, f), 'utf8').match(/function isBookable\(iso, now\) \{.*\}/)[0];
+if (g('index.html') !== g('admin.html')) throw new Error('index·admin 의 isBookable 이 다르다');
+const isBookable = new Function(g('index.html') + '; return isBookable;')();
+const now = new Date('2026-10-08T13:00:00Z');   // 하노이 10/08 20:00
+for (const [ymd, time, want] of [
+  ['2026-10-08', '19:00', false],   // 이미 지남
+  ['2026-10-08', '20:00', false],   // 지금
+  ['2026-10-08', '20:25', false],   // 30분 안쪽
+  ['2026-10-08', '20:30', true],    // 딱 30분 뒤
+  ['2026-10-09', '10:00', true],    // 내일
+]) {
+  const got = isBookable(iso(ymd, time), now); const ok = got === want;
+  console.log((ok ? 'OK  ' : 'FAIL') + ` 지금 하노이 10/08 20:00 · ${ymd} ${time} 예약 가능=${got}`); if (!ok) bad++;
+}
 console.log(bad ? `실패 ${bad}건` : 'ALL PASS'); process.exit(bad ? 1 : 0);

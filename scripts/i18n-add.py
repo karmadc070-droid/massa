@@ -612,6 +612,11 @@ ADD.update({
 '새 예약이 들어왔습니다': ['Có lịch đặt mới', 'New booking received', '收到新预约', '新しい予約が入りました'],
 '테라피스트가 출발했습니다': ['Kỹ thuật viên đang trên đường đến', 'Your therapist is on the way', '理疗师已出发', 'セラピストが出発しました'],
 '손님이 예약을 취소했습니다': ['Khách đã hủy đặt lịch', 'The customer cancelled the booking', '客人已取消预约', 'お客様が予約をキャンセルしました'],
+# 예약 시각 검사 (submitBooking)
+'지금부터 30분 이후의 시간만 예약할 수 있습니다. 날짜나 시간을 다시 골라 주세요.': [
+  'Chỉ có thể đặt lịch từ 30 phút sau thời điểm hiện tại. Vui lòng chọn lại ngày hoặc giờ.',
+  'You can only book a time at least 30 minutes from now. Please choose another date or time.',
+  '只能预约30分钟以后的时间，请重新选择日期或时间。', '現在から30分以降の時間のみ予約できます。日付または時間を選び直してください。'],
 })
 
 # 화면 제목

@@ -1402,6 +1402,8 @@ function renderDays() {
   grid.innerHTML = week.map(w => '<div class="day' + (w.ymd === sel ? ' sel' : '') + '" data-date="' + w.ymd
     + '" onclick="pick(this)"><span class="dow">' + w.dow + '</span>' + w.day + '</div>').join('');
 }
+// 지금(하노이)부터 30분 안쪽이거나 이미 지난 시각은 예약할 수 없다. 마사지사가 이동할 시간이 필요하다.
+function isBookable(iso, now) { return new Date(iso).getTime() >= now.getTime() + 30 * 60 * 1000; }
 renderDays();
 
 render();
@@ -2024,6 +2026,7 @@ async function submitBooking() {
   const ymd = document.querySelector('#time .day.sel')?.dataset.date || hanoiWeek(new Date())[0].ymd;
   const time = document.getElementById('timeView')?.textContent || '20:00';
   const scheduled = new Date(`${ymd}T${time}:00+07:00`).toISOString();
+  if (!isBookable(scheduled, new Date())) { alert('지금부터 30분 이후의 시간만 예약할 수 있습니다. 날짜나 시간을 다시 골라 주세요.'); window.go('time'); return; }
   const row = {
     customer_id: SESSION.user.id,
     provider_id: SEL.provider?.id || null,
@@ -4590,6 +4593,7 @@ const DICT = {
   '새로고침': ['Làm mới', 'Refresh', '刷新', '更新'],
   '운영 권한이 있는 계정으로 로그인해 주세요.': ['Vui lòng đăng nhập bằng tài khoản có quyền vận hành.', 'Please log in with an account that has operator permissions.', '请使用具有运营权限的账户登录。', '運営権限のあるアカウントでログインしてください。'],
   '이 페이지는 관리자·파트너 전용입니다.': ['Trang này chỉ dành cho quản trị viên và đối tác.', 'This page is for admins and partners only.', '此页面仅供管理员和合作伙伴使用。', 'このページは管理者・パートナー専用です。'],
+  '지금부터 30분 이후의 시간만 예약할 수 있습니다. 날짜나 시간을 다시 골라 주세요.': ['Chỉ có thể đặt lịch từ 30 phút sau thời điểm hiện tại. Vui lòng chọn lại ngày hoặc giờ.', 'You can only book a time at least 30 minutes from now. Please choose another date or time.', '只能预约30分钟以后的时间，请重新选择日期或时间。', '現在から30分以降の時間のみ予約できます。日付または時間を選び直してください。'],
 };
 function trOne(ko, lang) {
   if (lang === 'ko') return ko;
