@@ -1,6 +1,7 @@
 # massaviet.com 정적 사이트 생성기 — 페이지를 블록 데이터로 기술하고 HTML 을 찍어낸다.
 # 10페이지 x 3언어 = 30개를 손으로 관리할 수 없어서 만들었다. 실행: python3 site-src/build.py
 import os, re, shutil, html as H
+from social import SOCIAL
 
 SITE = "https://massaviet.com"
 OUT  = "site"
@@ -207,6 +208,13 @@ def chrome(lang, name, L, body, page):
     )
     ld = page.get("jsonld") or auto_faq_ld(page)
     ld = f'<script type="application/ld+json">{ld}</script>' if ld else ""
+    # 소셜 채널 줄 (푸터). 평소엔 잉크색, 올리면 브랜드색으로 — 사이트 톤을 깨지 않으려고.
+    social_row = "".join(
+        f'<a href="{u}" style="--bc:{c}" aria-label="{esc(n)}" title="{esc(n)}"'
+        f' target="_blank" rel="noopener noreferrer">'
+        f'<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">'
+        f'<path d="{d}"/></svg></a>'
+        for _k, n, u, c, d in SOCIAL)
     # 테라피스트 모집 띠. 지금은 공급이 병목이라 전 페이지에 둔다.
     # 모집 페이지 자신에는 안 붙인다 — 이미 와 있는 사람에게 또 권할 이유가 없다.
     rbar = "" if name == "partner" else (
@@ -266,6 +274,7 @@ def chrome(lang, name, L, body, page):
       {fcol(L["f_company"], ["about","safety","partner"])}
       {fcol(L["f_support"], ["download","contact","terms","privacy"])}
     </div>
+    <div class="social">{social_row}</div>
     <div class="legal">{L["legal"]}</div>
   </div>
 </footer>

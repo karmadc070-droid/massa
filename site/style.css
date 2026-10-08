@@ -344,3 +344,14 @@ footer.site .legal { border-top: 1px solid #27505E; padding-top: 22px; color: #7
 /* CTA 버튼 아래 한 줄. .note 를 쓰면 안내 박스처럼 보여서 따로 둔다. */
 .ctasub{margin:14px 0 0;text-align:center;font-family:var(--sans);
   font-size:13.5px;color:var(--ink-soft)}
+
+/* 소셜 채널 줄 (푸터). 평소엔 눌러 두고 올렸을 때만 브랜드색이 뜬다.
+   8개를 전부 원색 원으로 깔면 조용한 사이트에 다른 사이트가 붙은 것처럼 보인다. */
+.social{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px;padding-top:22px;
+  border-top:1px solid #27505E}
+.social a{display:inline-flex;align-items:center;justify-content:center;
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,.08);color:rgba(255,255,255,.72);
+  transition:background .15s ease,color .15s ease}
+.social a:hover{background:var(--bc);color:#fff}
+@media (max-width:560px){.social a{width:34px;height:34px}}
