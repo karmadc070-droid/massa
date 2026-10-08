@@ -58,6 +58,7 @@ grant execute on function public.claim_unpushed_notifications() to service_role;
 -- ── 3. 예약 이벤트 → 알림 ─────────────────────────────
 -- 새 예약: 마사지사 계정(owner_id·profile_id)과 관리자 전원에게.
 -- 상태 변경: 손님에게. 확정·출발·완료, 그리고 손님 본인이 하지 않은 취소(거절·노쇼·관리자 취소).
+-- 손님 본인 취소는 거꾸로 마사지사 계정에게.
 -- 제목은 index.html DICT 에 있는 한국어 문장 그대로 넣는다 — 알림 화면에서 그 사람 언어로 번역된다.
 -- 본문은 예약번호·시각(하노이)만 넣어 언어와 무관하게 읽힌다.
 create or replace function public.notify_booking_event()
@@ -86,6 +87,14 @@ begin
     v_kind := 'booking_completed';  v_title := '서비스가 완료되었습니다. 평가를 남겨주세요';
   elsif new.status = 'cancelled' and coalesce(new.cancelled_by, '') <> 'customer' then
     v_kind := 'booking_cancelled';  v_title := '예약이 취소되었습니다.';
+  elsif new.status = 'cancelled' then
+    -- 손님 본인 취소는 마사지사 계정(owner_id·profile_id — 새 예약 알림과 같은 대상)에 알린다
+    insert into notifications (user_id, title, body, kind, booking_id)
+    select u, '손님이 예약을 취소했습니다', v_body, 'booking_cancelled_by_customer', new.id
+    from (select owner_id as u from providers where id = new.provider_id
+          union select profile_id from providers where id = new.provider_id) r
+    where u is not null;
+    return new;
   else
     return new;
   end if;

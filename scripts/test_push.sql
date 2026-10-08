@@ -124,12 +124,16 @@ end $$;
 update bookings set is_paid = true where id = '00000000-0000-0000-0000-00000000b001';
 update bookings set status = 'on_the_way' where id = '00000000-0000-0000-0000-00000000b001';
 update bookings set status = 'completed', completed_at = now() where id = '00000000-0000-0000-0000-00000000b001';
--- 요청 → 확정, 손님 본인 취소는 알림 없음
+-- 요청 → 확정, 손님 본인 취소는 손님에게는 없고 마사지사에게 간다
 insert into bookings (id, customer_id, provider_id, scheduled_at, status, amount_vnd) values
   ('00000000-0000-0000-0000-00000000b002', '00000000-0000-0000-0000-00000000c001', '00000000-0000-0000-0000-00000000d001', now() + interval '1 day', 'requested', 500000),
   ('00000000-0000-0000-0000-00000000b003', '00000000-0000-0000-0000-00000000c001', '00000000-0000-0000-0000-00000000d001', now() + interval '1 day', 'requested', 500000);
 update bookings set status = 'confirmed' where id = '00000000-0000-0000-0000-00000000b002';
+-- 손님 취소는 앱처럼 손님 권한(RLS)으로 한다
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000c001", "role": "authenticated"}', true);
 update bookings set status = 'cancelled', cancelled_by = 'customer' where id = '00000000-0000-0000-0000-00000000b002';
+reset role;
 -- 마사지사 거절(cancelled_by 비어 있음)은 손님에게 간다
 update bookings set status = 'cancelled', rejected_at = now() where id = '00000000-0000-0000-0000-00000000b003';
 
@@ -140,6 +144,19 @@ begin
   from notifications where user_id = '00000000-0000-0000-0000-00000000c001';
   if got is distinct from 'booking_cancelled:b003,booking_completed:b001,booking_confirmed:b002,booking_on_the_way:b001' then
     raise exception 'FAIL: 손님 알림이 기대와 다름: %', got;
+  end if;
+  -- 손님 본인 취소(b002)는 마사지사 계정 둘 다에게 간다. 거절(b003)은 마사지사에게 가지 않는다
+  if (select count(*) from notifications where kind = 'booking_cancelled_by_customer'
+      and booking_id = '00000000-0000-0000-0000-00000000b002'
+      and user_id in ('00000000-0000-0000-0000-00000000c002', '00000000-0000-0000-0000-00000000c003')) <> 2
+     or exists (select 1 from notifications where kind = 'booking_cancelled_by_customer'
+                and (booking_id <> '00000000-0000-0000-0000-00000000b002'
+                     or user_id not in ('00000000-0000-0000-0000-00000000c002', '00000000-0000-0000-0000-00000000c003'))) then
+    raise exception 'FAIL: 손님 취소 알림이 마사지사 계정 둘에게만 정확히 가지 않음';
+  end if;
+  if (select body from notifications where kind = 'booking_cancelled_by_customer' and user_id = '00000000-0000-0000-0000-00000000c002')
+     not like 'MS-% · __/__ __:__' then
+    raise exception 'FAIL: 손님 취소 알림 본문에 예약번호·시각이 없음';
   end if;
 end $$;
 
@@ -174,7 +191,7 @@ create temp table t_first as select id from public.claim_unpushed_notifications(
 do $$
 begin
   if (select count(*) from t_first f join notifications n using (id)
-      where n.user_id in ('00000000-0000-0000-0000-00000000c001', '00000000-0000-0000-0000-00000000c002')) <> 9 then  -- 손님 4+공지 1, 마사지사 새 예약 3+공지 1
+      where n.user_id in ('00000000-0000-0000-0000-00000000c001', '00000000-0000-0000-0000-00000000c002')) <> 10 then  -- 손님 4+공지 1, 마사지사 새 예약 3+손님 취소 1+공지 1
     raise exception 'FAIL: 첫 claim 이 시험 알림을 다 돌려주지 않음';
   end if;
   if exists (select 1 from public.claim_unpushed_notifications()) then

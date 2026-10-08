@@ -74,6 +74,7 @@ const TITLE: Record<string, Record<string, string>> = {
   booking_on_the_way: { vi: "Kỹ thuật viên đang trên đường đến", ko: "테라피스트가 출발했습니다", en: "Your therapist is on the way" },
   booking_completed: { vi: "Dịch vụ đã hoàn tất. Hãy để lại đánh giá nhé.", ko: "서비스가 완료되었습니다. 평가를 남겨주세요", en: "Your service is complete. Please leave a review." },
   booking_cancelled: { vi: "Đã hủy đặt lịch.", ko: "예약이 취소되었습니다.", en: "Your booking has been cancelled." },
+  booking_cancelled_by_customer: { vi: "Khách đã hủy đặt lịch", ko: "손님이 예약을 취소했습니다", en: "The customer cancelled the booking" },
 };
 
 type Noti = { id: string; user_id: string; title: string | null; body: string | null; kind: string; booking_id: string | null };
