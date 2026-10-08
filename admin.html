@@ -2149,8 +2149,9 @@ window.openPayment = function (bookingId, amount) {
       const paid = sel !== 'card_onsite';
       const final = finalAmt();
       const used = couponId ? applicable.find(x => x.coupon_id === couponId) : null;
-      // 실제 결제 금액을 예약에 반영(정산·매출 정확도)
-      const patch = { payment_method: sel, is_paid: paid, amount_vnd: final };
+      // 결제 수단과 쿠폰만 저장한다. 결제 완료(is_paid)·금액은 서버가 정한다 —
+      // 앱이 '결제됨' 을 직접 쓰면 돈을 안 내고도 결제 완료가 된다. 할인액도 서버가 다시 계산한다.
+      const patch = { payment_method: sel };
       if (used) { patch.coupon_id = couponId; patch.discount_vnd = amount - final; }
       const { error } = await sb.from('bookings').update(patch).eq('id', bookingId);
       if (error) { btn.disabled = false; alert('결제 처리 실패: ' + error.message); return; }
@@ -2160,7 +2161,7 @@ window.openPayment = function (bookingId, amount) {
         if (!ce) { const mm = (CACHE.myCoupons || []).find(x => x.coupon_id === couponId); if (mm) mm.is_used = true; }
       }
       ov.style.display = 'none';
-      alert((paid ? '결제가 완료되었습니다.' : '현장 결제로 확정되었습니다.') + (used ? '\n쿠폰 할인 ' + (amount - final).toLocaleString() + '₫이 적용되었습니다.' : ''));
+      alert((paid ? '결제 수단을 저장했습니다. 결제가 확인되면 결제완료로 바뀝니다.' : '현장 결제로 확정되었습니다.') + (used ? '\n쿠폰 할인 ' + (amount - final).toLocaleString() + '₫이 적용되었습니다.' : ''));
       if (window.loadMyBookings) loadMyBookings();
     };
   };
@@ -2811,17 +2812,11 @@ window.submitReject = async function (bookingId, providerId) {
 // 최근 30일 거절 수를 세어 등급을 갱신하고 안내 문구를 반환
 async function applyRejectPenalty(providerId) {
   if (!providerId) return '';
-  const since = new Date(Date.now() - PENALTY_RULES.window * 864e5).toISOString();
-  const { count } = await sb.from('bookings').select('id', { count: 'exact', head: true })
-    .eq('provider_id', providerId).not('rejected_at', 'is', null).gte('rejected_at', since);
-  const n = count || 0;
-  let level = 0, note = '';
-  if (n >= PENALTY_RULES.suspend) level = 3;
-  else if (n >= PENALTY_RULES.lower) level = 2;
-  else if (n >= PENALTY_RULES.warn) level = 1;
-  const patch = { reject_count: n, penalty_level: level };
-  if (level === 3) { patch.suspended_until = new Date(Date.now() + PENALTY_RULES.days * 864e5).toISOString(); patch.is_active = false; }
-  await sb.from('providers').update(patch).eq('id', providerId);
+  // 제재 칸은 마사지사가 직접 못 고친다 — 서버 함수가 예약 기록으로 다시 세서 저장한다(규칙은 PENALTY_RULES 와 같다)
+  const { data: pen } = await sb.rpc('refresh_provider_penalty', { p_provider: providerId });
+  const n = (pen && pen.count) || 0;
+  const level = (pen && pen.level) || 0;
+  let note = '';
   if (level === 1) note = '⚠ 최근 ' + PENALTY_RULES.window + '일 거절 ' + n + '회 — 경고 단계입니다. ' + PENALTY_RULES.lower + '회부터 목록 노출이 낮아집니다.';
   if (level === 2) note = '⚠ 거절 ' + n + '회 — 목록 노출이 낮아집니다. ' + PENALTY_RULES.suspend + '회면 ' + PENALTY_RULES.days + '일 예약이 정지됩니다.';
   if (level === 3) note = '🚫 거절 ' + n + '회 — ' + PENALTY_RULES.days + '일간 예약 접수가 정지되었습니다.';

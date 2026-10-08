@@ -664,3 +664,26 @@ APNs 키는 VIBI 와 같은 팀 키(HS4BHJFLR2, Sandbox & Production)라 `/root/
   주의: 이후 `refresh_customer_penalty` 가 돌면 30일 예약 기록으로 횟수를 다시 센다(5회 이상이면 다시 7일 제한).
 - 시험: `scripts/test_profiles_signup_trigger.sql` — 마이그레이션의 begin/commit 줄을 sed 로 지운 본문을
   컨테이너 `/tmp/profiles_signup_body.sql` 로 넣고 돌린다(전체 롤백).
+
+## 예약·제공자 행 권한 잠금 (2026-10-08)
+
+- 컬럼 GRANT 가 아니라 BEFORE 트리거(`trg_booking_guard`, `trg_provider_guard`)로 막는다. 관리자도 같은 authenticated
+  역할이라 GRANT 로는 손님·관리자를 못 가르고, '값이 실제로 바뀐 칸'(`changed_columns(old,new)`)만 보면
+  구 앱이 같은 값을 다시 보내는 요청(현장 결제 확정의 `is_paid:false`·같은 금액)도 통과한다.
+- 통과: `current_user` 가 authenticated/anon 이 아닌 경우(service_role 엣지 함수, postgres 소유 보안정의자 함수), `is_admin()`,
+  providers 는 `is_reviewer()`(관리자·심사자). 트리거 함수는 보안정의자가 아니다 — current_user 로 판단하기 때문.
+- bookings 손님: 취소(대기·확정 → cancelled, `cancelled_at=now()`·`cancelled_by='customer'` 서버가 덮어씀), `payment_method`, 쿠폰
+  (보유·미사용·유효 쿠폰 한 번만, `discount_vnd` 는 서버 계산). is_paid·amount_vnd·노쇼·기타 칸은 42501.
+- bookings 담당 마사지사: status·accepted/completed/rejected/cancelled_at·no_show_at·reject/cancel_reason·cancelled_by 만.
+  기록 시각은 비어 있을 때 한 번만, 값은 `now()`. 끝난 예약(cancelled·completed·no_show)은 못 바꾼다.
+- bookings INSERT(관리자 외): `booking_blocked_until > now()` 면 42501 + hint `booking_blocked` + 하노이 시각 안내.
+  결제·기록 칸·쿠폰이 있거나 status 가 requested/confirmed 가 아니거나 service_id 가 없으면 거부. fee_rate 는 null 로 비워 `trg_freeze_fee_rate` 가 채운다.
+- providers 본인: display_name·photo_url(s)·bio·service_area·phone·business_hours·is_active·위치(lat/lng/last_*)·반려 재제출(rejected→pending, reject_reason null)만.
+  정지 중(`suspended_until > now()`)에는 is_active 를 켤 수 없다. INSERT 는 pending·표시 없음·fee_tier 기본값·본인 id 로만.
+- 거절 누적은 `refresh_provider_penalty(p_provider)` — 30일 거절 수로 단계 계산, **단계는 올리기만**(신고 제재를 이 함수로 지우지 못하게).
+  내리는 것은 관리자 clearPenalty. 앱 문구 '거절을 줄이면 회복됩니다' 는 이제 자동이 아니다.
+- 결제창 QR·이체·카드는 가짜 결제다(돈이 오가지 않음). 이제 결제 수단만 저장하고 is_paid 는 서버(토스 승인)·관리자만 바꾼다.
+- 알려진 미해결: createStaff(샵 직원 추가)는 중복 신청 가드 때문에 원래도 실패하던 경로이고, 이제 승인 상태 INSERT 도 막힌다.
+  user_coupons 는 손님이 자기 행을 자유롭게 쓴다(is_used 되돌리기 가능).
+- 시험: `scripts/test_bookings_providers_lock.sql`(롤백, 예약 INSERT 알림도 롤백으로 사라짐),
+  REST: `scripts/vps-test-bookings-providers-lock.sh`(임시 계정, 시험 예약은 session_replication_role=replica 로 넣어 알림 없음).

@@ -2831,4 +2831,16 @@ api 401. 모바일 화면 눈으로 확인 — 띠·CTA·보조문구 정상.
 - [x] 운영 적용: profiles 없는 회원 9 → 0, admin 1 → 1, notifications 3 → 3, 트리거 활성(O), 스키마 리로드
 - [x] admin.html `unblockCustomer` → `sb.rpc('admin_unblock_customer')` (실패 시 알림창)
 - [x] admin 배포 `vps-deploy-admin.sh`
-- [ ] (보고만) `bookings_customer_update`·`providers_owner_update` 컬럼 제한 없음 — 이번에 손대지 않음
+- [x] (보고만) `bookings_customer_update`·`providers_owner_update` 컬럼 제한 없음 → Z-39 에서 해결
+
+## Z-39. 예약·제공자 행 권한 잠금 + 예약 제한 서버 검사 (2026-10-08, 보안 버그 수정)
+- [x] 앱의 bookings·providers 쓰기 경로 전수 조사 (index.html·admin.html, 엣지 함수 toss-payment 는 service_role)
+- [x] `scripts/bookings_providers_lock.sql` — BEFORE 트리거 `trg_booking_guard`·`trg_provider_guard`(바뀐 칸만 검사, 관리자·심사자·서버 경로 통과), `refresh_provider_penalty(uuid)` RPC
+- [x] 예약 INSERT 에서 `booking_blocked_until` 검사(42501, hint `booking_blocked`) + 결제·기록 칸 거부 + fee_rate 는 서버 값
+- [x] index.html·admin.html 결제창 — is_paid·amount_vnd 를 보내지 않음, admin.html 거절 누적 → RPC
+- [x] verify: `scripts/test_bookings_providers_lock.sql` 적용 전 FAIL(손님 is_paid 변경 성공) → 적용 후 ALL PASS
+- [x] verify: `scripts/vps-test-bookings-providers-lock.sh` 실제 REST 임시 계정 — 거부 403·정상 200/201 전부 PASS, 실제 사용자 알림 0, 정리 후 0건
+- [x] app·admin 웹 배포
+- [ ] (사장님) 아이폰 1.0.11(29) — 결제창의 QR·이체·카드(가짜 결제) 버튼과 '쿠폰+현장 결제'는 오류 안내가 뜬다(쿠폰 없는 현장 결제는 정상). 현장 결제·카드 미리 결제(토스)·취소·예약은 그대로. 다음 빌드에 새 index.html 포함 권장(필수 아님)
+- [ ] (결정 필요) 비토스 결제의 '결제 확인'을 누가 할지 — 관리자 화면에 결제 확인 버튼이 아직 없다
+- [ ] (보고만) user_coupons 는 손님이 is_used 를 되돌리거나 아무 쿠폰이나 받을 수 있다 — 이번에 손대지 않음
