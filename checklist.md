@@ -2812,3 +2812,14 @@ api 401. 모바일 화면 눈으로 확인 — 띠·CTA·보조문구 정상.
 - [x] verify: `test_hanoi_week.js` 경계 5건(지남·지금·25분 뒤·30분 뒤·내일) 포함 ALL PASS
 - [x] 웹앱 배포 `vps-deploy-app.sh` + 콘솔 재배포 — app·admin 둘 다 200, `function isBookable`·`hanoiWeek` 있음, `2026-06-` 0건
       (웹·안드로이드 TWA 는 지금부터 날짜 수정 적용. 아이폰은 다음 빌드부터)
+
+## Z-37. profiles 자기 권한 상승 차단 (2026-10-08, 보안 버그 수정)
+- [x] 앱의 profiles 쓰기 경로 전수 조사 — 이름·전화·성별·국적·약관동의만 정상 경로, 제재 컬럼은 손님 자기 취소·파트너 노쇼 두 곳
+- [x] `scripts/profiles_role_lock.sql` — 테이블 INSERT/UPDATE 회수, 위 8개 컬럼만 UPDATE 재부여, `refresh_customer_penalty(uuid)` RPC 추가
+- [x] index.html·admin.html — 제재 저장을 RPC 호출로 교체 (3곳)
+- [x] verify: `scripts/test_profiles_role_lock.sql` 적용 전 FAIL(구멍 확인) → 적용 후 ALL PASS
+- [x] verify: 실제 REST 임시 계정 — role·cancel_count·no_show_count·booking_blocked_until PATCH 403, full_name 204, RPC 200, 계정 삭제 후 0건
+- [x] app·admin 웹 배포
+- [ ] (사장님) 아이폰은 다음 빌드부터 RPC 호출 — 그 전 빌드에서는 손님 자기 취소 페널티 기록이 조용히 실패한다(예약·취소 자체는 정상)
+- [ ] (사장님 결정) auth.users 가입 트리거가 VPS 에 없음 — 8/27 이후 가입 9명이 profiles 행 없음 (context-notes 참고)
+- [ ] (사장님 결정) 관리자 `unblockCustomer` 는 원래부터 RLS 로 막혀 동작 안 함 — 필요하면 관리자용 RPC 추가

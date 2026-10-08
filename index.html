@@ -2425,15 +2425,14 @@ async function applyCustomerPenalty() {
     if (b.no_show_at) { n++; return; }
     if (b.cancelled_at && b.scheduled_at && (new Date(b.scheduled_at) - new Date(b.cancelled_at)) < CANCEL_RULES.free_hours * 36e5) n++;
   });
-  const patch = { cancel_count: n };
   let note = '';
   if (n >= CANCEL_RULES.block) {
-    patch.booking_blocked_until = new Date(Date.now() + CANCEL_RULES.block_days * 864e5).toISOString();
     note = '🚫 임박 취소·노쇼 ' + n + '회 — ' + CANCEL_RULES.block_days + '일간 새 예약이 제한됩니다.';
   } else if (n >= CANCEL_RULES.warn) {
     note = '⚠ 임박 취소·노쇼 ' + n + '회 — ' + CANCEL_RULES.block + '회가 되면 ' + CANCEL_RULES.block_days + '일간 예약이 제한됩니다.';
   }
-  await sb.from('profiles').update(patch).eq('id', SESSION.user.id);
+  // 제재 값은 서버가 예약 기록으로 다시 세서 저장한다(손님은 profiles 의 제재 컬럼을 직접 못 쓴다)
+  await sb.rpc('refresh_customer_penalty', { p_customer: SESSION.user.id });
   if (note) await sb.from('notifications').insert({ user_id: SESSION.user.id, title: '예약 취소 누적 안내', body: note, kind: 'warning' });
   return note;
 }

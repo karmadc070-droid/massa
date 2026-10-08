@@ -2213,15 +2213,14 @@ async function applyCustomerPenalty() {
     if (b.no_show_at) { n++; return; }
     if (b.cancelled_at && b.scheduled_at && (new Date(b.scheduled_at) - new Date(b.cancelled_at)) < CANCEL_RULES.free_hours * 36e5) n++;
   });
-  const patch = { cancel_count: n };
   let note = '';
   if (n >= CANCEL_RULES.block) {
-    patch.booking_blocked_until = new Date(Date.now() + CANCEL_RULES.block_days * 864e5).toISOString();
     note = '🚫 임박 취소·노쇼 ' + n + '회 — ' + CANCEL_RULES.block_days + '일간 새 예약이 제한됩니다.';
   } else if (n >= CANCEL_RULES.warn) {
     note = '⚠ 임박 취소·노쇼 ' + n + '회 — ' + CANCEL_RULES.block + '회가 되면 ' + CANCEL_RULES.block_days + '일간 예약이 제한됩니다.';
   }
-  await sb.from('profiles').update(patch).eq('id', SESSION.user.id);
+  // 제재 값은 서버가 예약 기록으로 다시 세서 저장한다(손님은 profiles 의 제재 컬럼을 직접 못 쓴다)
+  await sb.rpc('refresh_customer_penalty', { p_customer: SESSION.user.id });
   if (note) await sb.from('notifications').insert({ user_id: SESSION.user.id, title: '예약 취소 누적 안내', body: note, kind: 'warning' });
   return note;
 }
@@ -2771,11 +2770,11 @@ window.markNoShow = async function (bookingId, customerId) {
     const { data: rows } = await sb.from('bookings').select('scheduled_at, cancelled_at, no_show_at').eq('customer_id', customerId).gte('created_at', since).limit(200);
     let n = 0;
     (rows || []).forEach(b => { if (b.no_show_at) { n++; return; } if (b.cancelled_at && b.scheduled_at && (new Date(b.scheduled_at) - new Date(b.cancelled_at)) < 36e5) n++; });
-    const patch = { no_show_count: (rows || []).filter(x => x.no_show_at).length, cancel_count: n };
     let note = '';
-    if (n >= 5) { patch.booking_blocked_until = new Date(Date.now() + 7 * 864e5).toISOString(); note = '🚫 임박 취소·노쇼 ' + n + '회 — 7일간 새 예약이 제한됩니다.'; }
+    if (n >= 5) note = '🚫 임박 취소·노쇼 ' + n + '회 — 7일간 새 예약이 제한됩니다.';
     else if (n >= 3) note = '⚠ 임박 취소·노쇼 ' + n + '회 — 5회가 되면 7일간 예약이 제한됩니다.';
-    await sb.from('profiles').update(patch).eq('id', customerId);
+    // 손님 행은 RLS 상 마사지사가 직접 못 고친다 — 서버 함수가 예약 기록으로 다시 세서 저장한다
+    await sb.rpc('refresh_customer_penalty', { p_customer: customerId });
     if (note) await sb.from('notifications').insert({ user_id: customerId, title: '노쇼 처리 안내', body: '예약 시간에 방문이 확인되지 않아 노쇼로 처리되었습니다.\n' + note, kind: 'warning' });
   }
   alert('노쇼로 처리했습니다.');

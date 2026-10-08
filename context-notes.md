@@ -621,3 +621,29 @@ APNs 키는 VIBI 와 같은 팀 키(HS4BHJFLR2, Sandbox & Production)라 `/root/
   (칩도 그때 다시 그려진다). 관리자 콘솔의 상태 변경(adminSetBooking 등)은 다른 경로라 영향 없다.
   화면에서 미리 막지 않고 저장 직전에만 막는다 — 시간 고르는 UI 를 바꾸지 않는 최소 수정.
 - index.html 과 admin.html 의 `hanoiWeek` 는 글자까지 같아야 한다 — `scripts/test_hanoi_week.js` 가 둘을 비교한다.
+
+## profiles 자기 권한 상승 차단 (2026-10-08)
+
+### 구멍
+`profiles_self_update` 정책에 컬럼 제한이 없고 anon·authenticated 에 테이블 단위 UPDATE/INSERT 가 있었다.
+로그인만 하면 자기 `role` 을 `admin` 으로 바꿔 `is_admin()` 을 통과하고, `cancel_count`·`no_show_count`·
+`booking_blocked_until` 을 지워 노쇼 제재를 풀 수 있었다. (적용 전 시험이 FAIL 로 재현)
+
+### 고친 방법
+- 테이블 단위 INSERT/UPDATE 회수 → `full_name, phone, gender, nationality, terms_agreed_at, privacy_agreed_at,
+  marketing_agreed_at, terms_version` 만 UPDATE 재부여. INSERT 는 앱에 경로가 없어 다시 주지 않았다.
+  (테이블 권한이 남아 있으면 컬럼 revoke 가 먹지 않는다 — KBizV 0022 와 같은 방식)
+- 제재 값은 `refresh_customer_penalty(p_customer)` (security definer) 가 예약 기록으로 다시 세서 저장한다.
+  규칙은 앱 CANCEL_RULES 그대로(30일·1시간·5회→7일). 부를 수 있는 사람: 본인, 그 손님 예약을 맡은 마사지사, 관리자.
+  파트너의 `markNoShow` 는 원래 RLS 때문에 손님 행 수정이 조용히 실패하고 있었는데 이걸로 실제로 기록된다.
+- 시험: `scripts/test_profiles_role_lock.sql` (롤백). REST 확인은 임시 계정으로 하고 바로 지웠다.
+
+### 남은 것 (손대지 않음)
+- **auth.users 에 가입 트리거가 없다.** `handle_new_user()` 함수는 있는데 걸린 트리거가 0개.
+  VPS 이전 때 auth 스키마 트리거가 안 따라온 것으로 보인다. 8/27 이후 가입 9명이 profiles 행이 없어
+  프로필 수정·약관 동의 저장·제재 기록이 전부 0행 처리된다. 트리거 복구 + 9명 백필이 필요하다.
+- 아이폰 앱은 index.html 을 내장하므로 RPC 호출은 다음 빌드부터. 옛 빌드의 자기 취소 페널티 기록은 403 으로 조용히 실패한다.
+- 예약 제한은 여전히 앱에서만 검사한다(`ensureNotBlocked`). bookings INSERT 정책은 제재를 보지 않는다.
+- `bookings_customer_update` 가 손님에게 자기 예약의 모든 컬럼(no_show_at·cancelled_at·amount_vnd·is_paid 등) 수정을 허용한다.
+- `providers_owner_update` 가 마사지사에게 자기 행의 모든 컬럼(is_verified·fee_tier·penalty_level·suspended_until·application_status 등) 수정을 허용한다.
+- 관리자 `unblockCustomer` 는 profiles 에 관리자 UPDATE 정책이 없어 원래부터 동작하지 않는다.
