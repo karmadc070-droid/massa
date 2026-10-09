@@ -3084,3 +3084,50 @@ Play 는 프로덕션을 열기 전에는 국가 설정 자체가 없다.
 
 ### 접근성
 `prefers-reduced-motion` 에서 빛 덩이·빛줄기·카드 전환을 전부 끈다. ESC 로 닫힌다.
+
+## Z-41. ★ 사고 — 팝업이 사이트 전체 클릭을 막았다 (2026-10-09)
+
+Z-40 에서 넣은 모집 팝업 때문에 **massaviet.com 의 모든 링크와 버튼이 안 눌렸다.**
+사장님이 "언어 변경이 클릭이 안 된다" 고 알려 주셔서 발견했다. 실제로는 언어만이 아니라
+네비게이션·버튼·푸터·다운로드 전부였다. 약 40분간 그 상태로 떠 있었다.
+
+### 원인
+```css
+.jp{position:fixed;inset:0;z-index:120;display:flex;opacity:0}
+```
+팝업에 `hidden` 속성을 걸어 뒀는데, **내 `.jp{display:flex}` 가 브라우저 기본값인
+`[hidden]{display:none}` 를 이겼다.** 둘 다 명시도가 같은데 작성자 스타일이 UA 스타일을
+이기기 때문이다.
+
+결과 — 팝업이 `hidden` 인 채로 `display:flex` 가 되어, **투명하지만 화면 전체를 덮은
+배경(`.jp-bd`)이 모든 클릭을 삼켰다.** 눈에는 아무것도 안 보이니 알아채기 어렵다.
+
+확인한 방법 (다음에도 이렇게 본다)
+```js
+const r = 링크.getBoundingClientRect();
+document.elementFromPoint(r.x+r.width/2, r.y+r.height/2)   // → jp-bd 가 나왔다
+```
+
+### 고친 것 — 두 겹으로
+```css
+.jp[hidden]{display:none}      /* 명시도를 올려 확실히 숨긴다 */
+.jp:not(.on){pointer-events:none}  /* 혹시 또 새면 클릭은 통과시킨다 */
+```
+한 겹만 두면 다음에 누가 `display` 를 또 건드릴 때 같은 일이 반복된다.
+
+### 덤으로 발견한 두 번째 버그
+`requestAnimationFrame` 으로 `.on` 을 붙였는데 **rAF 는 배경 탭에서 멈춘다.**
+그래서 팝업이 '열리다 만' 상태로 굳었다. `void jp.offsetWidth` 로 레이아웃을 강제
+계산시키는 방식으로 바꿨다. 탭 상태와 무관하게 동작한다.
+
+### 교훈
+**`position:fixed; inset:0` 짜리를 새로 만들면, 숨겼을 때 정말 안 보이는지가 아니라
+"클릭이 통과하는지" 를 확인해야 한다.** 눈으로 스크린샷만 봤을 때는 멀쩡해 보였다.
+스크린샷은 투명한 오버레이를 잡아내지 못한다.
+
+**앞으로 오버레이를 추가하면 `elementFromPoint` 로 주요 링크를 한 번 훑는다.**
+
+### 확인
+7개 페이지(ko/vi/en 홈 · partner · services · download · faq)에서
+팝업 `hidden` 유지, 배너 `.wrap` 적용 확인. 헤더·언어·버튼·푸터·소셜 전부 막힘 0건.
+VI → KO 전환 실제로 눌러서 `/` 이동 · `lang=ko` · 한국어 제목 · 선택 기억까지 확인했다.
