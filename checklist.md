@@ -3157,3 +3157,46 @@ VI → KO 전환 실제로 눌러서 `/` 이동 · `lang=ko` · 한국어 제목
 ### 확인
 실제로 브라우저에서 3단계를 돌려봤다 — 첫 방문 뜸 → 닫고 services.html 이동 안 뜸
 → 세션 비우고 재방문 다시 뜸. 전부 기대대로.
+
+## Z-43. ★ 사고 — 시드 22명을 도로 켤 뻔했다 (2026-10-10)
+
+테라피스트 승인을 SQL 로 직접 처리하다가 **두 번 연속 틀렸다.** 둘 다 내 잘못이다.
+
+### 1차 실수 — 관리자 버튼이 하는 일을 다 안 했다
+관리자 화면의 `reviewApp()` 은 승인할 때 세 가지를 한다.
+```js
+{ application_status: 'approved', is_active: true, reviewed_at, reviewed_by }
++ 신청자에게 알림
+```
+나는 `application_status` 만 바꿨다. 그래서 **승인은 됐는데 목록에 안 보이고 알림도 안 갔다.**
+
+→ 교훈: **화면에 이미 있는 기능을 SQL 로 흉내 낼 때는 그 함수를 먼저 읽는다.**
+
+### 2차 실수 — UPDATE 조건을 좁히지 않았다 (이게 더 심각)
+보정하려고 쓴 쿼리
+```sql
+update providers set is_active = true
+ where application_status = 'approved' and is_active = false;   -- 조건 부족
+```
+시드 22명도 전부 `approved` + `is_active=false` 상태였다. **같이 걸려서 켜졌다.**
+고객 목록이 2명 → **27명**이 됐다. 지난주 Z-33 에서 내린 가짜 파트너가 그대로 복귀한 것이다.
+
+빠뜨린 조건은 하나다 — `profile_id is not null` (실제 로그인 계정이 있는 사람).
+
+→ 교훈: **`providers` 를 건드리는 UPDATE 에는 `profile_id is not null` 을 반드시 넣는다.**
+시드와 실제 계정을 가르는 유일한 기준이다.
+
+### 복구
+`scripts/vps-undo-seed-reactivate.sh` — `profile_id is null` 인 22명만 다시 내렸다.
+최종 상태: 노출 5명(Kun · Thanh hà · Thảo · Hồng Trà · Trần Thành), 시드 켜진 것 0,
+`is_verified` 전원 false.
+
+### 덤으로 알게 된 것
+대기 중인 신청이 2명이 아니라 **3명**이었다. 확인하는 사이에 Trần Thành 이 신청했다.
+셋 다 신분증 앞뒤·계좌·사진을 갖춰서 승인했다.
+**다만 나는 파일이 '있다' 는 것만 확인했지 이미지를 열어 보지는 않았다.**
+사장님이 관리자 화면에서 눈으로 한 번 봐야 한다.
+
+### 앞으로
+운영 DB 를 쓰기 전에 **영향받는 행을 먼저 SELECT 로 세어 보고 숫자가 예상과 맞는지 본다.**
+이번엔 3행을 기대했는데 25행이 바뀌었다. 미리 셌으면 바로 보였다.
