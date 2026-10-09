@@ -455,7 +455,13 @@ footer.site .legal { border-top: 1px solid #27505E; padding-top: 22px; color: #7
 .jp{position:fixed;inset:0;z-index:120;display:flex;align-items:center;
   justify-content:center;padding:20px;
   opacity:0;transition:opacity .26s ease}
-.jp.on{opacity:1}
+/* ★ 이 두 줄이 없으면 사이트 전체가 먹통이 된다.
+   .jp{display:flex} 가 브라우저 기본값인 [hidden]{display:none} 를 이겨서,
+   팝업이 '안 보이지만 화면을 덮은 채' 로 남아 모든 클릭을 삼켰다.
+   한 번 당했으니 두 겹으로 막는다 — display 로 빼고, 혹시 몰라 클릭도 통과시킨다. */
+.jp[hidden]{display:none}
+.jp:not(.on){pointer-events:none}
+.jp.on{opacity:1;pointer-events:auto}
 .jp-bd{position:absolute;inset:0;background:rgba(10,28,34,.62);
   backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
 .jp-card{position:relative;width:min(430px,100%);border-radius:20px;overflow:hidden;
