@@ -329,18 +329,6 @@ footer.site .legal { border-top: 1px solid #27505E; padding-top: 22px; color: #7
   body { padding-bottom: 62px; }
 }
 
-/* 테라피스트 모집 띠 — 헤더 바로 아래. 지금은 공급이 병목이라 전 페이지에 둔다.
-   고객용 사이트에 끼어드는 요소라 금색 한 줄로만 눌러 둔다. */
-.rbar{display:flex;align-items:center;justify-content:center;gap:10px;
-  padding:9px 16px;background:var(--gold-pale);border-bottom:1px solid var(--line);
-  color:var(--ink);text-decoration:none;font-family:var(--sans);font-size:13.5px;
-  line-height:1.4;text-align:center;flex-wrap:wrap}
-.rbar b{font-weight:600}
-.rbar span{color:var(--gold);font-weight:600;white-space:nowrap}
-.rbar span::after{content:' →'}
-.rbar:hover{background:#F7E9CF}
-@media (max-width:560px){.rbar{font-size:12.5px;padding:8px 12px;gap:6px}}
-
 /* CTA 버튼 아래 한 줄. .note 를 쓰면 안내 박스처럼 보여서 따로 둔다. */
 .ctasub{margin:14px 0 0;text-align:center;font-family:var(--sans);
   font-size:13.5px;color:var(--ink-soft)}
@@ -355,3 +343,104 @@ footer.site .legal { border-top: 1px solid #27505E; padding-top: 22px; color: #7
   transition:background .15s ease,color .15s ease}
 .social a:hover{background:var(--bc);color:#fff}
 @media (max-width:560px){.social a{width:34px;height:34px}}
+
+/* ── 테라피스트 모집 배너 ─────────────────────────
+   공급이 병목이라 전 페이지 맨 위에 크게 둔다. 고객용 사이트에 끼어드는 요소라
+   색은 금색 계열 하나로만 쓰고, 움직임은 화살표와 아주 느린 광택뿐이다. */
+.rbar{position:relative;overflow:hidden;display:flex;align-items:center;
+  gap:18px;padding:18px 28px;text-decoration:none;
+  background:linear-gradient(100deg,#2A5C6B 0%,#1F4E5F 55%,#143643 100%);
+  color:#F3EDE1;font-family:var(--sans)}
+.rbar::after{content:'';position:absolute;top:0;bottom:0;width:38%;
+  left:-45%;transform:skewX(-18deg);pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(232,201,142,.16),transparent);
+  animation:rbShine 7s ease-in-out infinite}
+@keyframes rbShine{0%,62%{left:-45%}100%{left:125%}}
+
+.rb-tag{flex:0 0 auto;font-size:11px;font-weight:600;letter-spacing:.16em;
+  padding:6px 11px;border-radius:999px;color:#E8C98E;
+  border:1px solid rgba(232,201,142,.45);background:rgba(232,201,142,.08)}
+.rb-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:3px}
+.rb-main b{font-size:19px;font-weight:600;letter-spacing:-.01em;color:#fff;line-height:1.25}
+.rb-main em{font-style:normal;font-size:14px;color:#BFD4DA;line-height:1.35}
+.rb-go{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;
+  padding:11px 20px;border-radius:999px;font-size:14px;font-weight:600;
+  background:#E8C98E;color:#143643;white-space:nowrap;
+  transition:background .18s ease,transform .18s ease}
+.rb-go::after{content:'→';transition:transform .25s cubic-bezier(.2,.8,.3,1)}
+.rbar:hover .rb-go{background:#F2DAA9;transform:translateY(-1px)}
+.rbar:hover .rb-go::after{transform:translateX(5px)}
+
+@media (max-width:860px){
+  .rbar{flex-wrap:wrap;gap:10px 14px;padding:15px 20px}
+  .rb-main{flex:1 1 100%;order:2}
+  .rb-main b{font-size:17px}
+  .rb-main em{font-size:13px}
+  .rb-tag{order:1}
+  .rb-go{order:3;flex:1 1 100%;justify-content:center;padding:12px}
+}
+
+/* ── 모션 ─────────────────────────────────────────
+   라이브러리 없이 CSS 로만 한다. 이 사이트는 로딩 속도를 1.8초에서 0.74초로
+   끌어내린 적이 있어서, 그걸 도로 까먹는 짓은 하지 않는다. */
+
+/* 히어로 — 열자마자 순서대로 들어온다 */
+@keyframes mIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.hero .kicker,.hero h1,.hero .lead,.hero .btns,.hero-cap{
+  opacity:0;animation:mIn .85s cubic-bezier(.2,.75,.3,1) forwards}
+.hero .kicker{animation-delay:.05s}
+.hero h1      {animation-delay:.16s}
+.hero .lead   {animation-delay:.32s}
+.hero .btns   {animation-delay:.44s}
+.hero-cap     {animation-delay:.56s}
+
+/* 히어로 사진 — 아주 느리게 밀려 들어온다. 정지 사진이 숨 쉬는 정도로만 */
+@keyframes mKen{from{transform:scale(1)}to{transform:scale(1.07)}}
+.hero-img img{animation:mKen 26s ease-out forwards}
+.hero-img{opacity:0;animation:mIn 1s cubic-bezier(.2,.75,.3,1) .22s forwards}
+
+/* 스크롤 등장 — 한 줄에 여러 개면 차례로 */
+.grid .rv:nth-child(2){transition-delay:.09s}
+.grid .rv:nth-child(3){transition-delay:.18s}
+.grid .rv:nth-child(4){transition-delay:.27s}
+.steps .rv:nth-child(2){transition-delay:.07s}
+.steps .rv:nth-child(3){transition-delay:.14s}
+.steps .rv:nth-child(4){transition-delay:.21s}
+.tbl.rv tr{opacity:0;transform:translateY(10px);
+  transition:opacity .55s ease,transform .55s ease}
+.tbl.rv.in tr{opacity:1;transform:none}
+.tbl.rv.in tr:nth-child(2){transition-delay:.06s}
+.tbl.rv.in tr:nth-child(3){transition-delay:.12s}
+.tbl.rv.in tr:nth-child(4){transition-delay:.18s}
+.tbl.rv.in tr:nth-child(5){transition-delay:.24s}
+.tbl.rv.in tr:nth-child(6){transition-delay:.30s}
+
+/* 섹션 제목 — 밑에서 올라오되 글자가 먼저 */
+.sec-head .kicker{display:inline-block}
+.sec-head.rv.in .kicker{animation:mIn .6s ease forwards}
+
+/* 카드 — 손이 닿으면 반응한다 */
+.card{transition:transform .3s cubic-bezier(.2,.8,.3,1),
+  box-shadow .3s ease,border-color .3s ease}
+.card:hover{transform:translateY(-5px);
+  box-shadow:0 14px 34px -18px rgba(20,54,67,.4)}
+.pcard .ph{overflow:hidden}
+.pcard img{transition:transform .6s cubic-bezier(.2,.8,.3,1)}
+.pcard:hover img{transform:scale(1.06)}
+
+/* 버튼 — 눌리는 느낌 */
+.btn{transition:transform .18s cubic-bezier(.2,.8,.3,1),
+  box-shadow .18s ease,background .18s ease}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px -12px rgba(20,54,67,.55)}
+.btn:active{transform:translateY(0)}
+
+/* 움직임을 줄이도록 설정한 기기에서는 전부 끈다 */
+@media (prefers-reduced-motion: reduce){
+  .hero .kicker,.hero h1,.hero .lead,.hero .btns,.hero-cap,.hero-img{
+    opacity:1;animation:none}
+  .hero-img img{animation:none}
+  .rbar::after{animation:none}
+  .tbl.rv tr{opacity:1;transform:none;transition:none}
+  .card:hover,.pcard:hover img,.btn:hover{transform:none}
+  .grid .rv,.steps .rv{transition-delay:0s !important}
+}

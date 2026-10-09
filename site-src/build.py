@@ -215,11 +215,14 @@ def chrome(lang, name, L, body, page):
         f'<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">'
         f'<path d="{d}"/></svg></a>'
         for _k, n, u, c, d in SOCIAL)
-    # 테라피스트 모집 띠. 지금은 공급이 병목이라 전 페이지에 둔다.
+    # 테라피스트 모집 배너. 지금은 공급이 병목이라 전 페이지 맨 위에 크게 둔다.
     # 모집 페이지 자신에는 안 붙인다 — 이미 와 있는 사람에게 또 권할 이유가 없다.
     rbar = "" if name == "partner" else (
         f'<a class="rbar" href="{url(lang,"partner")}">'
-        f'<b>{esc(L["rbar"])}</b><span>{esc(L["rbar_cta"])}</span></a>')
+        f'<span class="rb-tag">{esc(L["rbar_tag"])}</span>'
+        f'<span class="rb-main"><b>{esc(L["rbar"])}</b>'
+        f'<em>{esc(L["rbar_sub"])}</em></span>'
+        f'<span class="rb-go">{esc(L["rbar_cta"])}</span></a>')
     return f'''<!DOCTYPE html>
 <!-- 자동 생성 파일이다. 고치려면 site-src/content_{lang}.py 를 고치고 build.py 를 다시 돌린다 -->
 <html lang="{lang}">
