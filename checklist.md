@@ -3293,3 +3293,36 @@ Caddy  @adminpath path /admin /admin/*
 **막힌 지점** — 구글 OAuth 클라이언트에 `https://massaviet.com/oauth2/callback` 을
 승인된 리디렉션 URI 로 넣어야 한다. 그건 구글 클라우드 콘솔에서 사람이 해야 한다.
 포트는 4180 이 emoi 가 쓰고 있으니 massa 는 다른 번호를 쓴다.
+
+## Z-46 · 시드 마사지사 22명 완전 삭제 (2026-10-10)
+
+- [x] 사전 점검 — 외래키와 딸린 행 수를 먼저 센다 (`scripts/vps-seed-delete-precheck.sh`)
+- [x] 백업 — providers · provider_services · favorites · provider_kyc 네 테이블 CSV
+- [x] 삭제 — 한 트랜잭션, 행수 가드 통과
+- [x] 검증 — 남은 마사지사 5명 전원 승인·노출, 계정 없는 행 0
+
+**왜 끄는 데서 그치지 않고 지웠나** — Z-43 에서 UPDATE 조건 하나를 빠뜨려 꺼 둔 22명이
+전부 다시 켜졌다. 행이 남아 있는 동안은 같은 사고가 또 난다. 지우면 그 경로가 사라진다.
+
+**대상 기준** — `profile_id is null`. 로그인 계정이 없으니 실존 인물이 아니다.
+Z-33 · Z-43 에서 쓴 것과 같은 기준이다.
+
+**사전 점검 결과** — 예약 0 · 후기 0 · provider_services 682 · favorites 1.
+외래키는 전부 CASCADE 또는 SET NULL 이라 막는 것이 없었다. 실제 기록 손실은 없다.
+
+**안전장치 세 겹** (`scripts/vps-seed-delete.sh`)
+1. 지우기 전 네 테이블 CSV 백업 → `/root/massa-backup/seed-delete-20261010-012817/`
+2. 한 트랜잭션 안에서 대상 수가 22가 아니면 스스로 중단
+3. 로그인 계정이 달린 행이나 켜져 있는 행이 섞이면 중단
+
+Z-43 의 교훈을 코드로 박았다. 운영 DB 쓰기는 **영향 행 수를 세는 가드 없이 돌리지 않는다.**
+
+**남은 마사지사 5명** — Thanh hà · Kun · Thảo · Hồng Trà · Trần Thành.
+전원 approved · 노출 중 · `is_verified = false` (인증 마크 아직 안 붙음).
+
+**PowerShell ssh 따옴표 문제 우회** — 스크립트를 base64 로 바꿔서 한 줄로 보냈다.
+base64 는 영숫자뿐이라 PowerShell 이 건드릴 게 없다. GitHub 경유보다 빠르다.
+```powershell
+$b = [Convert]::ToBase64String([IO.File]::ReadAllBytes("...sh"))
+ssh -i $env:USERPROFILE\.ssh\erp_vultr root@141.164.46.88 "echo $b | base64 -d > /tmp/x.sh && bash /tmp/x.sh"
+```
