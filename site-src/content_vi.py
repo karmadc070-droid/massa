@@ -331,19 +331,19 @@ PAGES = {
     ]}]},
 
   {"type": "section", "soft": True,
-   "kicker": "An toàn",
-   "h2": "Bạn đến nhà khách.<br>Nên chúng tôi làm kỹ phần này.",
-   "lead": "Mọi đối tác đều xác minh giấy tờ trước khi hoạt động. Nhờ vậy khách yên tâm mở cửa, và bạn yên tâm bước vào.",
+   "kicker": "Môi trường làm việc",
+   "h2": "Làm việc mà<br><em>không phải dè chừng.</em>",
+   "lead": "Khách và chuyên viên đều biết rõ mình đang bước vào đâu. Nhờ vậy cả hai bên đều thoải mái, và bạn chỉ cần tập trung vào tay nghề của mình.",
    "blocks": [
     {"type": "grid", "items": [
-      {"n": "01", "t": "Ai cũng được xác minh",
-       "d": "Chúng tôi kiểm tra CCCD của từng đối tác trước khi duyệt. Hồ sơ đã kiểm mới được gắn dấu xác minh."},
+      {"n": "01", "t": "Những người dễ chịu",
+       "d": "Khách đến massa là để được chăm sóc đàng hoàng. Bạn làm đúng nghề của mình, không phải xoay xở thêm điều gì."},
       {"n": "02", "t": "Nút an toàn trong ứng dụng",
        "d": "Gặp tình huống không ổn giữa buổi, một chạm là vị trí của bạn được gửi ngay cho đội ngũ chúng tôi."},
       {"n": "03", "t": "Chuẩn mực áp dụng hai chiều",
        "d": "Khách đưa ra yêu cầu không phù hợp thì bạn từ chối và báo cáo. Vi phạm được xác nhận sẽ bị khóa ngay."},
-      {"n": "04", "t": "Minh bạch với khách",
-       "d": "Chúng tôi ghi đúng những gì đã kiểm tra, không tô vẽ thêm cho ai. Niềm tin của khách là tài sản chung."},
+      {"n": "04", "t": "Chúng tôi đứng cùng bạn",
+       "d": "Có chuyện gì chưa ổn, bạn báo trong ứng dụng là chúng tôi xử lý. Bạn không phải tự mình đối mặt."},
     ]}]},
 
   {"type": "section",

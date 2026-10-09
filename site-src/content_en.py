@@ -329,19 +329,19 @@ PAGES = {
     ]}]},
 
   {"type": "section", "soft": True,
-   "kicker": "Safety",
-   "h2": "You walk into someone's home.<br>So we take this part seriously.",
-   "lead": "Every partner verifies their ID before working. That is why customers open the door with confidence, and why you can walk in with the same.",
+   "kicker": "How it feels to work here",
+   "h2": "Work without<br><em>watching your back.</em>",
+   "lead": "Customers and therapists both know exactly what they are walking into. That keeps it easy on both sides, and leaves you free to focus on your craft.",
    "blocks": [
     {"type": "grid", "items": [
-      {"n": "01", "t": "Everyone is verified",
-       "d": "We check each partner's ID before approval. Only checked documents earn a verification mark."},
+      {"n": "01", "t": "Easy people to work with",
+       "d": "People come to massa for proper care. You do the work you trained for, and nothing beyond it."},
       {"n": "02", "t": "Safety button in the app",
        "d": "If something feels wrong mid-session, one tap sends your location straight to our team."},
       {"n": "03", "t": "The standard runs both ways",
        "d": "If a customer makes an inappropriate request, refuse and report it. Confirmed violations are suspended immediately."},
-      {"n": "04", "t": "Straight with customers too",
-       "d": "We state exactly what we checked and nothing more. A customer's trust is something we build together."},
+      {"n": "04", "t": "You are not on your own",
+       "d": "If something is not right, report it in the app and we handle it. You never have to face it alone."},
     ]}]},
 
   {"type": "section",
