@@ -337,7 +337,7 @@ def chrome(lang, name, L, body, page):
     try {{ localStorage.setItem('massa_sb','off'); }} catch(e) {{}}
   }};
 
-  // 모집 팝업 — 2.2초 뒤 한 번. 닫으면 7일 동안 다시 안 띄운다.
+  // 모집 팝업 — 2.2초 뒤 한 번. 닫으면 1일 동안 다시 안 띄운다.
   // 고객용 사이트라 매번 가로막으면 손님을 잃는다.
   var jp = document.getElementById('jp');
   if (jp) {{
@@ -347,7 +347,7 @@ def chrome(lang, name, L, body, page):
     var close = function(){{
       jp.classList.remove('on');
       setTimeout(function(){{ jp.hidden = true; }}, 260);
-      try {{ localStorage.setItem(K, String(Date.now() + 7*864e5)); }} catch(e) {{}}
+      try {{ localStorage.setItem(K, String(Date.now() + 864e5)); }} catch(e) {{}}
       document.removeEventListener('keydown', onEsc);
     }};
     var onEsc = function(e){{ if (e.key === 'Escape') close(); }};
