@@ -387,6 +387,15 @@
   .chips { display: flex; gap: 8px; flex-wrap: wrap; }
   .chip { border: 1.5px solid var(--line); border-radius: 20px; padding: 8px 16px; font-size: 13px; cursor: pointer; background: var(--card); }
   .chip.sel { background: var(--navy); color: #fff; border-color: var(--navy); }
+  /* 목록 위 띠 — 정렬 드롭다운 + 상태 칩 + 찾기. 목록 11개가 같은 모양을 쓴다 */
+  .lfbar { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; margin-bottom: 11px; }
+  .lfbar select.lfsort { width: auto; min-width: 104px; padding: 7px 9px; font-size: 12.5px; }
+  .lfbar input.lfq { width: auto; flex: 1; min-width: 108px; border: 1.5px solid var(--line);
+                     border-radius: 10px; padding: 7px 11px; font-size: 12.5px;
+                     background: var(--card); color: var(--text); }
+  .lfchips { display: flex; gap: 5px; flex-wrap: wrap; }
+  .lfchips .chip { padding: 6px 12px; font-size: 12px; border-width: 1.5px; }
+  .lfcnt { font-size: 11.5px; color: var(--muted); margin-left: auto; white-space: nowrap; }
   input.tx, select { width: 100%; border: 1.5px solid var(--line); border-radius: 10px; padding: 11px 12px; font-size: 13.5px; background: var(--card); color: var(--text); }
   .grid7 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
   .day { text-align: center; padding: 9px 0; border: 1.5px solid var(--line); border-radius: 9px; font-size: 12.5px; cursor: pointer; background: var(--card); }
@@ -2838,6 +2847,88 @@ window.applyRejectPenalty = applyRejectPenalty;
 
 
 // ── 관리자: 신청 승인/거절 ──
+// ── 목록 띠 (정렬 드롭다운 + 상태 칩 + 검색) ───────────────────────
+// 운영 콘솔 목록은 표가 아니라 카드다. 누를 머리칸이 없어서 목록 위에 띠를 따로 붙인다.
+// 목록 11개가 전부 이 함수 하나를 쓴다. 목록마다 바뀌는 건 설정 객체뿐이다.
+//
+// 설정 모양
+//   sorts  [{ k:'new', h:'최신순', f:(a,b)=>... }]   첫 번째가 기본값
+//   chips  [{ k:'wait', h:'대기', f:(r)=>참이면 남김 }]  없으면 칩을 안 그린다
+//   search (행) => [훑을 값들]                        없으면 검색칸을 안 그린다
+const LF = {};
+
+function mountList(key, wrap, rows, cfg, render) {
+  const st = LF[key] || (LF[key] = { sort: cfg.sorts[0].k, chip: '', q: '' });
+  Object.assign(st, { wrap, rows: rows || [], cfg, render });
+  paintList(key);
+}
+
+function paintList(key) {
+  const st = LF[key]; if (!st || !st.wrap) return;
+  const { cfg } = st;
+  let out = st.rows;
+
+  if (st.q && cfg.search) {
+    const q = st.q.toLowerCase();
+    out = out.filter(r => cfg.search(r).some(v => String(v == null ? '' : v).toLowerCase().includes(q)));
+  }
+  if (st.chip && cfg.chips) {
+    const c = cfg.chips.find(x => x.k === st.chip);
+    if (c) out = out.filter(c.f);
+  }
+  const s = cfg.sorts.find(x => x.k === st.sort);
+  // sort 는 제자리 정렬이라 원본을 뒤섞는다. 복사본을 정렬한다.
+  if (s) out = out.slice().sort(s.f);
+
+  const bar = `<div class="lfbar" data-lf="${key}">
+    <select class="lfsort">${cfg.sorts.map(x =>
+      `<option value="${x.k}"${x.k === st.sort ? ' selected' : ''}>${x.h}</option>`).join('')}</select>
+    ${cfg.chips ? `<div class="lfchips">
+      <span class="chip${st.chip === '' ? ' sel' : ''}" data-c="">전체</span>
+      ${cfg.chips.map(c => `<span class="chip${st.chip === c.k ? ' sel' : ''}" data-c="${c.k}">${c.h}</span>`).join('')}
+    </div>` : ''}
+    ${cfg.search ? `<input class="lfq" placeholder="찾기" value="${String(st.q).replace(/"/g, '&quot;')}">` : ''}
+    <span class="lfcnt">${out.length === st.rows.length
+      ? st.rows.length + '건' : out.length + ' / ' + st.rows.length + '건'}</span>
+  </div>`;
+
+  st.wrap.innerHTML = (cfg.top || '') + bar + (out.length
+    ? out.map(st.render).join('')
+    : '<div class="notice">조건에 맞는 것이 없습니다.</div>');
+
+  // 그린 뒤에 핸들러를 붙이는 목록이 있다 (가격 승인의 일괄 선택 등).
+  // 다시 그리면 그 핸들러가 같이 사라지므로 매번 다시 불러 준다.
+  if (cfg.after) cfg.after(out);
+}
+
+// 띠는 다시 그릴 때마다 사라지므로 개별 핸들러가 아니라 문서에 한 번만 건다.
+document.addEventListener('change', (e) => {
+  const bar = e.target.closest('.lfbar'); if (!bar) return;
+  const st = LF[bar.dataset.lf]; if (!st) return;
+  if (e.target.classList.contains('lfsort')) { st.sort = e.target.value; paintList(bar.dataset.lf); }
+});
+document.addEventListener('click', (e) => {
+  const chip = e.target.closest('.lfchips .chip'); if (!chip) return;
+  const bar = chip.closest('.lfbar'); const st = LF[bar.dataset.lf]; if (!st) return;
+  st.chip = chip.dataset.c;
+  paintList(bar.dataset.lf);
+});
+document.addEventListener('input', (e) => {
+  if (!e.target.classList.contains('lfq')) return;
+  const bar = e.target.closest('.lfbar'); const st = LF[bar.dataset.lf]; if (!st) return;
+  st.q = e.target.value;
+  paintList(bar.dataset.lf);
+  // 다시 그리면 입력칸이 새로 생겨 글자를 치던 자리를 잃는다. 끝으로 돌려 놓는다.
+  const el = st.wrap.querySelector('.lfq');
+  if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+});
+
+// 자주 쓰는 비교 — 날짜 내림/오름, 숫자 내림, 글자 가나다
+const byNew  = (f) => (a, b) => new Date(b[f] || 0) - new Date(a[f] || 0);
+const byOld  = (f) => (a, b) => new Date(a[f] || 0) - new Date(b[f] || 0);
+const byBig  = (f) => (a, b) => Number(b[f] || 0) - Number(a[f] || 0);
+const byName = (f) => (a, b) => String(a[f] || '').localeCompare(String(b[f] || ''), 'ko');
+
 async function loadAdminApps() {
   if (!SESSION) { openAuth(); return; }
   const wrap = document.getElementById('adminList');
@@ -2868,7 +2959,23 @@ async function loadAdminApps() {
       <button class="chip" style="border-color:#E5484D;color:#E5484D" onclick="openKycReject('${p.id}')">반려 (사유 입력)</button>
     </div></div>`;
   }));
-  wrap.innerHTML = cards.join('') || '<div class="notice">대기 중인 신청이 없습니다.</div>';
+  if (!data.length) { wrap.innerHTML = '<div class="notice">대기 중인 신청이 없습니다.</div>'; return; }
+  // 카드를 서명 URL 때문에 비동기로 미리 만들었다. 행에 붙여 두고 그대로 꺼내 쓴다.
+  const rows = data.map((p, i) => Object.assign({}, p, {
+    _html: cards[i],
+    _shop: ((p.provider_kyc || [])[0] || {}).reg_type === 'shop',
+    _lack: !((p.provider_kyc || [])[0] || {}).id_front_url
+        || !((p.provider_kyc || [])[0] || {}).id_back_url }));
+  mountList('apps', wrap, rows, {
+    sorts: [{ k:'new', h:'최신순', f: byNew('created_at') },
+            { k:'old', h:'오래된순', f: byOld('created_at') },
+            { k:'name', h:'이름순', f: byName('display_name') }],
+    chips: [{ k:'ok',   h:'서류 완비', f: (r) => !r._lack },
+            { k:'lack', h:'서류 미비', f: (r) =>  r._lack },
+            { k:'shop', h:'마사지샵',  f: (r) =>  r._shop },
+            { k:'free', h:'프리랜서',  f: (r) => !r._shop }],
+    search: (r) => [r.display_name, r.service_area, r.bio],
+  }, (r) => r._html);
 }
 window.loadAdminApps = loadAdminApps;
 async function loadAdminStats() {
@@ -2902,14 +3009,24 @@ async function loadAdminReports() {
   const stKo = { open: '접수', resolved: '처리완료', rejected: '반려' };
   const stCol = { open: '#E8A33D', resolved: '#1E6B45', rejected: '#B23A5B' };
   const ACT_KO = { warn: '경고', lower: '노출 저하', suspend: '예약 정지', none: '조치 없음' };
-  wrap.innerHTML = sosHtml + ((data && data.length) ? data.map(r => '<div class="card" style="cursor:default">'
+  if (!data || !data.length) { wrap.innerHTML = sosHtml + '<div class="notice">신고가 없습니다.</div>'; return; }
+  mountList('rep', wrap, data, {
+    top: sosHtml,   // 안전 요청은 거르지 않고 늘 맨 위에 둔다. 놓치면 안 되는 것이다
+    sorts: [{ k:'new', h:'최신순',   f: byNew('created_at') },
+            { k:'old', h:'오래된순', f: byOld('created_at') }],
+    chips: [{ k:'open', h:'미처리', f: (r) => r.status === 'open' },
+            { k:'done', h:'처리완료', f: (r) => r.status === 'resolved' },
+            { k:'rej',  h:'반려',    f: (r) => r.status === 'rejected' },
+            { k:'act',  h:'조치함',  f: (r) => !!r.action_taken && r.action_taken !== 'none' }],
+    search: (r) => [r.target_name, r.reason, r.resolution],
+  }, (r) => '<div class="card" style="cursor:default">'
     + '<div class="trow1"><span class="t">' + (r.target_name || '대상') + '</span><span style="font-size:12px;font-weight:bold;color:' + stCol[r.status] + '">' + stKo[r.status] + '</span></div>'
     + '<div class="d">' + (r.reason || '') + '</div>'
     + '<div class="d" style="color:var(--muted)">접수 ' + new Date(r.created_at).toLocaleDateString() + '</div>'
     + (r.action_taken ? '<div class="d" style="color:#B23A5B;font-weight:bold">조치: ' + (ACT_KO[r.action_taken] || r.action_taken) + '</div>' : '')
     + (r.resolution ? '<div class="d">회신: ' + r.resolution + '</div>' : '')
     + (r.status === 'open' ? '<div style="margin-top:8px;display:flex;gap:8px"><button class="chip sel" onclick="openResolve(\'' + r.id + '\',\'' + (r.target_id || '') + '\',\'' + String(r.target_name || '').replace(/'/g, "") + '\')">처리하기</button><button class="chip" onclick="resolveReport(\'' + r.id + '\',\'rejected\')">반려</button></div>' : '')
-    + '</div>').join('') : '<div class="notice">신고가 없습니다.</div>');
+    + '</div>');
 }
 window.loadAdminReports = loadAdminReports;
 window.handleSafety = async (id) => { await sb.from('safety_alerts').update({ status: 'handled' }).eq('id', id); loadAdminReports(); };
@@ -2972,14 +3089,26 @@ async function loadAdminMembers() {
   wrap.innerHTML = '<div class="hint">불러오는 중…</div>';
   const { data, error } = await sb.from('profiles').select('id,full_name,role,phone,created_at,cancel_count,no_show_count,booking_blocked_until').order('created_at', { ascending: false });
   if (error) { wrap.innerHTML = '<div class="notice">불러오기 실패: ' + error.message + '</div>'; return; }
-  wrap.innerHTML = (data && data.length) ? data.map(u => {
-    const blocked = u.booking_blocked_until && new Date(u.booking_blocked_until) > new Date();
+  if (!data || !data.length) { wrap.innerHTML = '<div class="notice">회원이 없습니다.</div>'; return; }
+  const bl = (u) => u.booking_blocked_until && new Date(u.booking_blocked_until) > new Date();
+  mountList('mem', wrap, data, {
+    sorts: [{ k:'new',  h:'최신 가입순', f: byNew('created_at') },
+            { k:'old',  h:'오래된순',   f: byOld('created_at') },
+            { k:'name', h:'이름순',     f: byName('full_name') },
+            { k:'bad',  h:'사고 많은순',
+              f: (a, b) => ((b.cancel_count||0)+(b.no_show_count||0)) - ((a.cancel_count||0)+(a.no_show_count||0)) }],
+    chips: [{ k:'block', h:'예약 정지 중', f: bl },
+            { k:'bad',   h:'취소·노쇼 있음', f: (u) => (u.cancel_count||0) + (u.no_show_count||0) > 0 },
+            { k:'staff', h:'직원·관리자',  f: (u) => u.role !== 'customer' }],
+    search: (u) => [u.full_name, u.phone],
+  }, (u) => {
+    const blocked = bl(u);
     return '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + (u.full_name || '(이름 없음)') + '</span><span style="font-size:12px;color:#2E8B8B;font-weight:bold">' + u.role + '</span></div>'
       + '<div class="d">' + (u.phone || '-') + '</div>'
       + (((u.cancel_count || 0) > 0 || (u.no_show_count || 0) > 0) ? '<div class="d" style="color:' + (blocked ? '#E5484D' : 'var(--muted)') + '">임박취소 ' + (u.cancel_count || 0) + '회 · 노쇼 ' + (u.no_show_count || 0) + '회' + (blocked ? ' · 🚫 예약 제한 ~' + new Date(u.booking_blocked_until).toLocaleDateString() : '') + '</div>' : '')
       + (blocked ? '<div style="margin-top:8px"><button class="chip" style="border-color:#1E6B45;color:#1E6B45" onclick="unblockCustomer(\'' + u.id + '\')">예약 제한 해제</button></div>' : '')
       + '</div>';
-  }).join('') : '<div class="notice">회원이 없습니다.</div>';
+  });
 }
 window.loadAdminMembers = loadAdminMembers;
 // 전체 공지 — 서버(send_notice)가 관리자인지 확인하고 전 회원 알림함에 넣는다. 푸시는 send-push 가 이어서 보낸다
@@ -3223,7 +3352,21 @@ async function loadSettlement() {
     }
     const { data: s2 } = await sb.from('settlement').select('*'); (s2 || []).forEach(s => smap[s.provider_id] = s);
   }
-  wrap.innerHTML = rows.length ? rows.map(r => {
+  if (!rows.length) { wrap.innerHTML = '<div class="notice">정산할 결제 내역이 없습니다.</div>'; return; }
+  const dueOf = (r) => new Date(r.first).getTime() + DUE_DAYS * 864e5;
+  mountList('sett', wrap, rows, {
+    sorts: [{ k:'fee',  h:'받을 수수료 큰순', f: byBig('fee') },
+            { k:'sum',  h:'결제액 큰순',     f: byBig('sum') },
+            { k:'cnt',  h:'건수 많은순',     f: byBig('cnt') },
+            { k:'due',  h:'기한 임박순',     f: (a, b) => dueOf(a) - dueOf(b) },
+            { k:'name', h:'이름순',          f: byName('name') }],
+    chips: [{ k:'owe',  h:'미납',       f: (r) => { const st = smap[r.id]; return !st || st.status !== 'paid'; } },
+            { k:'late', h:'기한 지남',   f: (r) => { const st = smap[r.id];
+                            return Date.now() > dueOf(r) && (!st || st.status !== 'paid'); } },
+            { k:'rep',  h:'확인 대기',   f: (r) => (rmap[r.id] || []).length > 0 },
+            { k:'done', h:'완납',       f: (r) => { const st = smap[r.id]; return st && st.status === 'paid'; } }],
+    search: (r) => [r.name, r.code],
+  }, (r) => {
     const fee = r.fee;                               // 예약별 요율로 더한 값
     const keep = r.sum - fee;                        // 마사지사 수령
     const dueMs = new Date(r.first).getTime() + DUE_DAYS * 864e5;
@@ -3256,7 +3399,7 @@ async function loadSettlement() {
       + '<div class="d">마사지사 수령 ' + keep.toLocaleString() + '₫ · 입금기한 ' + fmtDate(dueMs) + '까지</div>'
       + tierRow(r, sugMap[r.id])
       + warned + pend + btns + '</div>';
-  }).join('') : '<div class="notice">정산할 결제 내역이 없습니다.</div>';
+  });
 }
 // 수수료 등급 줄. 지금 등급을 보여 주고, 눌러서 바꾼다.
 function tierRow(r, sug) {
@@ -3587,7 +3730,19 @@ async function loadPriceRequests() {
     + '<span id="apxCount" style="font-size:12.5px;color:var(--muted);margin-left:auto">0건 선택</span>'
     + '<button class="chip sel" id="apxBulk" disabled style="opacity:.45">선택 승인</button></div>';
 
-  wrap.innerHTML = bar + rows.map(r => {
+  // 일괄 선택 띠(bar)는 거르기와 무관하므로 top 으로 올려 늘 보이게 둔다.
+  mountList('apx', wrap, rows, {
+    top: bar,
+    sorts: [{ k:'up',   h:'인상폭 큰순',
+                f: (a, b) => (b.pending_vnd / b.base_vnd) - (a.pending_vnd / a.base_vnd) },
+            { k:'name', h:'마사지사순', f: byName('provider_name') },
+            { k:'big',  h:'요청가 큰순', f: byBig('pending_vnd') }],
+    chips: [{ k:'cap', h:'상한 가까움',
+                f: (r) => r.cap_vnd && r.pending_vnd >= r.cap_vnd * 0.9 },
+            { k:'first', h:'첫 책정', f: (r) => r.current_vnd == null }],
+    search: (r) => [r.provider_name, r.service_name],
+    after: bindApx,
+  }, (r) => {
     const now = r.current_vnd != null ? nf(r.current_vnd) + '₫' : '기본가 ' + nf(r.base_vnd) + '₫';
     const up = Math.round((r.pending_vnd / r.base_vnd - 1) * 100);
     return '<div class="card" style="cursor:default">'
@@ -3601,8 +3756,12 @@ async function loadPriceRequests() {
       +   '<button class="chip sel apx-ok" data-p="' + r.provider_id + '" data-s="' + r.service_id + '">승인</button>'
       +   '<button class="chip apx-no" data-p="' + r.provider_id + '" data-s="' + r.service_id + '">반려</button>'
       + '</div></div>';
-  }).join('');
+  });
+}
 
+// 체크박스·버튼 묶기. 목록을 다시 그릴 때마다 불러야 한다 (paintList 의 after).
+function bindApx() {
+  const wrap = document.getElementById('apxList'); if (!wrap) return;
   const cks = [...wrap.querySelectorAll('.apx-ck')];
   const all = wrap.querySelector('#apxAll');
   const btn = wrap.querySelector('#apxBulk');
@@ -3818,13 +3977,22 @@ async function loadFraud() {
     if (score >= 40) flagged.push({ b, score, why });
   });
   if (!flagged.length) { wrap.innerHTML = '<div class="notice">의심 예약이 발견되지 않았습니다. (최근 ' + list.length + '건 분석)</div>'; return; }
-  flagged.sort((a, b) => b.score - a.score);
-  wrap.innerHTML = '<div class="hint">최근 ' + list.length + '건 중 ' + flagged.length + '건 의심</div>' + flagged.slice(0, 30).map(f => {
+  // 위험도순이 기본이다. 30건 자르기는 거르기 전에 하면 걸러진 뒤 텅 빌 수 있으니 여기서 하지 않는다.
+  mountList('fraud', wrap, flagged, {
+    top: '<div class="hint">최근 ' + list.length + '건 중 ' + flagged.length + '건 의심</div>',
+    sorts: [{ k:'risk', h:'위험도순', f: (a, b) => b.score - a.score },
+            { k:'new',  h:'최신순',   f: (a, b) => new Date(b.b.created_at) - new Date(a.b.created_at) },
+            { k:'big',  h:'금액 큰순', f: (a, b) => (b.b.amount_vnd || 0) - (a.b.amount_vnd || 0) }],
+    chips: [{ k:'hi',  h:'높음',        f: (f) => f.score >= 70 },
+            { k:'mid', h:'중간 이상',    f: (f) => f.score >= 55 },
+            { k:'pay', h:'완료 후 미결제', f: (f) => f.b.status === 'completed' && !f.b.is_paid }],
+    search: (f) => [f.b.booking_no, f.b.hotel_name, f.b.address, f.why.join(' ')],
+  }, (f) => {
     const lv = f.score >= 70 ? ['높음', '#E5484D'] : f.score >= 55 ? ['중간', '#E8A33D'] : ['낮음', '#7A8C94'];
     return '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + (f.b.booking_no || f.b.id.slice(0, 8)) + '</span><span style="color:' + lv[1] + ';font-weight:bold;font-size:12px">위험 ' + lv[0] + ' (' + f.score + ')</span></div>'
       + '<div class="d">' + (f.b.amount_vnd || 0).toLocaleString() + '₫ · ' + (f.b.status || '') + ' · 고객 ' + String(f.b.customer_id || '').slice(0, 6) + '···</div>'
       + '<div class="d" style="color:#B23A5B">' + f.why.join(' · ') + '</div></div>';
-  }).join('');
+  });
 }
 window.loadFraud = loadFraud;
 
@@ -3842,7 +4010,21 @@ async function loadAdminBookings() {
   const ST = { requested: ['요청됨','#E8A33D'], confirmed: ['확정','#2E8B8B'],
                on_the_way: ['이동 중','#2E8B8B'], in_progress: ['진행 중','#2E8B8B'],
                completed: ['완료','#1E6B45'], cancelled: ['취소','#E5484D'], no_show: ['노쇼','#E5484D'] };
-  wrap.innerHTML = (data && data.length) ? data.map(b => {
+  if (!data || !data.length) { wrap.innerHTML = '<div class="notice">해당 상태의 예약이 없습니다.</div>'; return; }
+  // 상태 칩은 위쪽 #abFilter 가 이미 서버에서 거른다. 여기서는 그게 못 거르는 것만 칩으로 둔다.
+  mountList('bk', wrap, data, {
+    sorts: [{ k:'new',  h:'최신순',   f: byNew('created_at') },
+            { k:'old',  h:'오래된순', f: byOld('created_at') },
+            { k:'big',  h:'금액 큰순', f: byBig('amount_vnd') },
+            { k:'prov', h:'마사지사순',
+              f: (a, b) => String(a.providers ? a.providers.display_name : 'ㅎ')
+                   .localeCompare(String(b.providers ? b.providers.display_name : 'ㅎ'), 'ko') }],
+    chips: [{ k:'paid',   h:'결제완료', f: (b) =>  b.is_paid },
+            { k:'unpaid', h:'미결제',   f: (b) => !b.is_paid },
+            { k:'none',   h:'미배정',   f: (b) => !b.provider_id }],
+    search: (b) => [b.booking_no, b.providers && b.providers.display_name,
+                    b.services && b.services.name, b.hotel_name, b.address],
+  }, (b) => {
     const s = ST[b.status] || [b.status, '#7A8C94'];
     return '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + (b.booking_no || b.id.slice(0, 8)) + '</span><span style="color:' + s[1] + ';font-weight:bold;font-size:12px">' + s[0] + '</span></div>'
       + '<div class="d">' + (b.providers ? b.providers.display_name : '미배정') + ' · ' + (b.services ? b.services.name : '') + '</div>'
@@ -3851,7 +4033,7 @@ async function loadAdminBookings() {
       + (b.status !== 'completed' ? '<button class="chip sel" onclick="adminSetBooking(\'' + b.id + '\',\'completed\')">완료 처리</button>' : '')
       + (b.status !== 'cancelled' ? '<button class="chip" style="border-color:#E5484D;color:#E5484D" onclick="adminSetBooking(\'' + b.id + '\',\'cancelled\')">취소</button>' : '')
       + '</div></div>';
-  }).join('') : '<div class="notice">해당 상태의 예약이 없습니다.</div>';
+  });
 }
 window.loadAdminBookings = loadAdminBookings;
 window.adminSetBooking = async (id, status) => { const patch = { status }; if (status === 'completed') patch.completed_at = new Date().toISOString(); await sb.from('bookings').update(patch).eq('id', id); loadAdminBookings(); };
@@ -3866,7 +4048,20 @@ async function loadAdminProviders() {
   const { data, error } = await q;
   if (error) { wrap.innerHTML = '<div class="notice">불러오기 실패: ' + error.message + '</div>'; return; }
   const kindKo = { masseur: '마사지사', therapist: '홈 뷰티' };
-  wrap.innerHTML = (data && data.length) ? data.map(p => '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + p.display_name + ' <span style="font-size:11px;color:var(--muted)">' + (kindKo[p.kind] || p.kind) + '</span></span><label class="sw"><input type="checkbox" ' + (p.is_active ? 'checked' : '') + ' onchange="toggleActive(\'' + p.id + '\',this.checked)"><span class="sw-track"></span></label></div>'
+  if (!data || !data.length) { wrap.innerHTML = '<div class="notice">검색 결과가 없습니다.</div>'; return; }
+  const susp = (p) => p.suspended_until && new Date(p.suspended_until) > new Date();
+  mountList('prov', wrap, data, {
+    sorts: [{ k:'name', h:'이름순',      f: byName('display_name') },
+            { k:'new',  h:'최신 가입순', f: byNew('created_at') },
+            { k:'rate', h:'별점 높은순', f: byBig('rating') },
+            { k:'rev',  h:'리뷰 많은순', f: byBig('review_count') }],
+    chips: [{ k:'on',   h:'노출 중',   f: (p) =>  p.is_active },
+            { k:'off',  h:'내려감',    f: (p) => !p.is_active },
+            { k:'wait', h:'심사 대기', f: (p) => p.application_status === 'pending' },
+            { k:'ver',  h:'인증 있음', f: (p) => p.is_verified || p.credential_verified },
+            { k:'pen',  h:'제재 있음', f: (p) => (p.penalty_level || 0) > 0 || susp(p) }],
+    search: (p) => [p.display_name, p.base_district, p.phone, p.deposit_code],
+  }, (p) => '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + p.display_name + ' <span style="font-size:11px;color:var(--muted)">' + (kindKo[p.kind] || p.kind) + '</span></span><label class="sw"><input type="checkbox" ' + (p.is_active ? 'checked' : '') + ' onchange="toggleActive(\'' + p.id + '\',this.checked)"><span class="sw-track"></span></label></div>'
     + '<div class="d">★ ' + Number(p.rating).toFixed(1) + ' · 리뷰 ' + p.review_count + ' · ' + (p.base_district || '-') + ' · ' + (p.application_status === 'approved' ? '승인' : p.application_status) + '</div>'
     + (function () { const lv = p.penalty_level || 0; const sus = p.suspended_until && new Date(p.suspended_until) > new Date(); if (!lv && !sus) return ''; const t = sus ? '🚫 예약 정지 (~' + new Date(p.suspended_until).toLocaleDateString() + ')' : lv >= 2 ? '⚠ 노출 저하' : '⚠ 경고'; return '<div class="d" style="color:#E5484D;font-weight:bold">' + t + ' · 최근 거절 ' + (p.reject_count || 0) + '회</div>'; })()
     + '<div class="d">' + (p.specialties || []).map(s => TYPE_KO[s] || s).join('·') + ' · ' + (p.phone || '연락처 없음') + '</div>'
@@ -3875,7 +4070,7 @@ async function loadAdminProviders() {
     + (p.credential_verified ? '<span class="chip sel" style="background:#2E8B8B;border-color:#2E8B8B">★ 자격 확인됨</span>' : '<button class="chip" style="border-color:#2E8B8B;color:#2E8B8B" onclick="adminCredential(\'' + p.id + '\')">자격 확인 주기</button>')
     + ((p.is_verified || p.credential_verified) ? '<button class="chip" style="border-color:#E5484D;color:#E5484D" onclick="adminUnverify(\'' + p.id + '\')">인증 내리기</button>' : '')
     + (((p.penalty_level || 0) > 0 || p.suspended_until) ? '<button class="chip" style="border-color:#1E6B45;color:#1E6B45" onclick="clearPenalty(\'' + p.id + '\')">제재 해제</button>' : '')
-    + '</div></div>').join('') : '<div class="notice">검색 결과가 없습니다.</div>';
+    + '</div></div>');
 }
 window.loadAdminProviders = loadAdminProviders;
 // 인증은 두 단계다. 서류가 실제로 올라와 있는지 먼저 확인하고, 없으면 버튼이 동작하지 않는다.
@@ -3930,7 +4125,18 @@ window.saveFeeSettings = async () => {
 async function loadAdminCoupons() {
   const wrap = document.getElementById('adminCouponList'); if (!wrap) return;
   const { data } = await sb.from('coupons').select('*').order('created_at', { ascending: false });
-  wrap.innerHTML = (data && data.length) ? data.map(c => '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + c.title + '</span><span style="font-size:12px;color:#2E8B8B;font-weight:bold">' + (c.discount_type === 'percent' ? c.discount_value + '%' : Number(c.discount_value || 0).toLocaleString() + '₫') + '</span></div><div class="d">코드 ' + (c.code || '-') + ' · ' + (c.is_active ? '활성' : '중지') + ' · 발행 ' + new Date(c.created_at).toLocaleDateString() + '</div></div>').join('') : '<div class="notice">발행된 쿠폰이 없습니다.</div>';
+  if (!data || !data.length) { wrap.innerHTML = '<div class="notice">발행된 쿠폰이 없습니다.</div>'; return; }
+  mountList('cp', wrap, data, {
+    sorts: [{ k:'new',  h:'최신 발행순', f: byNew('created_at') },
+            { k:'old',  h:'오래된순',   f: byOld('created_at') },
+            { k:'name', h:'제목순',     f: byName('title') },
+            { k:'big',  h:'할인 큰순',  f: byBig('discount_value') }],
+    chips: [{ k:'on',  h:'활성', f: (c) =>  c.is_active },
+            { k:'off', h:'중지', f: (c) => !c.is_active },
+            { k:'pct', h:'％ 할인', f: (c) => c.discount_type === 'percent' },
+            { k:'amt', h:'₫ 할인', f: (c) => c.discount_type !== 'percent' }],
+    search: (c) => [c.title, c.code],
+  }, (c) => '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + c.title + '</span><span style="font-size:12px;color:#2E8B8B;font-weight:bold">' + (c.discount_type === 'percent' ? c.discount_value + '%' : Number(c.discount_value || 0).toLocaleString() + '₫') + '</span></div><div class="d">코드 ' + (c.code || '-') + ' · ' + (c.is_active ? '활성' : '중지') + ' · 발행 ' + new Date(c.created_at).toLocaleDateString() + '</div></div>');
 }
 window.loadAdminCoupons = loadAdminCoupons;
 window.createCoupon = async () => {
@@ -4126,7 +4332,15 @@ async function loadStaff() {
   const { data, error } = await q.order('display_name');
   if (error) { wrap.innerHTML = '<div class="notice">불러오기 실패: ' + error.message + '</div>'; return; }
   const kindKo = { masseur: '마사지사', therapist: '홈 뷰티' };
-  wrap.innerHTML = (data && data.length) ? data.map(p => '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + p.display_name + ' <span style="font-size:11px;color:var(--muted)">' + (kindKo[p.kind] || p.kind) + '</span></span><label class="sw"><input type="checkbox" ' + (p.is_active ? 'checked' : '') + ' onchange="toggleActive(\'' + p.id + '\',this.checked)"><span class="sw-track"></span></label></div><div class="d">' + (p.specialties || []).map(s => TYPE_KO[s] || s).join('·') + ' · ★ ' + Number(p.rating).toFixed(1) + '</div></div>').join('') : '<div class="notice">직원이 없습니다. 위에서 추가하세요.</div>';
+  if (!data || !data.length) { wrap.innerHTML = '<div class="notice">직원이 없습니다. 위에서 추가하세요.</div>'; return; }
+  mountList('staff', wrap, data, {
+    sorts: [{ k:'name', h:'이름순',      f: byName('display_name') },
+            { k:'new',  h:'최신 등록순', f: byNew('created_at') },
+            { k:'rate', h:'별점 높은순', f: byBig('rating') }],
+    chips: [{ k:'on',  h:'일하는 중', f: (p) =>  p.is_active },
+            { k:'off', h:'쉬는 중',   f: (p) => !p.is_active }],
+    search: (p) => [p.display_name, p.phone],
+  }, (p) => '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + p.display_name + ' <span style="font-size:11px;color:var(--muted)">' + (kindKo[p.kind] || p.kind) + '</span></span><label class="sw"><input type="checkbox" ' + (p.is_active ? 'checked' : '') + ' onchange="toggleActive(\'' + p.id + '\',this.checked)"><span class="sw-track"></span></label></div><div class="d">' + (p.specialties || []).map(s => TYPE_KO[s] || s).join('·') + ' · ★ ' + Number(p.rating).toFixed(1) + '</div></div>');
 }
 window.loadStaff = loadStaff;
 window.onStaffPhoto = async function (el) {
