@@ -118,17 +118,22 @@
     try { localStorage.setItem('massa_sb','off'); } catch(e) {}
   };
 
-  // 모집 팝업 — 2.2초 뒤 한 번. 닫으면 1일 동안 다시 안 띄운다.
-  // 고객용 사이트라 매번 가로막으면 손님을 잃는다.
+  // 모집 팝업 — 들어올 때마다 2.2초 뒤 한 번.
+  // sessionStorage 라서 탭을 닫으면 기억이 사라진다. 즉 '방문할 때마다' 다시 뜬다.
+  // 다만 사이트 안에서 메뉴를 눌러 돌아다니는 동안에는 다시 뜨지 않는다 —
+  // 페이지마다 띄우면 사이트를 쓸 수가 없다.
   var jp = document.getElementById('jp');
   if (jp) {
     var K = 'massa_jp';
+    // 예전에 localStorage 로 최대 1일을 기억하던 때의 값이 남아 있으면 지운다.
+    // 안 지우면 그때 닫았던 사람은 하루 동안 팝업을 못 본다.
+    try { localStorage.removeItem(K); } catch(e) {}
     var skip = false;
-    try { skip = Number(localStorage.getItem(K) || 0) > Date.now(); } catch(e) {}
+    try { skip = sessionStorage.getItem(K) === 'off'; } catch(e) {}
     var close = function(){
       jp.classList.remove('on');
       setTimeout(function(){ jp.hidden = true; }, 260);
-      try { localStorage.setItem(K, String(Date.now() + 864e5)); } catch(e) {}
+      try { sessionStorage.setItem(K, 'off'); } catch(e) {}
       document.removeEventListener('keydown', onEsc);
     };
     var onEsc = function(e){ if (e.key === 'Escape') close(); };
