@@ -27,7 +27,9 @@ returns table (
   cancel_count    int,
   no_show_count   int,
   blocked_until   timestamptz,
-  is_provider     boolean
+  is_provider     boolean,
+  member_type     text,      -- '고객' | '마사지사' | '업체'
+  provider_status text       -- 'approved' | 'pending' | 'rejected' | null
 )
 language plpgsql
 security definer
@@ -54,8 +56,22 @@ begin
          coalesce(p.no_show_count, 0),
          p.booking_blocked_until,
          exists (select 1 from providers pr
-                  where pr.profile_id = p.id or pr.owner_id = p.id)
+                  where pr.profile_id = p.id or pr.owner_id = p.id),
+         -- 구분은 provider_kyc.reg_type 으로 가른다 ('shop' 이면 업체).
+         -- admin.html 이 이미 같은 기준으로 '마사지샵/프리랜서' 를 보여주고 있다.
+         case
+           when pr.id is null then '고객'
+           when k.reg_type = 'shop' then '업체'
+           else '마사지사'
+         end,
+         pr.application_status::text
     from profiles p
+    left join lateral (
+      select pr2.id, pr2.application_status
+        from providers pr2
+       where pr2.profile_id = p.id or pr2.owner_id = p.id
+       order by pr2.created_at desc limit 1) pr on true
+    left join provider_kyc k on k.provider_id = pr.id
     left join auth.users u on u.id = p.id
    where (p_role is null or p.role::text = p_role)
      and (p_q is null or p_q = '' or
