@@ -386,18 +386,19 @@ footer.site .legal { border-top: 1px solid #27505E; padding-top: 22px; color: #7
 
 /* 히어로 — 열자마자 순서대로 들어온다 */
 @keyframes mIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+/* 첫 화면이 비어 보이는 시간은 짧을수록 좋다. 제목은 거의 바로 뜨게 한다. */
 .hero .kicker,.hero h1,.hero .lead,.hero .btns,.hero-cap{
-  opacity:0;animation:mIn .85s cubic-bezier(.2,.75,.3,1) forwards}
-.hero .kicker{animation-delay:.05s}
-.hero h1      {animation-delay:.16s}
-.hero .lead   {animation-delay:.32s}
-.hero .btns   {animation-delay:.44s}
-.hero-cap     {animation-delay:.56s}
+  opacity:0;animation:mIn .55s cubic-bezier(.2,.75,.3,1) forwards}
+.hero .kicker{animation-delay:.02s}
+.hero h1      {animation-delay:.06s}
+.hero .lead   {animation-delay:.16s}
+.hero .btns   {animation-delay:.24s}
+.hero-cap     {animation-delay:.32s}
 
 /* 히어로 사진 — 아주 느리게 밀려 들어온다. 정지 사진이 숨 쉬는 정도로만 */
 @keyframes mKen{from{transform:scale(1)}to{transform:scale(1.07)}}
 .hero-img img{animation:mKen 26s ease-out forwards}
-.hero-img{opacity:0;animation:mIn 1s cubic-bezier(.2,.75,.3,1) .22s forwards}
+.hero-img{opacity:0;animation:mIn .7s cubic-bezier(.2,.75,.3,1) .12s forwards}
 
 /* 스크롤 등장 — 한 줄에 여러 개면 차례로 */
 .grid .rv:nth-child(2){transition-delay:.09s}
