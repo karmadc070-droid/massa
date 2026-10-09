@@ -3244,3 +3244,52 @@ emoi 와 같은 우하단 고정. `.opsbar`, 전 페이지. 평소엔 반투명(
 emoi 는 Caddy 단에서 구글 로그인을 거치게 해 HTML 조차 안 준다.
 massa 도 같은 방식(oauth2-proxy)으로 올릴 수 있다. 작업량은 Caddy 블록 하나 + 컨테이너 하나.
 **지금 당장 데이터가 새는 것은 아니지만, 한 겹이 비어 있다.**
+
+## Z-45. 대시보드 숫자 클릭 이동 + 가입자 구분 (2026-10-10)
+
+### 1. TODAY 숫자를 누르면 해당 자리로
+`.today .it` 를 `<div>` 에서 `<a>` 로 바꾸고 각자 갈 곳을 붙였다.
+
+| 숫자 | 가는 곳 |
+|---|---|
+| 유입 | `#s-traffic` |
+| 가입 | `#s-members` (오늘 만든 가입자 명단) |
+| 새 예약 · 완료 | `#s-match` |
+| 확인 대기 | `#s-roster` (입금 확인은 마사지사 명단에서 한다) |
+
+링크라서 밑줄·파란색이 생기는 걸 CSS 로 막고, 올리면 살짝 떠오르게 했다.
+
+### 2. 가입자 구분 — 고객 / 마사지사 / 업체
+`admin_member_list()` 에 `member_type` 과 `provider_status` 를 추가했다.
+
+구분 기준은 **`provider_kyc.reg_type`** 이다 (`'shop'` 이면 업체).
+`admin.html` 의 신청 심사 화면이 이미 같은 기준으로 '마사지샵/프리랜서' 를 쓰고 있어서
+새 기준을 만들지 않고 그대로 따랐다.
+
+한 사람이 providers 행을 여러 개 가질 수 있어서 `left join lateral` 로 **가장 최근 것 하나**만
+집는다. 그냥 조인하면 같은 사람이 여러 줄로 나온다.
+
+심사 대기·반려 상태면 구분 옆에 주황색으로 같이 보여 준다.
+
+**검증** (롤백 트랜잭션) — 고객 17명 · 마사지사 5명 · 업체 0명. 합 22로 전체와 맞는다.
+
+**걸렸던 것** — 돌려주는 칼럼이 바뀌면 `CREATE OR REPLACE` 가 거부된다
+(`cannot change return type of existing function`). `drop function` 을 앞에 붙였다.
+
+**또 걸렸던 것** — `site-src/admin/` 만 고치고 `build.py` 를 안 돌려서 배포에 반영이 안 됐다.
+`site/admin/index.html` 은 빌드 산출물이다. **소스만 고치고 끝내면 안 된다.**
+
+### 3. `/admin` 서버 차단 — 준비만 하고 멈춤
+emoi 방식을 그대로 쓸 수 있다는 것까지 확인했다.
+
+```
+Caddy  @adminpath path /admin /admin/*
+       handle @adminpath { forward_auth localhost:41xx { uri /oauth2/auth ... } }
+컨테이너  quay.io/oauth2-proxy/oauth2-proxy  (루프백에만 바인딩)
+설정   --provider=google --redirect-url=https://massaviet.com/oauth2/callback
+       --authenticated-emails-file=emails.txt  --cookie-domain=massaviet.com
+```
+
+**막힌 지점** — 구글 OAuth 클라이언트에 `https://massaviet.com/oauth2/callback` 을
+승인된 리디렉션 URI 로 넣어야 한다. 그건 구글 클라우드 콘솔에서 사람이 해야 한다.
+포트는 4180 이 emoi 가 쓰고 있으니 massa 는 다른 번호를 쓴다.
