@@ -188,6 +188,13 @@
   .pf-care { border: 1.5px solid #CFE6D8; background: #F3F9F5; border-radius: 14px; padding: 14px; display: flex; gap: 16px; align-items: center; margin: 16px 0; }
   .pf-bio { font-size: 14px; line-height: 1.65; color: #333; margin: 6px 0; }
   .pf-sec { font-size: 18px; font-weight: bold; margin: 20px 0 10px; }
+  /* 신청 버튼 — 필수 항목이 다 차기 전에는 꺼진 것처럼 보인다.
+     다만 disabled 로 막지는 않는다. 눌렀을 때 '무엇이 비었는지' 를 알려줘야 하기 때문이다.
+     회색 버튼만 놓고 이유를 안 알려주면 신청자는 왜 안 되는지 모른 채 나간다. */
+  .cta.off { background: #C9D2D5; color: #6B797E; box-shadow: none; }
+  .cta.off:active { transform: none; }
+  .ap-left { font-size: 12.5px; color: #B23A5B; text-align: center; margin: 8px 2px 0; }
+  .ap-left.done { color: #1F7A5C; }
   /* massa 소식 채널 줄 (내 정보 화면 맨 아래). 평소엔 회색, 누르기 전 올리면 브랜드색. */
   .mp-sns-label { font-size: 12px; color: #8A979C; letter-spacing: .04em; margin: 22px 2px 8px; }
   .mp-sns { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 8px; }
@@ -888,7 +895,8 @@
     <div class="label">자격증 (선택 · 파일 업로드)</div>
     <input class="tx" id="apCert" type="file" accept="image/*" onchange="onApFile(this)">
     <div class="notice" id="apMsg"><span class="req">*</span> 표시는 모두 채워야 신청할 수 있습니다. 신청 후 관리자가 서류를 확인하고 승인하면 목록에 노출됩니다. 민감정보는 비공개로 저장됩니다.</div>
-    <button class="cta" id="applyBtn">신청 제출</button>
+    <button class="cta off" id="applyBtn">신청 제출</button>
+    <div class="ap-left" id="apLeft"></div>
   </div>
 
   <!-- 파트너 예약 관리 -->
@@ -2712,6 +2720,8 @@ window.closeApSvcSheet = function () { const ov = document.getElementById('apSvc
 
 // 내 신청 상태(대기·반려 사유·승인) 표시 + 재제출 안내
 async function loadApplyStatus() {
+  // 신청 화면을 열 때마다 버튼 상태 감시를 건다 (이미 걸려 있으면 다시 안 건다)
+  apWatchForm();
   const box = document.getElementById('apStatusBox'); if (!box) return;
   box.innerHTML = '';
   if (!SESSION) return;
@@ -2836,6 +2846,36 @@ function apMissingFields() {
   return need.filter(n => n[1]).map(n => ({ name: n[0], id: n[2] }));
 }
 
+// 남은 개수를 버튼과 안내문에 실시간으로 반영한다.
+// 사장님 요청 — "요청한 내용들을 다 적어야 승인 버튼이 활성화".
+function apRefreshBtn() {
+  const btn = document.getElementById('applyBtn');
+  if (!btn) return;
+  const left = apMissingFields().length;
+  const hint = document.getElementById('apLeft');
+  btn.classList.toggle('off', left > 0);
+  if (!hint) return;
+  if (left > 0) {
+    hint.className = 'ap-left';
+    hint.textContent = T('아직 {n}가지가 남았습니다.').replace('{n}', left);
+  } else {
+    hint.className = 'ap-left done';
+    hint.textContent = T('다 채우셨습니다. 신청할 수 있습니다.');
+  }
+}
+window.apRefreshBtn = apRefreshBtn;
+
+// 입력·선택·업로드 어디가 바뀌든 다시 센다. 폼 전체에 한 번만 걸어 둔다.
+function apWatchForm() {
+  const form = document.getElementById('applyForm');
+  if (!form || form.dataset.watched) return;
+  form.dataset.watched = '1';
+  ['input', 'change', 'click'].forEach(ev =>
+    form.addEventListener(ev, () => setTimeout(apRefreshBtn, 0)));
+  apRefreshBtn();
+}
+window.apWatchForm = apWatchForm;
+
 // 빈 칸을 빨갛게 칠하고 첫 번째 칸으로 데려간다
 function apMarkMissing(missing) {
   document.querySelectorAll('#applyForm .miss').forEach(e => e.classList.remove('miss'));
@@ -2858,6 +2898,7 @@ async function submitApplication() {
       // 이름을 <span> 으로 감싸야 번역기가 낱개로 바꿀 수 있다. 한 줄로 이어 붙이면 사전과 안 맞는다
       + missing.map(m => '· <span>' + m.name + '</span>').join('<br>');
     apMarkMissing(missing);
+    apRefreshBtn();
     return;
   }
   document.querySelectorAll('#applyForm .miss').forEach(e => e.classList.remove('miss'));
@@ -3434,6 +3475,8 @@ const DICT = {
   '국적': ['Quốc tịch', 'Nationality', '国籍', '国籍'],
   '비밀번호 변경': ['Đổi mật khẩu', 'Change password', '修改密码', 'パスワード変更'],
   'massa 소식 채널': ['Kênh tin tức massa', 'massa channels', 'massa 频道', 'massa チャンネル'],
+  '아직 {n}가지가 남았습니다.': ['Còn thiếu {n} mục.', '{n} items still missing.', '还差 {n} 项。', 'あと {n} 項目です。'],
+  '다 채우셨습니다. 신청할 수 있습니다.': ['Đã đủ. Bạn có thể gửi đăng ký.', 'All set. You can submit.', '已填完，可以提交申请。', '入力完了。申請できます。'],
   '계정 삭제': ['Xóa tài khoản', 'Delete account', '删除账户', 'アカウント削除'],
   '알림': ['Thông báo', 'Notifications', '通知', 'お知らせ'],
   '후불': ['Trả sau', 'Pay later', '后付', '後払い'],
