@@ -3326,3 +3326,25 @@ base64 는 영숫자뿐이라 PowerShell 이 건드릴 게 없다. GitHub 경유
 $b = [Convert]::ToBase64String([IO.File]::ReadAllBytes("...sh"))
 ssh -i $env:USERPROFILE\.ssh\erp_vultr root@141.164.46.88 "echo $b | base64 -d > /tmp/x.sh && bash /tmp/x.sh"
 ```
+
+## Z-47 · 입금코드 자동 발급 (2026-10-10)
+
+- [x] 코드 없는 4명 채움 — Kun MS3560 · Thảo MS7610 · Hồng Trà MS1990 · Trần Thành MS0425
+- [x] 신규 가입 시 자동 발급 트리거 추가 (`trg_provider_zz_code`)
+- [x] 실제 가입 경로로 시험 (일반 회원 권한, 롤백 트랜잭션) → MS8756 발급 확인
+
+**왜 비어 있었나** — `settlement_schema.sql` 의 코드 채우기는 그 스크립트를 돌린 그 순간 한 번만
+돌았다. 그 뒤에 가입한 사람은 코드가 없다. 채우기만 또 하면 다음 가입자에게 같은 일이 반복된다.
+그래서 트리거로 바꿨다.
+
+**트리거 이름에 zz_ 를 붙인 이유** — providers 의 BEFORE 트리거는 이름순으로 돈다.
+`guard_provider_write()` 가 "신청 시 deposit_code 가 null 이 아니면 거부" 한다.
+발급이 가드보다 먼저 돌면 가드가 자기 트리거가 넣은 값을 보고 신청을 막아 버린다.
+`trg_provider_guard` < `trg_provider_zz_code` 라서 가드가 먼저 통과하고 그 뒤에 값이 들어간다.
+
+**걸렸던 것** — 첫 시험에서 `insert into providers (display_name, profile_id)` 로 넣었더니
+"제공자 신청은 심사 대기 상태로만 만들 수 있습니다" 로 막혔다. 칼럼 기본값이 pending 이 아니라서다.
+앱(`index.html` 2923행)은 `application_status: 'pending'` 을 명시해서 보낸다.
+**시험은 앱이 실제로 보내는 모양 그대로 해야 한다.** 내 편한 모양으로 줄이면 엉뚱한 데서 막힌다.
+
+파일 — `scripts/sql-deposit-code-auto.sql`, `scripts/vps-apply-deposit-code.sh`
