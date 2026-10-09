@@ -48,7 +48,8 @@ begin
          p.preferred_language,
          p.created_at,
          u.last_sign_in_at,
-         (select count(*) from bookings b where b.user_id = p.id),
+         -- 예약 테이블의 고객 칼럼은 customer_id 다 (user_id 아님. index.html 1541행에서 확인)
+         (select count(*) from bookings b where b.customer_id = p.id),
          coalesce(p.cancel_count, 0),
          coalesce(p.no_show_count, 0),
          p.booking_blocked_until,
