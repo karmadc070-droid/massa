@@ -20,6 +20,13 @@ LABELS = {
     "rbar": 'Tuyển 30 Thành viên sáng lập',
     "rbar_sub": '20 ca đầu tiên — bạn giữ 100% tiền khách trả',
     "rbar_cta": 'Xem chi tiết',
+    'pop_h': '30 Thành viên sáng lập đầu tiên',
+    'pop_sub': '20 ca đầu tiên — bạn giữ 100% tiền khách trả, không trừ hoa hồng.',
+    'pop_li1': 'Bạn tự chọn giờ làm và khu vực',
+    'pop_li2': 'Bạn tự đặt giá dịch vụ của mình',
+    'pop_li3': 'Đăng ký 5 phút · không phí tham gia',
+    'pop_cta': 'Xem điều kiện',
+    'pop_later': 'Để sau',
     "smart": "Đặt lịch nhanh hơn trên ứng dụng",
     "smart_cta": "Tải ngay",
 }

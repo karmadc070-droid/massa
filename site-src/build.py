@@ -217,12 +217,37 @@ def chrome(lang, name, L, body, page):
         for _k, n, u, c, d in SOCIAL)
     # 테라피스트 모집 배너. 지금은 공급이 병목이라 전 페이지 맨 위에 크게 둔다.
     # 모집 페이지 자신에는 안 붙인다 — 이미 와 있는 사람에게 또 권할 이유가 없다.
+    # 안쪽을 .wrap 으로 감싸야 본문과 같은 폭에서 가운데로 모인다.
+    # 감싸지 않으면 넓은 화면에서 글이 왼쪽 끝에 붙어 눈에 안 들어온다.
     rbar = "" if name == "partner" else (
-        f'<a class="rbar" href="{url(lang,"partner")}">'
+        f'<a class="rbar" href="{url(lang,"partner")}"><span class="wrap">'
         f'<span class="rb-tag">{esc(L["rbar_tag"])}</span>'
         f'<span class="rb-main"><b>{esc(L["rbar"])}</b>'
         f'<em>{esc(L["rbar_sub"])}</em></span>'
-        f'<span class="rb-go">{esc(L["rbar_cta"])}</span></a>')
+        f'<span class="rb-go">{esc(L["rbar_cta"])}</span></span></a>')
+
+    # 모집 팝업. 띠만으로는 지나치는 사람이 많아서 한 번은 정면으로 보여 준다.
+    # 닫으면 기억하고 한동안 다시 띄우지 않는다 — 고객용 사이트라 귀찮게 하면 안 된다.
+    pop = "" if name == "partner" else f'''
+<div class="jp" id="jp" hidden>
+  <div class="jp-bd" data-jpclose></div>
+  <div class="jp-card" role="dialog" aria-modal="true" aria-labelledby="jpH">
+    <button class="jp-x" data-jpclose aria-label="close">&times;</button>
+    <div class="jp-art"><span class="jp-orb"></span><span class="jp-orb"></span></div>
+    <div class="jp-body">
+      <span class="jp-tag">{esc(L["rbar_tag"])}</span>
+      <h3 id="jpH">{esc(L["pop_h"])}</h3>
+      <p class="jp-sub">{esc(L["pop_sub"])}</p>
+      <ul class="jp-li">
+        <li>{esc(L["pop_li1"])}</li>
+        <li>{esc(L["pop_li2"])}</li>
+        <li>{esc(L["pop_li3"])}</li>
+      </ul>
+      <a class="jp-go" href="{url(lang,'partner')}">{esc(L["pop_cta"])}</a>
+      <button class="jp-later" data-jpclose>{esc(L["pop_later"])}</button>
+    </div>
+  </div>
+</div>'''
     return f'''<!DOCTYPE html>
 <!-- 자동 생성 파일이다. 고치려면 site-src/content_{lang}.py 를 고치고 build.py 를 다시 돌린다 -->
 <html lang="{lang}">
@@ -282,6 +307,8 @@ def chrome(lang, name, L, body, page):
   </div>
 </footer>
 
+{pop}
+
 <div class="smartbar" id="smartbar">
   <button class="x" id="sbx" aria-label="close">×</button>
   <span>{esc(L["smart"])}</span>
@@ -309,6 +336,28 @@ def chrome(lang, name, L, body, page):
     bar.style.display = 'none';
     try {{ localStorage.setItem('massa_sb','off'); }} catch(e) {{}}
   }};
+
+  // 모집 팝업 — 2.2초 뒤 한 번. 닫으면 7일 동안 다시 안 띄운다.
+  // 고객용 사이트라 매번 가로막으면 손님을 잃는다.
+  var jp = document.getElementById('jp');
+  if (jp) {{
+    var K = 'massa_jp';
+    var skip = false;
+    try {{ skip = Number(localStorage.getItem(K) || 0) > Date.now(); }} catch(e) {{}}
+    var close = function(){{
+      jp.classList.remove('on');
+      setTimeout(function(){{ jp.hidden = true; }}, 260);
+      try {{ localStorage.setItem(K, String(Date.now() + 7*864e5)); }} catch(e) {{}}
+      document.removeEventListener('keydown', onEsc);
+    }};
+    var onEsc = function(e){{ if (e.key === 'Escape') close(); }};
+    if (!skip) setTimeout(function(){{
+      jp.hidden = false;
+      requestAnimationFrame(function(){{ jp.classList.add('on'); }});
+      document.addEventListener('keydown', onEsc);
+      jp.querySelectorAll('[data-jpclose]').forEach(function(b){{ b.onclick = close; }});
+    }}, 2200);
+  }}
 }})();
 </script>
 </body>

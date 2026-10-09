@@ -20,7 +20,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="/style.css?v=7a0a30da">
+<link rel="stylesheet" href="/style.css?v=15ad7e57">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Noto+Serif+KR:wght@400;500&family=Inter:wght@400;500;600&display=swap" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Noto+Serif+KR:wght@400;500&family=Inter:wght@400;500;600&display=swap"></noscript>
 <script>(function(){try{var K="massa_site_lang";if(/bot|crawl|spider|slurp|yeti|daum|facebookexternalhit|preview/i.test(navigator.userAgent))return;if(localStorage.getItem(K))return;var l=(navigator.language||"").slice(0,2).toLowerCase();var t=l==="ko"?null:(l==="en"?"en":"vi");if(!t){localStorage.setItem(K,"ko");return;}localStorage.setItem(K,t);location.replace(t==="en"?'/en/privacy.html':'/vi/privacy.html');}catch(e){}})();</script>
@@ -38,7 +38,7 @@
     </nav>
   </div>
 </header>
-<a class="rbar" href="/partner.html"><span class="rb-tag">모집 중</span><span class="rb-main"><b>창립 멤버 30명을 찾습니다</b><em>첫 20건은 수수료 없이 전액 내 것</em></span><span class="rb-go">자세히 보기</span></a>
+<a class="rbar" href="/partner.html"><span class="wrap"><span class="rb-tag">모집 중</span><span class="rb-main"><b>창립 멤버 30명을 찾습니다</b><em>첫 20건은 수수료 없이 전액 내 것</em></span><span class="rb-go">자세히 보기</span></span></a>
 <section class=""><div class="wrap"><div class="sec-head rv">
       <span class="kicker">시행일 2026년 8월 14일 · 개정 2026년 9월 6일 · 버전 1.1</span>
       <h2>개인정보처리방침</h2>
@@ -60,6 +60,27 @@
     <div class="legal">© 2026 massa. 베트남 출장 마사지·홈뷰티 방문 예약 플랫폼. 현재 하노이에서 운영합니다.<br>massa는 고객과 검증된 제공자를 연결하는 중개 플랫폼이며, 제공되는 케어는 의료 행위가 아닙니다.</div>
   </div>
 </footer>
+
+
+<div class="jp" id="jp" hidden>
+  <div class="jp-bd" data-jpclose></div>
+  <div class="jp-card" role="dialog" aria-modal="true" aria-labelledby="jpH">
+    <button class="jp-x" data-jpclose aria-label="close">&times;</button>
+    <div class="jp-art"><span class="jp-orb"></span><span class="jp-orb"></span></div>
+    <div class="jp-body">
+      <span class="jp-tag">모집 중</span>
+      <h3 id="jpH">창립 멤버 30분을 찾습니다</h3>
+      <p class="jp-sub">첫 20건은 고객이 낸 금액을 전액 가져갑니다. 수수료를 떼지 않습니다.</p>
+      <ul class="jp-li">
+        <li>일하는 시간과 구역을 직접 정합니다</li>
+        <li>내 가격을 내가 정합니다</li>
+        <li>신청 5분 · 가입비 0원</li>
+      </ul>
+      <a class="jp-go" href="/partner.html">조건 보기</a>
+      <button class="jp-later" data-jpclose>나중에</button>
+    </div>
+  </div>
+</div>
 
 <div class="smartbar" id="smartbar">
   <button class="x" id="sbx" aria-label="close">×</button>
@@ -88,6 +109,28 @@
     bar.style.display = 'none';
     try { localStorage.setItem('massa_sb','off'); } catch(e) {}
   };
+
+  // 모집 팝업 — 2.2초 뒤 한 번. 닫으면 7일 동안 다시 안 띄운다.
+  // 고객용 사이트라 매번 가로막으면 손님을 잃는다.
+  var jp = document.getElementById('jp');
+  if (jp) {
+    var K = 'massa_jp';
+    var skip = false;
+    try { skip = Number(localStorage.getItem(K) || 0) > Date.now(); } catch(e) {}
+    var close = function(){
+      jp.classList.remove('on');
+      setTimeout(function(){ jp.hidden = true; }, 260);
+      try { localStorage.setItem(K, String(Date.now() + 7*864e5)); } catch(e) {}
+      document.removeEventListener('keydown', onEsc);
+    };
+    var onEsc = function(e){ if (e.key === 'Escape') close(); };
+    if (!skip) setTimeout(function(){
+      jp.hidden = false;
+      requestAnimationFrame(function(){ jp.classList.add('on'); });
+      document.addEventListener('keydown', onEsc);
+      jp.querySelectorAll('[data-jpclose]').forEach(function(b){ b.onclick = close; });
+    }, 2200);
+  }
 })();
 </script>
 </body>

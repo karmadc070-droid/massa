@@ -20,7 +20,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="/style.css?v=7a0a30da">
+<link rel="stylesheet" href="/style.css?v=15ad7e57">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Noto+Serif+KR:wght@400;500&family=Inter:wght@400;500;600&display=swap" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Noto+Serif+KR:wght@400;500&family=Inter:wght@400;500;600&display=swap"></noscript>
 
@@ -187,7 +187,7 @@
     </nav>
   </div>
 </header>
-<a class="rbar" href="/en/partner.html"><span class="rb-tag">NOW HIRING</span><span class="rb-main"><b>Looking for 30 founding therapists</b><em>Keep 100% of what the customer pays on your first 20 jobs</em></span><span class="rb-go">See details</span></a>
+<a class="rbar" href="/en/partner.html"><span class="wrap"><span class="rb-tag">NOW HIRING</span><span class="rb-main"><b>Looking for 30 founding therapists</b><em>Keep 100% of what the customer pays on your first 20 jobs</em></span><span class="rb-go">See details</span></span></a>
 <section class=""><div class="wrap"><div class="sec-head rv">
       <span class="kicker">FAQ</span>
       <h2>Questions we get</h2>
@@ -213,6 +213,27 @@
     <div class="legal">© 2026 massa. Home massage and beauty booking in Vietnam. Currently operating in Hanoi.<br>massa is a platform connecting customers with verified providers. The care offered is not a medical treatment.</div>
   </div>
 </footer>
+
+
+<div class="jp" id="jp" hidden>
+  <div class="jp-bd" data-jpclose></div>
+  <div class="jp-card" role="dialog" aria-modal="true" aria-labelledby="jpH">
+    <button class="jp-x" data-jpclose aria-label="close">&times;</button>
+    <div class="jp-art"><span class="jp-orb"></span><span class="jp-orb"></span></div>
+    <div class="jp-body">
+      <span class="jp-tag">NOW HIRING</span>
+      <h3 id="jpH">Our first 30 founding therapists</h3>
+      <p class="jp-sub">Keep 100% of what the customer pays on your first 20 jobs. No commission.</p>
+      <ul class="jp-li">
+        <li>You choose your hours and districts</li>
+        <li>You set your own price</li>
+        <li>Five-minute signup · no joining fee</li>
+      </ul>
+      <a class="jp-go" href="/en/partner.html">See the terms</a>
+      <button class="jp-later" data-jpclose>Later</button>
+    </div>
+  </div>
+</div>
 
 <div class="smartbar" id="smartbar">
   <button class="x" id="sbx" aria-label="close">×</button>
@@ -241,6 +262,28 @@
     bar.style.display = 'none';
     try { localStorage.setItem('massa_sb','off'); } catch(e) {}
   };
+
+  // 모집 팝업 — 2.2초 뒤 한 번. 닫으면 7일 동안 다시 안 띄운다.
+  // 고객용 사이트라 매번 가로막으면 손님을 잃는다.
+  var jp = document.getElementById('jp');
+  if (jp) {
+    var K = 'massa_jp';
+    var skip = false;
+    try { skip = Number(localStorage.getItem(K) || 0) > Date.now(); } catch(e) {}
+    var close = function(){
+      jp.classList.remove('on');
+      setTimeout(function(){ jp.hidden = true; }, 260);
+      try { localStorage.setItem(K, String(Date.now() + 7*864e5)); } catch(e) {}
+      document.removeEventListener('keydown', onEsc);
+    };
+    var onEsc = function(e){ if (e.key === 'Escape') close(); };
+    if (!skip) setTimeout(function(){
+      jp.hidden = false;
+      requestAnimationFrame(function(){ jp.classList.add('on'); });
+      document.addEventListener('keydown', onEsc);
+      jp.querySelectorAll('[data-jpclose]').forEach(function(b){ b.onclick = close; });
+    }, 2200);
+  }
 })();
 </script>
 </body>

@@ -18,6 +18,13 @@ LABELS = {
     "rbar": 'Looking for 30 founding therapists',
     "rbar_sub": 'Keep 100% of what the customer pays on your first 20 jobs',
     "rbar_cta": 'See details',
+    'pop_h': 'Our first 30 founding therapists',
+    'pop_sub': 'Keep 100% of what the customer pays on your first 20 jobs. No commission.',
+    'pop_li1': 'You choose your hours and districts',
+    'pop_li2': 'You set your own price',
+    'pop_li3': 'Five-minute signup · no joining fee',
+    'pop_cta': 'See the terms',
+    'pop_later': 'Later',
     "smart": "Book faster in the app",
     "smart_cta": "Get it",
 }

@@ -347,10 +347,12 @@ footer.site .legal { border-top: 1px solid #27505E; padding-top: 22px; color: #7
 /* ── 테라피스트 모집 배너 ─────────────────────────
    공급이 병목이라 전 페이지 맨 위에 크게 둔다. 고객용 사이트에 끼어드는 요소라
    색은 금색 계열 하나로만 쓰고, 움직임은 화살표와 아주 느린 광택뿐이다. */
-.rbar{position:relative;overflow:hidden;display:flex;align-items:center;
-  gap:18px;padding:18px 28px;text-decoration:none;
+.rbar{position:relative;overflow:hidden;display:block;padding:18px 0;
+  text-decoration:none;
   background:linear-gradient(100deg,#2A5C6B 0%,#1F4E5F 55%,#143643 100%);
   color:#F3EDE1;font-family:var(--sans)}
+/* 본문과 같은 폭 안에서 가운데로 모은다. 감싸지 않으면 넓은 화면에서 왼쪽 끝에 붙는다. */
+.rbar .wrap{display:flex;align-items:center;gap:18px}
 .rbar::after{content:'';position:absolute;top:0;bottom:0;width:38%;
   left:-45%;transform:skewX(-18deg);pointer-events:none;
   background:linear-gradient(90deg,transparent,rgba(232,201,142,.16),transparent);
@@ -372,7 +374,8 @@ footer.site .legal { border-top: 1px solid #27505E; padding-top: 22px; color: #7
 .rbar:hover .rb-go::after{transform:translateX(5px)}
 
 @media (max-width:860px){
-  .rbar{flex-wrap:wrap;gap:10px 14px;padding:15px 20px}
+  .rbar{padding:15px 0}
+  .rbar .wrap{flex-wrap:wrap;gap:10px 14px}
   .rb-main{flex:1 1 100%;order:2}
   .rb-main b{font-size:17px}
   .rb-main em{font-size:13px}
@@ -444,4 +447,76 @@ footer.site .legal { border-top: 1px solid #27505E; padding-top: 22px; color: #7
   .tbl.rv tr{opacity:1;transform:none;transition:none}
   .card:hover,.pcard:hover img,.btn:hover{transform:none}
   .grid .rv,.steps .rv{transition-delay:0s !important}
+}
+
+/* ── 모집 팝업 ───────────────────────────────────
+   띠만으로는 지나치는 사람이 많아 한 번은 정면으로 보여 준다.
+   닫으면 7일 기억한다 — 고객용 사이트라 매번 가로막으면 손님을 잃는다. */
+.jp{position:fixed;inset:0;z-index:120;display:flex;align-items:center;
+  justify-content:center;padding:20px;
+  opacity:0;transition:opacity .26s ease}
+.jp.on{opacity:1}
+.jp-bd{position:absolute;inset:0;background:rgba(10,28,34,.62);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.jp-card{position:relative;width:min(430px,100%);border-radius:20px;overflow:hidden;
+  background:var(--paper);box-shadow:0 36px 90px -30px rgba(10,28,34,.7);
+  transform:translateY(22px) scale(.97);opacity:0;
+  transition:transform .42s cubic-bezier(.2,.85,.3,1),opacity .34s ease}
+.jp.on .jp-card{transform:none;opacity:1}
+
+/* 머리 그림 — 사진 대신 움직이는 빛 두 덩이. 파일을 더 받지 않는다. */
+.jp-art{position:relative;height:124px;overflow:hidden;
+  background:linear-gradient(120deg,#143643,#1F4E5F 52%,#2A5C6B)}
+.jp-orb{position:absolute;border-radius:50%;filter:blur(26px);opacity:.75}
+.jp-orb:nth-child(1){width:150px;height:150px;left:-28px;top:-44px;
+  background:#E8C98E;animation:jpO1 9s ease-in-out infinite alternate}
+.jp-orb:nth-child(2){width:124px;height:124px;right:-20px;bottom:-50px;
+  background:#7FB4BF;animation:jpO2 11s ease-in-out infinite alternate}
+@keyframes jpO1{to{transform:translate(58px,26px) scale(1.18)}}
+@keyframes jpO2{to{transform:translate(-46px,-22px) scale(1.14)}}
+.jp-art::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(to bottom,transparent 46%,var(--paper))}
+
+.jp-x{position:absolute;top:12px;right:12px;z-index:2;width:32px;height:32px;
+  border:0;border-radius:50%;cursor:pointer;font-size:19px;line-height:1;
+  background:rgba(255,255,255,.18);color:#fff;
+  -webkit-tap-highlight-color:transparent;transition:background .15s ease}
+.jp-x:hover{background:rgba(255,255,255,.34)}
+
+.jp-body{position:relative;margin-top:-34px;padding:0 26px 26px;text-align:center}
+.jp-tag{display:inline-block;font-family:var(--sans);font-size:11px;font-weight:600;
+  letter-spacing:.16em;padding:6px 12px;border-radius:999px;margin-bottom:12px;
+  color:#8A6522;background:var(--gold-pale);border:1px solid rgba(184,134,59,.3)}
+.jp-body h3{font-family:var(--serif);font-size:25px;line-height:1.3;margin:0 0 9px;
+  letter-spacing:-.01em;color:var(--ink)}
+.jp-sub{font-family:var(--sans);font-size:14.5px;line-height:1.6;margin:0 0 16px;
+  color:var(--ink-soft)}
+.jp-li{list-style:none;padding:0;margin:0 0 20px;text-align:left;
+  font-family:var(--sans);font-size:14px;color:var(--ink)}
+.jp-li li{position:relative;padding:7px 0 7px 26px;border-top:1px solid var(--line)}
+.jp-li li:first-child{border-top:0}
+.jp-li li::before{content:'';position:absolute;left:4px;top:50%;
+  width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:var(--gold)}
+.jp-go{display:block;padding:14px;border-radius:999px;text-decoration:none;
+  font-family:var(--sans);font-size:15px;font-weight:600;
+  background:var(--teal);color:#fff;
+  transition:transform .18s cubic-bezier(.2,.8,.3,1),box-shadow .18s ease}
+.jp-go:hover{transform:translateY(-2px);box-shadow:0 12px 26px -12px rgba(20,54,67,.6)}
+.jp-later{display:block;width:100%;margin-top:10px;padding:8px;border:0;
+  background:none;cursor:pointer;font-family:var(--sans);font-size:13.5px;
+  color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px}
+
+/* 좁은 화면에서는 아래에서 올라오는 시트로 */
+@media (max-width:520px){
+  .jp{align-items:flex-end;padding:0}
+  .jp-card{width:100%;border-radius:20px 20px 0 0;transform:translateY(100%)}
+  .jp.on .jp-card{transform:none}
+  .jp-art{height:104px}
+  .jp-body h3{font-size:22px}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .jp,.jp-card{transition:none}
+  .jp-orb{animation:none}
+  .jp-go:hover{transform:none}
 }
