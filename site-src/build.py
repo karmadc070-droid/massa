@@ -309,6 +309,12 @@ def chrome(lang, name, L, body, page):
 
 {pop}
 
+<!-- 운영 콘솔 진입. emoi 와 같은 자리(우하단 고정)에 둔다.
+     링크만 공개돼 있고 실제 데이터는 /admin 의 로그인과 is_admin() 이 막는다. -->
+<a class="opsbar" href="/admin/" rel="nofollow">
+  <b>운영 콘솔</b><small>support@massaviet.com</small>
+</a>
+
 <div class="smartbar" id="smartbar">
   <button class="x" id="sbx" aria-label="close">×</button>
   <span>{esc(L["smart"])}</span>
