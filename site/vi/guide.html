@@ -141,7 +141,10 @@
     var onEsc = function(e){ if (e.key === 'Escape') close(); };
     if (!skip) setTimeout(function(){
       jp.hidden = false;
-      requestAnimationFrame(function(){ jp.classList.add('on'); });
+      // requestAnimationFrame 은 배경 탭에서 멈춘다. 그러면 팝업이 '열리다 만' 상태로
+      // 굳는다. 레이아웃을 강제로 한 번 계산시키는 쪽이 탭 상태와 무관하게 동작한다.
+      void jp.offsetWidth;
+      jp.classList.add('on');
       document.addEventListener('keydown', onEsc);
       jp.querySelectorAll('[data-jpclose]').forEach(function(b){ b.onclick = close; });
     }, 2200);
