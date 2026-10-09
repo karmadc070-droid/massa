@@ -60,7 +60,11 @@ main{flex:1;min-width:0;padding:0 clamp(16px,2.6vw,34px) 60px}
             border-right:1px solid rgba(255,255,255,.16)}
 .today .lab small{display:block;font-family:var(--sans);font-size:10.5px;letter-spacing:.16em;
                   text-transform:uppercase;color:var(--amber)}
-.today .it{min-width:0}
+.today .it{min-width:0;display:block;text-decoration:none;color:inherit;
+  border-radius:10px;padding:4px 8px;margin:-4px -8px;
+  transition:background .15s ease,transform .15s ease}
+.today a.it:hover{background:rgba(255,255,255,.07);transform:translateY(-1px)}
+.today a.it:active{transform:none}
 .today .it b{display:block;font-family:var(--serif);font-size:29px;font-weight:400;line-height:1.1;
              font-variant-numeric:lining-nums}
 .today .it span{font-size:11.5px;color:#9DB6BC}
@@ -426,13 +430,16 @@ function render(d) {
   // 오늘
   $('today').innerHTML =
     `<div class="lab"><small>Today</small>오늘</div>` +
-    [['유입', t.visits, '앱을 연 기기'],
-     ['가입', t.signups, '새 회원'],
-     ['새 예약', t.bookings, '오늘 들어온 요청'],
-     ['완료', t.done, '오늘 끝난 시술'],
-     ['확인 대기', t.deposit_pending, '입금 확인해야 할 건', (t.deposit_pending || 0) > 0]]
-    .map(([l, v, sub, alert]) =>
-      `<div class="it${alert ? ' alert' : ''}"><b>${num(v)}</b><span>${esc(l)} · ${esc(sub)}</span></div>`)
+    // 숫자를 누르면 그 내용이 있는 자리로 내려간다. 보고 바로 파고들 수 있게.
+    [['유입', t.visits, '앱을 연 기기', false, '#s-traffic'],
+     ['가입', t.signups, '새 회원', false, '#s-members'],
+     ['새 예약', t.bookings, '오늘 들어온 요청', false, '#s-match'],
+     ['완료', t.done, '오늘 끝난 시술', false, '#s-match'],
+     ['확인 대기', t.deposit_pending, '입금 확인해야 할 건',
+      (t.deposit_pending || 0) > 0, '#s-roster']]
+    .map(([l, v, sub, alert, href]) =>
+      `<a class="it${alert ? ' alert' : ''}" href="${href}"><b>${num(v)}</b>`
+      + `<span>${esc(l)} · ${esc(sub)}</span></a>`)
     .join('');
 
   // 요약 카드
@@ -537,10 +544,11 @@ function drawMembers() {
   const rows = q ? all.filter(r => [r.full_name, r.email, r.phone]
     .some(v => String(v || '').toLowerCase().includes(q))) : all;
 
-  const prov = all.filter(r => r.is_provider).length;
+  const cnt = (t) => all.filter(r => (r.member_type || '고객') === t).length;
   const withBk = all.filter(r => Number(r.bookings || 0) > 0).length;
   $('mem-note').innerHTML =
-    `가입자 <b>${num(all.length)}명</b> · 그중 마사지사 <b>${num(prov)}명</b>`
+    `가입자 <b>${num(all.length)}명</b> · 고객 <b>${num(cnt('고객'))}</b>`
+    + ` · 마사지사 <b>${num(cnt('마사지사'))}</b> · 업체 <b>${num(cnt('업체'))}</b>`
     + ` · 예약해 본 사람 <b>${num(withBk)}명</b>`
     + `<br>개인정보입니다. 화면 밖으로 옮기지 마세요.`;
 
@@ -557,8 +565,10 @@ function drawMembers() {
           ${blocked ? '<div style="font-size:11px;color:#B23A5B">예약 정지 중</div>' : ''}</td>
         <td class="l" style="font-size:12px">${esc(r.email || '-')}</td>
         <td class="l" style="font-size:12px">${esc(r.phone || '-')}</td>
-        <td class="l" style="font-size:12px">${r.is_provider ? '마사지사' : '고객'}${
-          r.role !== 'customer' ? ' · ' + esc(r.role) : ''}</td>
+        <td class="l" style="font-size:12px">${esc(r.member_type || '고객')}${
+          r.provider_status && r.provider_status !== 'approved'
+            ? ' <span style="color:#E8A33D">' + esc(r.provider_status === 'pending' ? '심사 대기' : '반려') + '</span>'
+            : ''}${r.role !== 'customer' ? ' · ' + esc(r.role) : ''}</td>
         <td>${esc(d(r.created_at))}</td>
         <td>${esc(d(r.last_sign_in_at))}</td>
         <td>${num(r.bookings)}</td>
