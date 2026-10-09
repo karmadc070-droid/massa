@@ -7,7 +7,10 @@
 --
 -- 이메일은 profiles 에 없고 auth.users 에 있다. 그래서 조인한다.
 
-create or replace function public.admin_member_list(
+-- 돌려주는 칼럼이 바뀌면 CREATE OR REPLACE 가 안 통한다. 먼저 지우고 다시 만든다.
+drop function if exists public.admin_member_list(text, text, int, int);
+
+create function public.admin_member_list(
   p_q      text default null,   -- 이름·이메일·전화 부분 검색
   p_role   text default null,   -- 'customer' | 'admin' | 'reviewer' | null(전체)
   p_limit  int  default 200,
