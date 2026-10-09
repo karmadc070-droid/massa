@@ -124,6 +124,18 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 .tbl th:first-child,.tbl td:first-child,.tbl th.l,.tbl td.l{text-align:left}
 .tbl tr:last-child td{border-bottom:0}
 .tbl tbody tr:hover{background:var(--sand)}
+/* 누를 수 있는 머리칸. 화살표 자리를 늘 비워 둬서 정렬을 바꿔도 칸 너비가 안 흔들린다 */
+.tbl th.so{cursor:pointer;user-select:none}
+.tbl th.so:hover{color:var(--ink)}
+.tbl th.so i{font-style:normal;display:inline-block;width:11px;text-align:center;
+             margin-left:3px;opacity:.28;font-size:9px}
+.tbl th.so.on{color:var(--ink)}
+.tbl th.so.on i{opacity:1;color:var(--amber)}
+.pick{padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit;
+      background:var(--sand);color:inherit}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tools .chk{display:flex;align-items:center;gap:5px;font-size:12.5px;
+            color:var(--ink-soft);cursor:pointer;white-space:nowrap}
 .who{display:flex;align-items:center;gap:9px}
 .who img,.who .ph{width:34px;height:34px;border-radius:9px;object-fit:cover;flex:none;background:var(--sand-deep)}
 .owe{color:var(--bad);font-weight:600}
@@ -250,7 +262,17 @@ svg{display:block;width:100%;height:auto;overflow:visible}
           <h3>마사지사 명단</h3>
           <p class="note" id="roster-note"></p>
         </div>
-        <input id="q" placeholder="이름·지역·코드로 찾기" class="find">
+        <div class="tools">
+          <input id="q" placeholder="이름·지역·코드로 찾기" class="find">
+          <select id="rtier" class="pick">
+            <option value="">등급 전체</option>
+            <option value="vip">우대</option>
+            <option value="shop">가게</option>
+            <option value="freelancer">프리랜서</option>
+          </select>
+          <label class="chk"><input type="checkbox" id="rowe">미납만</label>
+          <label class="chk"><input type="checkbox" id="rpend">심사 대기만</label>
+        </div>
       </div>
       <div id="roster"></div>
     </div>
@@ -262,7 +284,16 @@ svg{display:block;width:100%;height:auto;overflow:visible}
           <h3>가입자 명단</h3>
           <p class="note" id="mem-note"></p>
         </div>
-        <input id="mq" placeholder="이름·이메일·전화로 찾기" class="find">
+        <div class="tools">
+          <input id="mq" placeholder="이름·이메일·전화로 찾기" class="find">
+          <select id="mtype" class="pick">
+            <option value="">구분 전체</option>
+            <option value="고객">고객</option>
+            <option value="마사지사">마사지사</option>
+            <option value="업체">업체</option>
+          </select>
+          <label class="chk"><input type="checkbox" id="mbk">예약해 본 사람만</label>
+        </div>
       </div>
       <div id="members"></div>
     </div>
@@ -528,6 +559,49 @@ async function loadRoster() {
   ROSTER = data; drawRoster();
 }
 
+// ── 표 정렬 (두 명단이 같이 쓴다) ──────────────
+// 표마다 {key, dir} 하나만 들고 있다가 머리칸을 누르면 뒤집는다.
+// 비교는 세 갈래뿐이다 — 숫자(n) · 날짜(d) · 글자(기본). 칼럼 정의에 적어 둔다.
+const SORT = {};
+
+// cols: [{ k:키, h:제목, l:왼쪽정렬, t:'n'|'d', v:(행)=>값 }]
+// v 를 주면 화면에 보이는 값이 아니라 그 결과로 정렬한다 (취소+노쇼 합계 같은 것).
+function thead(tbl, cols, tail) {
+  const s = SORT[tbl] || {};
+  return '<thead><tr>' + cols.map(c =>
+    `<th class="so${c.l ? ' l' : ''}${s.key === c.k ? ' on' : ''}"`
+    + ` data-tbl="${tbl}" data-k="${esc(c.k)}">${esc(c.h)}`
+    + `<i>${s.key === c.k ? (s.dir > 0 ? '▲' : '▼') : '↕'}</i></th>`).join('')
+    + (tail ? '<th></th>' : '') + '</tr></thead>';
+}
+
+function sortRows(tbl, rows, cols) {
+  const s = SORT[tbl];
+  if (!s || !s.key) return rows;
+  const c = cols.find(x => x.k === s.key);
+  if (!c) return rows;
+  const val = (r) => {
+    const raw = c.v ? c.v(r) : r[c.k];
+    if (c.t === 'n') return Number(raw || 0);
+    if (c.t === 'd') return raw ? new Date(raw).getTime() : 0;
+    return String(raw == null ? '' : raw).toLowerCase();
+  };
+  // sort 는 제자리 정렬이라 원본 배열을 뒤섞는다. 복사본을 정렬한다.
+  return rows.slice().sort((a, b) => {
+    const x = val(a), y = val(b);
+    return (x < y ? -1 : x > y ? 1 : 0) * s.dir;
+  });
+}
+
+// 머리칸은 다시 그릴 때마다 사라지므로 개별 onclick 이 아니라 문서에 한 번만 건다.
+document.addEventListener('click', (e) => {
+  const th = e.target.closest('th.so');
+  if (!th) return;
+  const t = th.dataset.tbl, k = th.dataset.k, s = SORT[t] || {};
+  SORT[t] = { key: k, dir: s.key === k ? -s.dir : 1 };
+  if (t === 'members') drawMembers(); else drawRoster();
+});
+
 // ── 가입자 명단 ──────────────────────────────
 // 전화번호·이메일이 들어 있다. 화면 밖으로 새지 않도록 다른 곳에 쓰지 않는다.
 let MEMBERS = null;
@@ -537,12 +611,30 @@ async function loadMembers() {
   if (error) { box.innerHTML = '<div class="empty">불러오지 못했습니다 — ' + esc(error.message) + '</div>'; return; }
   MEMBERS = data || []; drawMembers();
 }
+const MCOLS = [
+  { k: 'full_name',       h: '이름',      l: 1 },
+  { k: 'email',           h: '이메일',    l: 1 },
+  { k: 'phone',           h: '전화',      l: 1 },
+  { k: 'member_type',     h: '구분',      l: 1 },
+  { k: 'created_at',      h: '가입',      t: 'd' },
+  { k: 'last_sign_in_at', h: '최근 접속', t: 'd' },
+  { k: 'bookings',        h: '예약',      t: 'n' },
+  { k: 'bad',             h: '취소/노쇼', t: 'n',
+    v: (r) => Number(r.cancel_count || 0) + Number(r.no_show_count || 0) },
+];
+
 function drawMembers() {
   if (!MEMBERS) return;
   const q = ($('mq').value || '').trim().toLowerCase();
+  const type = $('mtype').value;
+  const bkOnly = $('mbk').checked;
   const all = MEMBERS;
-  const rows = q ? all.filter(r => [r.full_name, r.email, r.phone]
-    .some(v => String(v || '').toLowerCase().includes(q))) : all;
+  let rows = all;
+  if (q) rows = rows.filter(r => [r.full_name, r.email, r.phone]
+    .some(v => String(v || '').toLowerCase().includes(q)));
+  if (type) rows = rows.filter(r => (r.member_type || '고객') === type);
+  if (bkOnly) rows = rows.filter(r => Number(r.bookings || 0) > 0);
+  rows = sortRows('members', rows, MCOLS);
 
   const cnt = (t) => all.filter(r => (r.member_type || '고객') === t).length;
   const withBk = all.filter(r => Number(r.bookings || 0) > 0).length;
@@ -550,15 +642,15 @@ function drawMembers() {
     `가입자 <b>${num(all.length)}명</b> · 고객 <b>${num(cnt('고객'))}</b>`
     + ` · 마사지사 <b>${num(cnt('마사지사'))}</b> · 업체 <b>${num(cnt('업체'))}</b>`
     + ` · 예약해 본 사람 <b>${num(withBk)}명</b>`
-    + `<br>개인정보입니다. 화면 밖으로 옮기지 마세요.`;
+    + (rows.length !== all.length ? ` · <b>지금 보이는 ${num(rows.length)}명</b>` : '')
+    + `<br>머리칸을 누르면 정렬됩니다. 개인정보입니다. 화면 밖으로 옮기지 마세요.`;
 
   if (!rows.length) { $('members').innerHTML = '<div class="empty">해당하는 사람이 없습니다.</div>'; return; }
 
   const d = (v) => v ? new Date(v).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' }) : '-';
-  $('members').innerHTML = '<div class="scroll"><table class="tbl"><thead><tr>'
-    + ['이름','이메일','전화','구분','가입','최근 접속','예약','취소/노쇼']
-        .map((h, i) => `<th class="${i < 4 ? 'l' : ''}">${esc(h)}</th>`).join('')
-    + '</tr></thead><tbody>' + rows.map(r => {
+  $('members').innerHTML = '<div class="scroll"><table class="tbl">'
+    + thead('members', MCOLS)
+    + '<tbody>' + rows.map(r => {
       const blocked = r.blocked_until && new Date(r.blocked_until) > new Date();
       return `<tr>
         <td class="l"><div style="font-weight:600">${esc(r.full_name || '(이름 없음)')}</div>
@@ -577,27 +669,45 @@ function drawMembers() {
     }).join('') + '</tbody></table></div>';
 }
 
+const RCOLS = [
+  { k: 'name',     h: '마사지사',    l: 1 },
+  { k: 'tier',     h: '등급',        l: 1 },
+  { k: 'joined',   h: '가입',        l: 1 },
+  { k: 'cnt',      h: '예약',        t: 'n' },
+  { k: 'fee',      h: '발생 수수료', t: 'n' },
+  { k: 'paid_fee', h: '확인 입금',   t: 'n' },
+  { k: 'credit',   h: '선입금 잔액', t: 'n' },
+  { k: 'owe',      h: '미납',        t: 'n' },
+];
+
 function drawRoster() {
   if (!ROSTER) return;
   const tiers = ROSTER.tiers || {};
   const q = ($('q').value || '').trim().toLowerCase();
+  const tier = $('rtier').value;
   const all = ROSTER.rows || [];
-  const rows = q ? all.filter(r => [r.name, r.district, r.deposit_code]
-    .some(v => String(v || '').toLowerCase().includes(q))) : all;
+  let rows = all;
+  if (q) rows = rows.filter(r => [r.name, r.district, r.deposit_code]
+    .some(v => String(v || '').toLowerCase().includes(q)));
+  if (tier) rows = rows.filter(r => r.tier === tier);
+  if ($('rowe').checked) rows = rows.filter(r => Number(r.owe || 0) > 0);
+  if ($('rpend').checked) rows = rows.filter(r => r.status === 'pending');
+  rows = sortRows('roster', rows, RCOLS);
 
   const oweSum = all.reduce((a, r) => a + Number(r.owe || 0), 0);
   const credSum = all.reduce((a, r) => a + Number(r.credit || 0), 0);
   $('roster-note').innerHTML =
     `가입한 마사지사 <b>${num(all.length)}명</b> · 받아야 할 수수료 <b class="owe">${esc(vnd(oweSum))}</b>`
     + ` · 선입금 잔액 합계 <b class="cred">${esc(vnd(credSum))}</b>`
-    + `<br>미납은 <b>발생한 수수료 − 확인된 입금 − 선입금 잔액</b> 입니다. 선입금이 남아 있으면 0으로 봅니다.`;
+    + (rows.length !== all.length ? ` · <b>지금 보이는 ${num(rows.length)}명</b>` : '')
+    + `<br>미납은 <b>발생한 수수료 − 확인된 입금 − 선입금 잔액</b> 입니다. 선입금이 남아 있으면 0으로 봅니다.`
+    + ` 머리칸을 누르면 정렬됩니다.`;
 
   if (!rows.length) { $('roster').innerHTML = '<div class="empty">해당하는 사람이 없습니다.</div>'; return; }
 
-  $('roster').innerHTML = '<div class="scroll"><table class="tbl"><thead><tr>'
-    + ['마사지사','등급','가입','예약','발생 수수료','확인 입금','선입금 잔액','미납','']
-        .map((h, i) => `<th class="${i < 3 ? 'l' : ''}">${esc(h)}</th>`).join('')
-    + '</tr></thead><tbody>' + rows.map(r => {
+  $('roster').innerHTML = '<div class="scroll"><table class="tbl">'
+    + thead('roster', RCOLS, true)
+    + '<tbody>' + rows.map(r => {
       const owe = Number(r.owe || 0), cred = Number(r.credit || 0);
       return `<tr>
         <td class="l"><div class="who">${r.photo_url
@@ -679,6 +789,8 @@ $('tabs').onclick = (e) => {
 };
 $('q').oninput = drawRoster;
 $('mq').oninput = drawMembers;
+['rtier', 'rowe', 'rpend'].forEach(id => $(id).onchange = drawRoster);
+['mtype', 'mbk'].forEach(id => $(id).onchange = drawMembers);
 $('rf').onclick = () => { loadData(); loadRoster(); loadMembers(); };
 $('out').onclick = async () => { await sb.auth.signOut(); location.reload(); };
 
