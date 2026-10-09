@@ -464,18 +464,25 @@ footer.site .legal { border-top: 1px solid #27505E; padding-top: 22px; color: #7
   transition:transform .42s cubic-bezier(.2,.85,.3,1),opacity .34s ease}
 .jp.on .jp-card{transform:none;opacity:1}
 
-/* 머리 그림 — 사진 대신 움직이는 빛 두 덩이. 파일을 더 받지 않는다. */
-.jp-art{position:relative;height:124px;overflow:hidden;
-  background:linear-gradient(120deg,#143643,#1F4E5F 52%,#2A5C6B)}
-.jp-orb{position:absolute;border-radius:50%;filter:blur(26px);opacity:.75}
-.jp-orb:nth-child(1){width:150px;height:150px;left:-28px;top:-44px;
+/* 머리 그림 — 사진 대신 움직이는 빛 두 덩이. 파일을 더 받지 않는다.
+   처음엔 덮는 그라데이션을 46% 에서 시작했더니 틸 바탕이 거의 안 보였다. 68% 로 늦췄다. */
+.jp-art{position:relative;height:158px;overflow:hidden;
+  background:linear-gradient(118deg,#0F2C37,#1F4E5F 48%,#35707F)}
+.jp-orb{position:absolute;border-radius:50%;filter:blur(30px);opacity:.6}
+.jp-orb:nth-child(1){width:128px;height:128px;left:-18px;top:-34px;
   background:#E8C98E;animation:jpO1 9s ease-in-out infinite alternate}
-.jp-orb:nth-child(2){width:124px;height:124px;right:-20px;bottom:-50px;
-  background:#7FB4BF;animation:jpO2 11s ease-in-out infinite alternate}
-@keyframes jpO1{to{transform:translate(58px,26px) scale(1.18)}}
-@keyframes jpO2{to{transform:translate(-46px,-22px) scale(1.14)}}
+.jp-orb:nth-child(2){width:112px;height:112px;right:-14px;top:30px;
+  background:#79C2CF;animation:jpO2 11s ease-in-out infinite alternate}
+@keyframes jpO1{to{transform:translate(70px,34px) scale(1.2)}}
+@keyframes jpO2{to{transform:translate(-56px,-18px) scale(1.16)}}
+/* 가는 빛줄기 하나가 천천히 지나간다 */
+.jp-art::before{content:'';position:absolute;top:-30%;bottom:-30%;width:34%;
+  left:-40%;transform:skewX(-16deg);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent);
+  animation:jpSweep 6s ease-in-out infinite}
+@keyframes jpSweep{0%,55%{left:-40%}100%{left:120%}}
 .jp-art::after{content:'';position:absolute;inset:0;
-  background:linear-gradient(to bottom,transparent 46%,var(--paper))}
+  background:linear-gradient(to bottom,transparent 68%,var(--paper))}
 
 .jp-x{position:absolute;top:12px;right:12px;z-index:2;width:32px;height:32px;
   border:0;border-radius:50%;cursor:pointer;font-size:19px;line-height:1;
@@ -483,7 +490,7 @@ footer.site .legal { border-top: 1px solid #27505E; padding-top: 22px; color: #7
   -webkit-tap-highlight-color:transparent;transition:background .15s ease}
 .jp-x:hover{background:rgba(255,255,255,.34)}
 
-.jp-body{position:relative;margin-top:-34px;padding:0 26px 26px;text-align:center}
+.jp-body{position:relative;margin-top:-30px;padding:0 26px 26px;text-align:center}
 .jp-tag{display:inline-block;font-family:var(--sans);font-size:11px;font-weight:600;
   letter-spacing:.16em;padding:6px 12px;border-radius:999px;margin-bottom:12px;
   color:#8A6522;background:var(--gold-pale);border:1px solid rgba(184,134,59,.3)}
@@ -511,12 +518,13 @@ footer.site .legal { border-top: 1px solid #27505E; padding-top: 22px; color: #7
   .jp{align-items:flex-end;padding:0}
   .jp-card{width:100%;border-radius:20px 20px 0 0;transform:translateY(100%)}
   .jp.on .jp-card{transform:none}
-  .jp-art{height:104px}
+  .jp-art{height:132px}
   .jp-body h3{font-size:22px}
 }
 
 @media (prefers-reduced-motion: reduce){
   .jp,.jp-card{transition:none}
   .jp-orb{animation:none}
+  .jp-art::before{animation:none}
   .jp-go:hover{transform:none}
 }
