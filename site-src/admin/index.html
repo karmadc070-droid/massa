@@ -311,7 +311,8 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 const sb = createClient(
-  'https://api.moahagwon.com',
+  // 2026-10-10: 모아학원 도메인을 빌려 쓰던 것을 massa 자기 주소로 옮겼다.
+  'https://api.massaviet.com',
   'eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJyb2xlIjogImFub24iLCAiaXNzIjogInN1cGFiYXNlIiwgImlhdCI6IDE3ODc0NTg4OTMsICJleHAiOiAyMTAyODE4ODkzfQ.7taJaAzxPRIkd0PeC5qnuacficFnazkBN54ttblUv-o',
   // pkce 를 강제한다. 암시적 흐름이면 주소창 해시에 access_token 이 그대로 붙어
   // 주소를 복사해 남에게 보내는 순간 관리자 세션이 새어 나간다. 실제로 한 번 겪었다.

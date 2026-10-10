@@ -1263,7 +1263,9 @@ render();
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-const SUPABASE_URL = 'https://api.moahagwon.com';
+// 2026-10-10: api.moahagwon.com(모아학원 도메인)을 빌려 쓰던 것을 massa 자기 주소로 옮겼다.
+// 옛 주소도 같은 서버를 가리키게 살려 뒀다 — 업데이트 안 한 앱이 멈추면 안 된다.
+const SUPABASE_URL = 'https://api.massaviet.com';
 const SUPABASE_KEY = 'eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJyb2xlIjogImFub24iLCAiaXNzIjogInN1cGFiYXNlIiwgImlhdCI6IDE3ODc0NTg4OTMsICJleHAiOiAyMTAyODE4ODkzfQ.7taJaAzxPRIkd0PeC5qnuacficFnazkBN54ttblUv-o';
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
