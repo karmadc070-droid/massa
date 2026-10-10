@@ -1,4 +1,18 @@
 #!/bin/sh
+# ⛔ 더 쓰지 않는다 (2026-10-10). 관리자 화면은 massaviet.com/admin 아래로 모았다.
+#
+#   지표      massaviet.com/admin/
+#   운영 콘솔 massaviet.com/admin/console/
+#   둘 다 scripts/vps-deploy-massaviet.sh 가 배포한다.
+#
+# 이 스크립트가 쓰던 /srv/massa-admin 은 이제 Caddy 가 서빙하지 않는다.
+# 돌려 봐야 아무도 안 보는 자리에 파일만 쌓인다. 기록으로 남겨 둘 뿐이다.
+echo "이 스크립트는 더 쓰지 않습니다. scripts/vps-deploy-massaviet.sh 를 쓰세요."
+echo "  지표      https://massaviet.com/admin/"
+echo "  운영 콘솔 https://massaviet.com/admin/console/"
+exit 1
+
+# ─── 아래는 옛 내용 (참고용) ───────────────────────────────
 # 운영 콘솔(admin.html)을 /srv/massa-admin 에 배포하고 admin.massaviet.com 으로 서빙한다
 # (2026-10-01 이전. 옛 주소 admin.moahagwon.com 은 301 로 살려 둔다)
 set -e

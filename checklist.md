@@ -3513,3 +3513,38 @@ ssh -i $env:USERPROFILE\.ssh\erp_vultr root@141.164.46.88 "echo $b | base64 -d >
 
 **남는 주소** — `admin.massaviet.com` 은 운영 콘솔(`admin.html`)과 `reset.html` 로 계속 쓴다.
 지표만 옮긴 것이다. 콘솔까지 합치려면 따로 이야기해야 한다.
+
+## Z-53 · 관리자 화면을 massaviet.com/admin 아래 하나로 (2026-10-10)
+
+| | 새 주소 | 옛 주소 |
+|---|---|---|
+| 지표 | `massaviet.com/admin/` | `admin.massaviet.com/metrics/` → 301 |
+| 운영 콘솔 | `massaviet.com/admin/console/` | `admin.massaviet.com/` → 301 |
+| 비번 재설정 | `massaviet.com/admin/console/reset.html` | `admin.massaviet.com/reset.html` → 301 |
+| 앱의 옛 링크 | — | `app.massaviet.com/admin.html` → 301 |
+
+옛 주소는 **지우지 않고 넘겨만 준다.** 북마크와 이미 나간 재설정 메일 링크가 죽으면 안 된다.
+`?code=` 는 전부 보존한다 — 떨구면 로그인이 조용히 안 끝난다.
+
+**순서를 지켰다** — 새 자리에 파일을 먼저 올리고, 200 을 확인한 다음에 옛 주소를 넘겼다.
+리다이렉트를 먼저 걸었으면 그 사이에 콘솔이 404 였다.
+
+**한 스크립트가 docroot 를 통째로 책임지게 했다**
+`vps-deploy-massaviet.sh` 는 맨 앞에서 `rm -rf "$DIR"/*` 를 한다.
+콘솔 배포를 다른 스크립트에 맡기면 이 배포가 돌 때마다 콘솔이 사라진다.
+그래서 콘솔·재설정·그림까지 **이 스크립트 안에서** 같이 넣는다.
+오늘 아침 `/metrics/` 가 썩어 있던 것과 똑같은 함정이다 (Z-51).
+
+**`RESET_REDIRECT` 를 상대경로로 바꿨다**
+`'https://admin.massaviet.com/reset.html'` 로 박혀 있었다. 콘솔을 옮길 때마다 같이 고쳐야 하고,
+실제로 한동안 옛 도메인을 가리킨 채였다. `new URL('reset.html', location.href).href` 로 바꿨다.
+
+**그림 파일을 빠뜨리지 않았다** — 콘솔은 `11.jpg`~`66.jpg`, `icon-192.png`, 배너들을
+상대경로로 부른다. 옛 배포 스크립트는 그중 일부만 복사하고 있었다. 전부 목록에 넣었다.
+
+**봉인** — `scripts/vps-deploy-admin.sh` 는 맨 앞에서 안내만 하고 `exit 1` 한다.
+돌려 봐야 아무도 안 보는 `/srv/massa-admin` 에 파일만 쌓인다.
+그 폴더(3.3M)는 당장 지우지 않고 남겨 뒀다 — 되돌릴 일이 생기면 쓴다.
+
+**검증** — 새 주소 셋 200, 옛 주소 넷 301(`?code=` 보존), `/admin/*` 보안 헤더
+(no-store · no-referrer · DENY · noindex) 적용, 공개 페이지 5개 200 과 캐시 600 그대로.
