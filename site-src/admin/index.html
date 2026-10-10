@@ -629,6 +629,9 @@ const TCOLS = [
 
 function drawTraffic() {
   if (!LAST) return;
+  // 기본은 최신순. series 는 오래된 날부터 오는데, 보고 싶은 건 늘 어제·오늘이다.
+  // (머리칸을 눌러 바꾼 뒤에는 그 선택을 그대로 둔다.)
+  if (!SORT.traffic) SORT.traffic = { key: 'k', dir: -1 };
   let rows = LAST.series || [];
   if ($('tzero').value) rows = rows.filter(r => Number(r.visits || 0) > 0);
   rows = sortRows('traffic', rows, TCOLS);
