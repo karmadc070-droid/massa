@@ -14,6 +14,21 @@ tar -xzf "$TMP/m.tgz" -C "$TMP"
 # 지워진 파일이 남지 않도록 먼저 비운다 (배포본 = 저장소 상태).
 rm -rf "$DIR"/*
 cp -R "$TMP"/massa-main/site/. "$DIR"/
+
+# 관리자 화면은 massaviet.com/admin 아래 하나로 모았다 (2026-10-10).
+#   /admin/          지표    (site/admin/index.html — build.py 산출물)
+#   /admin/console/  운영 콘솔 (admin.html — 빌드를 안 거치는 저장소 루트 파일)
+# 이 스크립트가 위에서 docroot 를 통째로 비우므로, 콘솔도 **여기서** 같이 넣어야 한다.
+# 다른 스크립트에 맡기면 이 배포가 돌 때마다 콘솔이 사라진다.
+mkdir -p "$DIR/admin/console"
+cp "$TMP"/massa-main/admin.html "$DIR/admin/console/index.html"
+cp "$TMP"/massa-main/reset.html "$DIR/admin/console/reset.html"
+# 콘솔이 상대경로로 부르는 그림들. 빠지면 화면이 깨진 채로 돈다.
+for f in icon-192.png 11.jpg 22.jpg 33.jpg 44.jpg 55.jpg 66.jpg \
+         banner1.png banner2.png banner3.png masaage1_b.png wag1_b.png; do
+  cp "$TMP/massa-main/$f" "$DIR/admin/console/$f" 2>/dev/null || echo "  (없음: $f)"
+done
+
 rm -rf "$TMP"
 ls -la "$DIR"
 
@@ -21,6 +36,13 @@ ls -la "$DIR"
 grep -q "massaviet.com" "$DIR/sitemap.xml" || { echo "sitemap.xml 이상 — 중단"; exit 1; }
 grep -q "출장 마사지" "$DIR/index.html"     || { echo "index.html 이상 — 중단"; exit 1; }
 test -s "$DIR/style.css"                    || { echo "style.css 없음 — 중단"; exit 1; }
+# 콘솔의 권한 검사가 모듈 스코프 안에 있는지까지 본다 (밖에 있으면 아무나 들어온다)
+grep -q "window.guardConsole" "$DIR/admin/console/index.html" \
+  || { echo "콘솔 권한 검사 코드가 없다 — 중단"; exit 1; }
+G=$(grep -n "async function guardConsole" "$DIR/admin/console/index.html" | cut -d: -f1)
+M=$(grep -n '<script type="module">' "$DIR/admin/console/index.html" | cut -d: -f1)
+[ "$G" -gt "$M" ] || { echo "guardConsole 이 모듈 밖에 있다 — 중단"; exit 1; }
+test -s "$DIR/admin/index.html" || { echo "지표가 없다 — 중단"; exit 1; }
 
 echo "=== Caddy 설정 ==="
 F=/root/Caddyfile

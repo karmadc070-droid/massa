@@ -1448,7 +1448,9 @@ sb.auth.onAuthStateChange((event) => {
 // 2026-10-05 학원 도메인(massa.moahagwon.com) → 콘솔 자기 도메인으로.
 // 운영 콘솔의 재설정은 콘솔 안에서 끝나야 한다. 고객 앱 주소로 보내면 안 된다.
 // vps-deploy-admin.sh 가 reset.html 을 같이 올리도록 고쳐서 이 주소가 200 이 된다.
-const RESET_REDIRECT = 'https://admin.massaviet.com/reset.html';
+// 재설정 페이지는 콘솔 바로 옆에 둔다. 주소를 박아 두면 콘솔을 옮길 때마다 같이 고쳐야 하고,
+// 실제로 한 번 옛 도메인을 가리킨 채로 남아 있었다. 지금 보고 있는 주소에서 계산한다.
+const RESET_REDIRECT = new URL('reset.html', location.href).href;
 
 const TYPE_KO = { aroma: '아로마', swedish: '스웨디시', thai: '타이', deep_tissue: '딥티슈', nail: '네일', wax: '왁싱', exfoliation: '각질 제거' };
 const STATUS_KO = { requested: '요청됨', confirmed: '확정', on_the_way: '이동 중', in_progress: '진행 중', completed: '완료', cancelled: '취소됨', no_show: '노쇼' };
