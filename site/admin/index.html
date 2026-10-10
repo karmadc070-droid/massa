@@ -414,6 +414,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
             <option value="freelancer">프리랜서</option>
           </select>
           <label class="chk"><input type="checkbox" id="rowe">미납만</label>
+          <label class="chk"><input type="checkbox" id="rlate">기한 지남만</label>
           <label class="chk"><input type="checkbox" id="rpend">심사 대기만</label>
         </div>
       </div>
@@ -1438,6 +1439,9 @@ const RCOLS = [
   { k: 'owe',      h: '미납',        t: 'n' },
 ];
 
+// 기한이 지났고 아직 낼 돈이 남은 사람. 둘 다여야 독촉할 일이 있다.
+const isLate = (r) => r.due_at && new Date(r.due_at) < new Date() && Number(r.owe || 0) > 0;
+
 function drawRoster() {
   if (!ROSTER) return;
   const tiers = ROSTER.tiers || {};
@@ -1449,6 +1453,7 @@ function drawRoster() {
     .some(v => String(v || '').toLowerCase().includes(q)));
   if (tier) rows = rows.filter(r => r.tier === tier);
   if ($('rowe').checked) rows = rows.filter(r => Number(r.owe || 0) > 0);
+  if ($('rlate').checked) rows = rows.filter(isLate);
   if ($('rpend').checked) rows = rows.filter(r => r.status === 'pending');
   rows = sortRows('roster', rows, RCOLS);
 
@@ -1483,11 +1488,16 @@ function drawRoster() {
         <td>${vnd(r.fee)}</td>
         <td>${vnd(r.paid_fee)}</td>
         <td class="${cred ? 'cred' : ''}">${vnd(cred)}</td>
-        <td class="owe${owe ? '' : ' zero'}">${vnd(owe)}</td>
+        <td class="owe${owe ? '' : ' zero'}">${vnd(owe)}
+          ${r.due_at ? `<div style="font-size:11px;font-weight:400;color:${isLate(r) ? 'var(--bad)' : 'var(--ink-soft)'}">
+            ${isLate(r) ? '기한 지남 · ' : '기한 '}${esc(new Date(r.due_at).toLocaleDateString('ko-KR', { month:'2-digit', day:'2-digit' }))}
+            ${r.warned_at ? '<br>경고 보냄 ' + esc(new Date(r.warned_at).toLocaleDateString('ko-KR', { month:'2-digit', day:'2-digit' })) : ''}
+          </div>` : ''}</td>
         <td><div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">
           <button class="mini" onclick="prepay('${esc(r.id)}')">페이백 입력</button>
           ${cred ? `<button class="mini" onclick="useCredit('${esc(r.id)}')">잔고 차감</button>` : ''}
           ${r.pending_cnt ? `<button class="mini" style="border-color:var(--amber);color:var(--amber)" data-dep="${esc(r.id)}">입금 확인 ${num(r.pending_cnt)}</button>` : ''}
+          ${isLate(r) ? `<button class="mini" style="border-color:var(--bad);color:var(--bad)" data-warn="${esc(r.id)}" data-nm="${esc(r.name || '')}" data-owe="${owe}">${r.warned_at ? '경고 다시' : '경고 보내기'}</button>` : ''}
           <button class="mini" data-pv="${esc(r.id)}">인증 · 제재</button>
         </div></td>
       </tr>`;
@@ -1562,6 +1572,39 @@ async function openProviderActions(id) {
   loadData();
 }
 
+// ── 미납 경고 ─────────────────────────────────
+// 자동으로 보내지 않는다. 사람에게 가는 독촉이라 사장님이 직접 누른다.
+// 콘솔에는 기한이 지나면 코드가 알아서 보내는 길이 있었는데, 그건 위험하다 —
+// 집계가 한 번 틀리면 멀쩡한 사람에게 독촉이 날아간다.
+async function warnLate(id, name, owe) {
+  if (!confirm(`${name || '이 분'} 께 입금 독촉 알림을 보냅니다.\n`
+    + `미납 ${vnd(owe)}\n\n알림은 바로 전달되며 되돌릴 수 없습니다. 보낼까요?`)) return;
+
+  const { data: pr } = await sb.from('providers')
+    .select('profile_id, owner_id').eq('id', id).single();
+  const uid = pr && (pr.profile_id || pr.owner_id);
+
+  // 보낸 기록을 남긴다. 누가 몇 번 받았는지 알아야 다음 조치를 판단할 수 있다.
+  const { error } = await sb.from('settlement').upsert({
+    provider_id: id, warned_at: new Date().toISOString(),
+    updated_at: new Date().toISOString() });
+  if (error) { alert('기록 저장 실패 — ' + error.message); return; }
+
+  if (uid) {
+    const { error: e2 } = await sb.from('notifications').insert({
+      user_id: uid, title: '수수료 입금 안내',
+      body: '입금 기한이 지났습니다. 현재 미납 ' + vnd(owe) + ' 입니다.\n'
+          + '앱의 정산 화면에서 계좌와 입금코드를 확인하시고 보내 주세요.\n'
+          + '이미 보내셨다면 "입금했습니다" 를 눌러 알려 주세요.',
+      kind: 'deposit' });
+    if (e2) { alert('알림을 못 보냈습니다 — ' + e2.message + '\n(기록은 남았습니다)'); }
+    else alert('보냈습니다.');
+  } else {
+    alert('기록은 남겼지만, 이 분은 연결된 계정이 없어 알림이 가지 않았습니다.');
+  }
+  loadRoster();
+}
+
 // ── 입금 확인 ─────────────────────────────────
 // 마사지사가 "넣었습니다" 하고 올린 신고를, 통장과 맞춰 보고 확인·반려한다.
 async function openDeposits(providerId) {
@@ -1616,6 +1659,8 @@ document.addEventListener('click', async (e) => {
   if (v) { openProviderActions(v.dataset.pv); return; }
   const dp = e.target.closest('[data-dep]');
   if (dp) { openDeposits(dp.dataset.dep); return; }
+  const w = e.target.closest('[data-warn]');
+  if (w) { warnLate(w.dataset.warn, w.dataset.nm, Number(w.dataset.owe || 0)); return; }
   const ub = e.target.closest('[data-unblock]');
   if (ub) {
     if (!confirm('이 회원의 예약 정지를 풀까요? 바로 다시 예약할 수 있게 됩니다.')) return;
@@ -1682,7 +1727,7 @@ $('tabs').onclick = (e) => {
 };
 $('q').oninput = drawRoster;
 $('mq').oninput = drawMembers;
-['rtier', 'rowe', 'rpend'].forEach(id => $(id).onchange = drawRoster);
+['rtier', 'rowe', 'rpend', 'rlate'].forEach(id => $(id).onchange = drawRoster);
 ['mtype', 'mbk'].forEach(id => $(id).onchange = drawMembers);
 ['apsort', 'apok'].forEach(id => $(id).onchange = drawApps);
 ['bkst', 'bkunpaid', 'bknone'].forEach(id => $(id).onchange = drawBk);
