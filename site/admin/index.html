@@ -844,15 +844,26 @@ $('go').onclick = async () => {
   $('gerr').textContent = '';
   const { error } = await sb.auth.signInWithPassword(
     { email: $('em').value.trim(), password: $('pw').value });
-  if (error) { $('gerr').textContent = '로그인에 실패했습니다.'; return; }
+  // 무슨 일이 있었는지 적는다. '실패했습니다' 만 띄우면 왜 안 되는지 아무도 모른다.
+  if (error) { $('gerr').textContent = '로그인 실패 — ' + error.message; return; }
   start();
 };
 $('pw').onkeydown = (e) => { if (e.key === 'Enter') $('go').click(); };
 
+// 카카오톡·인스타 같은 앱 안의 브라우저는 구글 로그인을 구글이 막는다.
+// 돌아와도 로그인 전으로 보여서 "눌렀는데 안 넘어간다" 로 느껴진다. 미리 알려 준다.
+const INAPP = /KAKAOTALK|FBAN|FBAV|Instagram|Line\/|NAVER|DaumApps|everytimeApp/i
+  .test(navigator.userAgent);
+if (INAPP) $('gerr').innerHTML =
+  '앱 안에 있는 브라우저입니다. 구글 로그인이 막힐 수 있습니다.<br>'
+  + '오른쪽 위 ⋮ 에서 <b>다른 브라우저로 열기</b> 를 고르거나, 아래 이메일·비밀번호로 들어와 주세요.';
+
 $('goog').onclick = async () => {
   $('gerr').textContent = '';
   const { error } = await sb.auth.signInWithOAuth({
-    provider: 'google', options: { redirectTo: 'https://massaviet.com/admin/' } });
+    // 예전엔 'https://massaviet.com/admin/' 로 박아 뒀다. 그 주소는 지금 301 로 넘어간다.
+    // 한 번 더 거치는 만큼 깨질 데가 늘 뿐이다. 지금 보고 있는 주소로 바로 돌아오게 한다.
+    provider: 'google', options: { redirectTo: location.origin + location.pathname } });
   if (error) $('gerr').textContent = '구글 로그인을 열지 못했습니다 — ' + error.message;
 };
 
@@ -860,8 +871,9 @@ $('reset').onclick = async () => {
   const em = $('em').value.trim();
   $('gerr').textContent = '';
   if (!em) { $('gerr').textContent = '이메일을 먼저 입력해 주세요.'; return; }
+  // 옛 주소(massa.moahagwon.com)로 가 있었다. 이 화면의 재설정은 이 도메인에서 끝나야 한다.
   const { error } = await sb.auth.resetPasswordForEmail(em,
-    { redirectTo: 'https://massa.moahagwon.com/reset.html' });
+    { redirectTo: location.origin + '/reset.html' });
   $('gerr').innerHTML = error ? '보내지 못했습니다 — ' + esc(error.message)
     : '<span class="ok">재설정 메일을 보냈습니다. 메일함을 확인해 주세요.</span>';
 };
