@@ -3479,3 +3479,37 @@ ssh -i $env:USERPROFILE\.ssh\erp_vultr root@141.164.46.88 "echo $b | base64 -d >
 
 **교훈** — 손으로 복사한 파일은 반드시 썩는다. 옮겼으면 그 자리에서 배포 스크립트에 넣어야 한다.
 `site/admin/` 은 `build.py` 산출물이므로 소스만 고치고 끝내도 안 된다 (Z-45 와 같은 실수다).
+
+## Z-52 · 지표 주소를 massaviet.com/admin 하나로 (2026-10-10)
+
+- [x] `massaviet.com/admin` 에서 바로 보여 준다 (301 제거)
+- [x] 옛 `admin.massaviet.com/metrics/` 는 301 로 위로 보낸다 (`?code=` 보존)
+- [x] 공개 도메인이라 이 경로만 따로 잠갔다
+- [x] `/srv/massa-admin/metrics` 사본 제거 + 배포 스크립트에서도 제거
+
+**되돌려도 되는지 먼저 확인했다**
+
+| 확인 | 결과 |
+|---|---|
+| 파일이 이미 거기 있나 | `/srv/massaviet-web/admin/index.html` 있음 |
+| robots.txt | `Disallow: /admin/` 이미 있음 |
+| sitemap | admin 없음 |
+
+막는 게 없었다. 다만 `admin.massaviet.com` 에는 있고 `massaviet.com` 에는 없던 보호가 셋이라
+주소만 옮기면 관리자 화면이 공개 도메인에서 맨몸이 된다. 같이 챙겼다.
+
+- `X-Robots-Tag: noindex` — robots.txt 는 "크롤링하지 마라", 이건 "색인하지 마라" 다. 다른 것이다
+- `X-Frame-Options: DENY` — 남의 페이지에 끼워 넣고 클릭을 가로채는 걸 막는다
+- `Cache-Control: no-store` — 공개 블록은 `max-age=600` 이다. 로그인한 관리자 화면을 공개 캐시에 두면 안 된다
+
+**★ 한 번 덮였다** — `header @adminpath` 에 `no-store` 를 적었는데 확인해 보니 여전히
+`public, max-age=600` 이었다. 매처 없는 전역 `header` 가 나중에 돌면서 덮어쓴 것이다.
+`@notadmin not path /admin /admin/*` 을 만들어 캐시·Referrer 를 공개 경로에만 걸었다.
+**적용하고 헤더를 실제로 찍어 보지 않았으면 그냥 넘어갔을 일이다.**
+
+**`docker cp` 는 쓰면 안 된다** — `/root/Caddyfile` 은 컨테이너의 `/etc/caddy/Caddyfile` 로
+바인드 마운트돼 있다. `docker cp` 하면 `device or resource busy` 로 거부당한다.
+호스트 파일을 고치면 컨테이너에 바로 보인다. md5 로 같은 파일임을 확인하고 `validate` → `reload`.
+
+**남는 주소** — `admin.massaviet.com` 은 운영 콘솔(`admin.html`)과 `reset.html` 로 계속 쓴다.
+지표만 옮긴 것이다. 콘솔까지 합치려면 따로 이야기해야 한다.
