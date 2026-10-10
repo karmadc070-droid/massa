@@ -231,6 +231,8 @@ svg{display:block;width:100%;height:auto;overflow:visible}
     <a href="#s-traffic"><i class="dot"></i>유입</a>
     <a href="#s-people"><i class="dot"></i>인기 순위</a>
     <a href="#s-apps"><i class="dot"></i>가입 신청 심사</a>
+    <a href="#s-bk"><i class="dot"></i>예약</a>
+    <a href="#s-rep"><i class="dot"></i>신고 · 안전</a>
     <a href="#s-roster"><i class="dot"></i>마사지사 명단</a>
     <a href="#s-members"><i class="dot"></i>가입자 명단</a>
     <div class="foot">
@@ -307,6 +309,53 @@ svg{display:block;width:100%;height:auto;overflow:visible}
         </div>
       </div>
       <div id="apps"></div>
+    </div>
+
+    <!-- 예약. 콘솔에서 옮겨 왔다. 완료 처리·취소를 여기서 한다. -->
+    <div class="card" id="s-bk" style="margin-bottom:20px">
+      <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:220px">
+          <h3>예약</h3>
+          <p class="note" id="bk-note"></p>
+        </div>
+        <div class="tools">
+          <input id="bkq" placeholder="예약번호·마사지사·장소로 찾기" class="find">
+          <select id="bkst" class="pick">
+            <option value="">상태 전체</option>
+            <option value="requested">요청됨</option>
+            <option value="confirmed">확정</option>
+            <option value="on_the_way">이동 중</option>
+            <option value="in_progress">진행 중</option>
+            <option value="completed">완료</option>
+            <option value="cancelled">취소</option>
+            <option value="no_show">노쇼</option>
+          </select>
+          <label class="chk"><input type="checkbox" id="bkunpaid">미결제만</label>
+          <label class="chk"><input type="checkbox" id="bknone">미배정만</label>
+        </div>
+      </div>
+      <div id="bk"></div>
+    </div>
+
+    <!-- 신고와 안전 요청. 안전 요청은 거르기와 무관하게 늘 맨 위에 둔다 — 놓치면 안 된다. -->
+    <div class="card" id="s-rep" style="margin-bottom:20px">
+      <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:220px">
+          <h3>신고 · 안전</h3>
+          <p class="note" id="rep-note"></p>
+        </div>
+        <div class="tools">
+          <input id="repq" placeholder="대상·사유로 찾기" class="find">
+          <select id="repst" class="pick">
+            <option value="open">미처리</option>
+            <option value="">상태 전체</option>
+            <option value="resolved">처리완료</option>
+            <option value="rejected">반려</option>
+          </select>
+        </div>
+      </div>
+      <div id="sos"></div>
+      <div id="rep"></div>
     </div>
 
     <div class="card" id="s-roster">
@@ -660,7 +709,237 @@ document.addEventListener('click', (e) => {
   if (!th) return;
   const t = th.dataset.tbl, k = th.dataset.k, s = SORT[t] || {};
   SORT[t] = { key: k, dir: s.key === k ? -s.dir : 1 };
-  ({ members: drawMembers, roster: drawRoster, traffic: drawTraffic })[t]();
+  ({ members: drawMembers, roster: drawRoster, traffic: drawTraffic, bk: drawBk })[t]();
+});
+
+// ── 신고 · 안전 ───────────────────────────────
+// 콘솔에서 옮겨 왔다. 제재 단계와 알림 문구는 콘솔과 똑같이 맞춘다 —
+// 두 화면이 다른 처분을 내리면 기록을 믿을 수 없게 된다.
+const REP_ST  = { open:['미처리','var(--amber)'], resolved:['처리완료','var(--good)'],
+                  rejected:['반려','var(--bad)'] };
+const REP_ACT = [['none','조치 없음 (안내만)'], ['warn','경고 (1단계)'],
+                 ['lower','노출 저하 (2단계)'], ['suspend','예약 정지 3일 (3단계)']];
+const ACT_KO  = { warn:'경고', lower:'노출 저하', suspend:'예약 정지', none:'조치 없음' };
+let REPS = null, SOS = null;
+
+async function loadReps() {
+  const box = $('rep'); box.innerHTML = '<div class="empty">불러오는 중…</div>';
+  const [{ data: rp, error }, { data: sos }] = await Promise.all([
+    sb.from('reports').select('*').order('created_at', { ascending: false }),
+    sb.from('safety_alerts').select('*').eq('status', 'open')
+      .order('created_at', { ascending: false }).limit(20),
+  ]);
+  if (error) { box.innerHTML = '<div class="empty">불러오지 못했습니다 — ' + esc(error.message) + '</div>'; return; }
+  REPS = rp || []; SOS = sos || [];
+  drawReps();
+}
+
+function drawReps() {
+  if (!REPS) return;
+  const q = ($('repq').value || '').trim().toLowerCase();
+  let rows = REPS;
+  if ($('repst').value) rows = rows.filter(r => r.status === $('repst').value);
+  if (q) rows = rows.filter(r => [r.target_name, r.reason, r.resolution]
+    .some(v => String(v || '').toLowerCase().includes(q)));
+
+  const open = REPS.filter(r => r.status === 'open').length;
+  $('rep-note').innerHTML =
+    `신고 <b>${num(REPS.length)}건</b> · 미처리 <b style="color:var(--amber)">${num(open)}건</b>`
+    + (SOS.length ? ` · <b style="color:var(--bad)">미처리 안전 요청 ${num(SOS.length)}건</b>` : '')
+    + (rows.length !== REPS.length ? ` · 지금 보이는 ${num(rows.length)}건` : '')
+    + `<br>처분은 신고 대상과 신고자 양쪽에 알림으로 전달됩니다.`;
+
+  const dt = (v) => v ? new Date(v).toLocaleString('ko-KR',
+    { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '-';
+
+  // 안전 요청은 거르지 않는다. 사람이 위험한 상황일 수 있다.
+  $('sos').innerHTML = SOS.length
+    ? '<div class="apc" style="border-color:var(--bad);background:#FFF5F5">'
+      + `<h4 style="color:var(--bad)">🚨 미처리 안전 요청 ${num(SOS.length)}건</h4>`
+      + SOS.map(a => `<div class="meta">${esc(dt(a.created_at))} · ${esc(a.note || a.kind || '내용 없음')}
+          <button class="mini" style="margin-left:8px" data-sos="${esc(a.id)}">처리함으로 표시</button></div>`).join('')
+      + '</div>'
+    : '';
+
+  if (!rows.length) { $('rep').innerHTML = '<div class="empty">해당하는 신고가 없습니다.</div>'; return; }
+
+  $('rep').innerHTML = rows.map(r => {
+    const st = REP_ST[r.status] || [r.status, 'var(--ink-soft)'];
+    return `<div class="apc">
+      <h4>${esc(r.target_name || '대상 미상')}
+        <span class="tag" style="color:${st[1]}">${esc(st[0])}</span></h4>
+      <div class="meta">접수 ${esc(dt(r.created_at))}</div>
+      <div class="meta">${esc(r.reason || '사유 없음')}</div>
+      ${r.action_taken ? `<div class="meta" style="color:var(--bad);font-weight:600">조치 — ${esc(ACT_KO[r.action_taken] || r.action_taken)}</div>` : ''}
+      ${r.resolution ? `<div class="meta">회신 — ${esc(r.resolution)}</div>` : ''}
+      ${r.status === 'open'
+        ? `<div class="act"><button class="btn-ok" data-rep="${esc(r.id)}" data-tgt="${esc(r.target_id || '')}" data-nm="${esc(r.target_name || '')}">처리하기</button></div>`
+        : ''}
+    </div>`;
+  }).join('');
+}
+
+async function resolveReport(id, targetId, name) {
+  const pick = prompt(`${name || '대상'} — 어떤 조치를 할까요.\n\n`
+    + REP_ACT.map((a, i) => (i + 1) + '. ' + a[1]).join('\n')
+    + '\n\n번호를 입력하세요.', '1');
+  if (pick == null) return;
+  const i = Number(pick) - 1;
+  if (!(i >= 0 && i < REP_ACT.length)) { alert('1~' + REP_ACT.length + ' 중에 골라 주세요.'); return; }
+  const action = REP_ACT[i][0];
+
+  const msg = (prompt('신고자에게 보낼 회신 문구입니다. 비우면 기본 문구가 나갑니다.', '') || '').trim();
+  if (!confirm(`조치: ${REP_ACT[i][1]}\n되돌릴 수 없습니다. 진행할까요?`)) return;
+
+  // 1) 제공자 제재 — 단계는 콘솔과 같다 (warn 1 / lower 2 / suspend 3)
+  if (targetId && action !== 'none') {
+    const patch = { penalty_level: action === 'warn' ? 1 : action === 'lower' ? 2 : 3 };
+    if (action === 'suspend') {
+      patch.suspended_until = new Date(Date.now() + 3 * 864e5).toISOString();
+      patch.is_active = false;
+    }
+    const { error } = await sb.from('providers').update(patch).eq('id', targetId);
+    if (error) { alert('제재 적용 실패 — ' + error.message); return; }
+    try {
+      const { data: pr } = await sb.from('providers')
+        .select('profile_id, owner_id').eq('id', targetId).single();
+      const uid = pr && (pr.profile_id || pr.owner_id);
+      if (uid) await sb.from('notifications').insert({ user_id: uid,
+        title: '신고 접수에 따른 조치 안내',
+        body: '고객 신고가 확인되어 ' + (ACT_KO[action] || action) + ' 조치가 적용되었습니다.',
+        kind: 'penalty' });
+    } catch (e) {}
+  }
+
+  // 2) 신고 기록 — 제재가 끝난 뒤에 닫는다. 순서가 반대면 제재 실패해도 닫혀 버린다.
+  const { data: me } = await sb.auth.getUser();
+  const { error: e2 } = await sb.from('reports').update({
+    status: 'resolved', action_taken: action, resolution: msg || null,
+    resolved_at: new Date().toISOString(),
+    resolved_by: me && me.user ? me.user.id : null }).eq('id', id);
+  if (e2) { alert('기록 저장 실패 — ' + e2.message); return; }
+
+  // 3) 신고자에게 회신
+  try {
+    const { data: rp } = await sb.from('reports').select('reporter_id').eq('id', id).single();
+    if (rp && rp.reporter_id) await sb.from('notifications').insert({
+      user_id: rp.reporter_id, title: '신고 처리 결과 안내',
+      body: msg || (action === 'none'
+        ? '검토 결과 별도 조치 없이 종결되었습니다.'
+        : '확인 후 해당 제공자에게 조치했습니다. 신고해 주셔서 고맙습니다.'),
+      kind: 'report' });
+  } catch (e) {}
+
+  loadReps();
+  loadRoster();
+}
+
+document.addEventListener('click', async (e) => {
+  const r = e.target.closest('[data-rep]');
+  if (r) { resolveReport(r.dataset.rep, r.dataset.tgt, r.dataset.nm); return; }
+  const a = e.target.closest('[data-sos]');
+  if (a) {
+    if (!confirm('이 안전 요청을 처리함으로 표시합니다. 진행할까요?')) return;
+    const { error } = await sb.from('safety_alerts').update({ status: 'handled' }).eq('id', a.dataset.sos);
+    if (error) { alert('실패 — ' + error.message); return; }
+    loadReps();
+  }
+});
+
+// ── 예약 ─────────────────────────────────────
+// 콘솔에서 옮겨 왔다. booking_status enum 과 하나씩 맞춘 표다.
+const BK_ST = { requested:['요청됨','var(--amber)'], confirmed:['확정','var(--cool)'],
+                on_the_way:['이동 중','var(--cool)'], in_progress:['진행 중','var(--cool)'],
+                completed:['완료','var(--good)'], cancelled:['취소','var(--bad)'],
+                no_show:['노쇼','var(--bad)'] };
+const BCOLS = [
+  { k:'booking_no',   h:'예약번호', l:1 },
+  { k:'prov',         h:'마사지사', l:1, v:(b)=> b.providers ? b.providers.display_name : '' },
+  { k:'svc',          h:'서비스',   l:1, v:(b)=> b.services  ? b.services.name  : '' },
+  { k:'status',       h:'상태',     l:1 },
+  { k:'scheduled_at', h:'예약 시각', t:'d' },
+  { k:'created_at',   h:'들어온 때', t:'d' },
+  { k:'amount_vnd',   h:'금액',     t:'n' },
+];
+let BKS = null;
+
+async function loadBk() {
+  const box = $('bk'); box.innerHTML = '<div class="empty">불러오는 중…</div>';
+  const { data, error } = await sb.from('bookings')
+    .select('*, providers(display_name), services(name)')
+    .order('created_at', { ascending: false }).limit(300);
+  if (error) { box.innerHTML = '<div class="empty">불러오지 못했습니다 — ' + esc(error.message) + '</div>'; return; }
+  BKS = data || [];
+  if (!SORT.bk) SORT.bk = { key:'created_at', dir:-1 };   // 기본은 최신순
+  drawBk();
+}
+
+function drawBk() {
+  if (!BKS) return;
+  const q = ($('bkq').value || '').trim().toLowerCase();
+  let rows = BKS;
+  if (q) rows = rows.filter(b => [b.booking_no, b.providers && b.providers.display_name,
+      b.services && b.services.name, b.hotel_name, b.address]
+      .some(v => String(v || '').toLowerCase().includes(q)));
+  if ($('bkst').value)   rows = rows.filter(b => b.status === $('bkst').value);
+  if ($('bkunpaid').checked) rows = rows.filter(b => !b.is_paid);
+  if ($('bknone').checked)   rows = rows.filter(b => !b.provider_id);
+  rows = sortRows('bk', rows, BCOLS);
+
+  const cnt = (st) => BKS.filter(b => b.status === st).length;
+  $('bk-note').innerHTML =
+    `최근 <b>${num(BKS.length)}건</b> · 요청됨 <b>${num(cnt('requested'))}</b>`
+    + ` · 진행 중 <b>${num(cnt('confirmed') + cnt('on_the_way') + cnt('in_progress'))}</b>`
+    + ` · 완료 <b>${num(cnt('completed'))}</b> · 취소·노쇼 <b>${num(cnt('cancelled') + cnt('no_show'))}</b>`
+    + (rows.length !== BKS.length ? ` · <b>지금 보이는 ${num(rows.length)}건</b>` : '')
+    + `<br>머리칸을 누르면 정렬됩니다. 완료·취소는 되돌릴 수 없으니 확인하고 눌러 주세요.`;
+
+  if (!rows.length) { $('bk').innerHTML = '<div class="empty">해당하는 예약이 없습니다.</div>'; return; }
+
+  const dt = (v) => v ? new Date(v).toLocaleString('ko-KR',
+    { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '-';
+
+  $('bk').innerHTML = '<div class="scroll"><table class="tbl">'
+    + thead('bk', BCOLS, true)
+    + '<tbody>' + rows.map(b => {
+      const st = BK_ST[b.status] || [b.status, 'var(--ink-soft)'];
+      const done = b.status === 'completed', canc = b.status === 'cancelled';
+      return `<tr>
+        <td class="l"><div style="font-weight:600">${esc(b.booking_no || b.id.slice(0, 8))}</div>
+          <div style="font-size:11px;color:var(--ink-soft)">${esc(b.hotel_name || b.address || '위치 미입력')}</div></td>
+        <td class="l">${b.providers ? esc(b.providers.display_name)
+          : '<span style="color:var(--bad)">미배정</span>'}</td>
+        <td class="l" style="font-size:12px">${esc(b.services ? b.services.name : '-')}</td>
+        <td class="l"><b style="color:${st[1]};font-size:12px">${esc(st[0])}</b>
+          <div style="font-size:11px;color:${b.is_paid ? 'var(--good)' : 'var(--bad)'}">
+            ${b.is_paid ? '결제완료' : '미결제'}</div></td>
+        <td style="font-size:12px">${esc(dt(b.scheduled_at))}</td>
+        <td style="font-size:12px">${esc(dt(b.created_at))}</td>
+        <td>${vnd(b.amount_vnd)}</td>
+        <td><div style="display:flex;gap:5px;justify-content:flex-end">
+          ${done ? '' : `<button class="mini" data-bkdone="${esc(b.id)}">완료 처리</button>`}
+          ${canc ? '' : `<button class="mini" style="border-color:var(--bad);color:var(--bad)" data-bkcanc="${esc(b.id)}">취소</button>`}
+        </div></td>
+      </tr>`;
+    }).join('') + '</tbody></table></div>';
+}
+
+async function setBooking(id, status) {
+  const patch = { status };
+  if (status === 'completed') patch.completed_at = new Date().toISOString();
+  const { error } = await sb.from('bookings').update(patch).eq('id', id);
+  if (error) { alert('실패 — ' + error.message); return; }
+  loadBk();
+  loadData();   // 오늘·요약 숫자도 같이 움직인다
+}
+
+document.addEventListener('click', (e) => {
+  const d = e.target.closest('[data-bkdone]');
+  if (d) { if (confirm('이 예약을 완료로 바꿉니다. 되돌릴 수 없습니다. 진행할까요?'))
+             setBooking(d.dataset.bkdone, 'completed'); return; }
+  const c = e.target.closest('[data-bkcanc]');
+  if (c) { if (confirm('이 예약을 취소로 바꿉니다. 되돌릴 수 없습니다. 진행할까요?'))
+             setBooking(c.dataset.bkcanc, 'cancelled'); }
 });
 
 // ── 가입 신청 심사 ───────────────────────────
@@ -1043,8 +1322,12 @@ $('mq').oninput = drawMembers;
 ['rtier', 'rowe', 'rpend'].forEach(id => $(id).onchange = drawRoster);
 ['mtype', 'mbk'].forEach(id => $(id).onchange = drawMembers);
 ['apsort', 'apok'].forEach(id => $(id).onchange = drawApps);
+['bkst', 'bkunpaid', 'bknone'].forEach(id => $(id).onchange = drawBk);
+$('bkq').oninput = drawBk;
+$('repst').onchange = drawReps;
+$('repq').oninput = drawReps;
 $('tzero').onchange = drawTraffic;
-$('rf').onclick = () => { loadData(); loadRoster(); loadMembers(); loadApps(); };
+$('rf').onclick = () => { loadData(); loadRoster(); loadMembers(); loadApps(); loadBk(); loadReps(); };
 $('out').onclick = async () => { await sb.auth.signOut(); location.reload(); };
 
 $('go').onclick = async () => {
@@ -1103,6 +1386,8 @@ async function start() {
   loadRoster();
   loadMembers();
   loadApps();
+  loadBk();
+  loadReps();
 }
 start();
 </script>
