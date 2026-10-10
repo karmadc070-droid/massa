@@ -4045,13 +4045,17 @@ async function loadAdminProviders() {
   const wrap = document.getElementById('adminProvList'); if (!wrap) return;
   const kw = (document.getElementById('apSearch').value || '').trim();
   wrap.innerHTML = '<div class="hint">불러오는 중…</div>';
-  let q = sb.from('providers').select('*').order('display_name').limit(200);
+  // 연락처는 providers.phone 이 아니라 provider_kyc.contact 가 정본이다.
+  // providers.phone 은 로그인 없이도 보였기 때문에 DB 에서 비웠다 (sql-hide-provider-phone.sql).
+  // provider_kyc 는 관리자만 읽을 수 있어서, 관리자가 아니면 그냥 비어 온다.
+  let q = sb.from('providers').select('*, provider_kyc(contact)').order('display_name').limit(200);
   if (kw) q = q.ilike('display_name', '%' + kw + '%');
   const { data, error } = await q;
   if (error) { wrap.innerHTML = '<div class="notice">불러오기 실패: ' + error.message + '</div>'; return; }
   const kindKo = { masseur: '마사지사', therapist: '홈 뷰티' };
   if (!data || !data.length) { wrap.innerHTML = '<div class="notice">검색 결과가 없습니다.</div>'; return; }
   const susp = (p) => p.suspended_until && new Date(p.suspended_until) > new Date();
+  const tel = (p) => ((p.provider_kyc || [])[0] || {}).contact || p.phone || '';
   mountList('prov', wrap, data, {
     sorts: [{ k:'name', h:'이름순',      f: byName('display_name') },
             { k:'new',  h:'최신 가입순', f: byNew('created_at') },
@@ -4062,11 +4066,11 @@ async function loadAdminProviders() {
             { k:'wait', h:'심사 대기', f: (p) => p.application_status === 'pending' },
             { k:'ver',  h:'인증 있음', f: (p) => p.is_verified || p.credential_verified },
             { k:'pen',  h:'제재 있음', f: (p) => (p.penalty_level || 0) > 0 || susp(p) }],
-    search: (p) => [p.display_name, p.base_district, p.phone, p.deposit_code],
+    search: (p) => [p.display_name, p.base_district, tel(p), p.deposit_code],
   }, (p) => '<div class="card" style="cursor:default"><div class="trow1"><span class="t">' + p.display_name + ' <span style="font-size:11px;color:var(--muted)">' + (kindKo[p.kind] || p.kind) + '</span></span><label class="sw"><input type="checkbox" ' + (p.is_active ? 'checked' : '') + ' onchange="toggleActive(\'' + p.id + '\',this.checked)"><span class="sw-track"></span></label></div>'
     + '<div class="d">★ ' + Number(p.rating).toFixed(1) + ' · 리뷰 ' + p.review_count + ' · ' + (p.base_district || '-') + ' · ' + (p.application_status === 'approved' ? '승인' : p.application_status) + '</div>'
     + (function () { const lv = p.penalty_level || 0; const sus = p.suspended_until && new Date(p.suspended_until) > new Date(); if (!lv && !sus) return ''; const t = sus ? '🚫 예약 정지 (~' + new Date(p.suspended_until).toLocaleDateString() + ')' : lv >= 2 ? '⚠ 노출 저하' : '⚠ 경고'; return '<div class="d" style="color:#E5484D;font-weight:bold">' + t + ' · 최근 거절 ' + (p.reject_count || 0) + '회</div>'; })()
-    + '<div class="d">' + (p.specialties || []).map(s => TYPE_KO[s] || s).join('·') + ' · ' + (p.phone || '연락처 없음') + '</div>'
+    + '<div class="d">' + (p.specialties || []).map(s => TYPE_KO[s] || s).join('·') + ' · ' + (tel(p) || '연락처 없음') + '</div>'
     + '<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button class="chip" onclick="openProfile(\'' + p.id + '\')">프로필</button>'
     + (p.is_verified ? '<span class="chip sel">✓ 신원 확인됨</span>' : '<button class="chip" onclick="adminVerify(\'' + p.id + '\')">신원 확인 주기</button>')
     + (p.credential_verified ? '<span class="chip sel" style="background:#2E8B8B;border-color:#2E8B8B">★ 자격 확인됨</span>' : '<button class="chip" style="border-color:#2E8B8B;color:#2E8B8B" onclick="adminCredential(\'' + p.id + '\')">자격 확인 주기</button>')
