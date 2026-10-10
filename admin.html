@@ -1427,6 +1427,27 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 // 2026-10-10: 모아학원 도메인을 빌려 쓰던 것을 massa 자기 주소로 옮겼다.
 const SUPABASE_URL = 'https://api.massaviet.com';
+
+// 회사 입금 계좌. 코드에 박지 않고 설정값(app_settings.bank)에서 읽는다.
+// 계좌가 바뀌면 DB 한 줄만 고치면 된다 — 앱을 새로 빌드해 심사받을 일이 없다.
+// 예전에는 '0123 456 789' 라는 예시 번호가 그대로 박혀 있었다. 실제 계좌가 아니었다.
+let BANK = null;
+async function loadBank() {
+  if (BANK) return BANK;
+  try {
+    const { data } = await sb.from('app_settings').select('value').eq('key', 'bank').maybeSingle();
+    if (data && data.value && data.value.account) BANK = data.value;
+  } catch (e) {}
+  return BANK;
+}
+// 계좌를 못 읽었으면 가짜를 보여 주느니 아무것도 안 보여 준다.
+function bankBox(amount) {
+  if (!BANK) return '<div class="notice">입금 계좌를 불러오지 못했습니다. 잠시 뒤 다시 시도해 주세요.</div>';
+  return '<div class="pay-bank">은행: ' + BANK.bank + '<br>계좌: ' + BANK.account
+       + '<br>예금주: ' + BANK.holder
+       + (amount != null ? '<br>금액: ' + Number(amount).toLocaleString() + '₫' : '') + '</div>';
+}
+
 const SUPABASE_KEY = 'eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJyb2xlIjogImFub24iLCAiaXNzIjogInN1cGFiYXNlIiwgImlhdCI6IDE3ODc0NTg4OTMsICJleHAiOiAyMTAyODE4ODkzfQ.7taJaAzxPRIkd0PeC5qnuacficFnazkBN54ttblUv-o';
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -2143,7 +2164,7 @@ window.openPayment = function (bookingId, amount) {
   if (!ov) { ov = document.createElement('div'); ov.id = 'payOv'; ov.style.cssText = 'position:fixed;inset:0;z-index:230;background:rgba(20,25,28,.5);display:flex;align-items:flex-end;justify-content:center'; document.body.appendChild(ov); }
   const panel = () => {
     if (sel === 'qr') return '<div class="pay-panel"><div class="pay-qr">▦ QR</div><div class="hint">MoMo·ZaloPay·VNPay 앱으로 QR을 스캔하세요.</div></div>';
-    if (sel === 'bank_transfer') return '<div class="pay-panel"><div class="pay-bank">은행: Vietcombank<br>계좌: 0123 456 789<br>예금주: MASSA CO.,LTD<br>금액: ' + amount.toLocaleString() + '₫</div><div class="hint">이체 후 아래 버튼을 눌러주세요.</div></div>';
+    if (sel === 'bank_transfer') return '<div class="pay-panel">' + bankBox(amount) + '<div class="hint">이체 후 아래 버튼을 눌러주세요.</div></div>';
     if (sel === 'card') return '<div class="pay-panel"><div class="hint">실서비스에서는 PG(Visa·Master) 결제창이 열립니다. 카드 정보는 앱이 저장하지 않습니다.</div></div>';
     return '<div class="pay-panel"><div class="hint">서비스 완료 시 현장에서 카드·현금으로 결제합니다.</div></div>';
   };
@@ -3526,6 +3547,7 @@ window.exportCyclesCsv = function () {
   setTimeout(() => URL.revokeObjectURL(a.href), 3000);
 };
 async function loadMySettle() {
+  await loadBank();   // 계좌를 먼저 받아야 화면에 띄울 수 있다
   if (!SESSION) { openAuth(); return; }
   const wrap = document.getElementById('mySettleList'); if (!wrap) return;
   wrap.innerHTML = '<div class="hint">불러오는 중…</div>';
@@ -3558,6 +3580,10 @@ async function loadMySettle() {
       + '<div class="d" style="margin:0">이체할 때 <b>입금자명 또는 메모</b>에 아래 코드를 꼭 적어주세요</div>'
       + '<div style="font-family:monospace;font-size:19px;font-weight:bold;letter-spacing:.06em;margin:5px 0 2px">' + code + '</div>'
       + '<div class="d" style="margin:0;font-size:11.5px">동명이인이 있어 이름만으로는 확인이 어렵습니다.</div></div>' : '';
+    // 보낼 곳을 알려 준다. 예전에는 코드만 주고 계좌는 안 줘서 사장님이 매번 말로 알려 줘야 했다.
+    const bankBoxHtml = BANK ? '<div style="margin-top:9px;padding:10px 12px;background:#FBF1DF;border-radius:9px">'
+      + '<div class="d" style="margin:0 0 4px">아래 계좌로 보내 주세요</div>'
+      + '<div style="font-size:13.5px;font-weight:bold;line-height:1.65">' + BANK.bank + '<br>' + BANK.account + '<br>' + BANK.holder + '</div></div>' : '';
     const deps = (depMap[r.id] || []).slice(0, 3).map(d => {
       const st = d.status === 'confirmed' ? '<span style="color:#1E6B45;font-weight:bold">확인 완료</span>'
         : d.status === 'rejected' ? '<span style="color:#E5484D;font-weight:bold">확인 안 됨</span>'
@@ -3570,7 +3596,7 @@ async function loadMySettle() {
       + '<div class="d">' + r.cnt + '건 · 고객 결제 ' + r.sum.toLocaleString() + '₫</div>'
       + '<div class="d" style="color:#B23A5B;font-weight:bold">회사에 입금할 금액 ' + fee.toLocaleString() + '₫</div>'
       + '<div class="d">입금기한 ' + fmtDate(dueMs) + '까지' + (overdue ? ' · 기한 초과' : '') + '</div>'
-      + codeBox + deps + btn + '</div>';
+      + bankBoxHtml + codeBox + deps + btn + '</div>';
   }).join('');
   const head = '<div class="card" style="background:#FBF1DF;cursor:default"><div class="trow1"><span class="t">회사 입금 합계</span><span style="color:#B23A5B;font-weight:bold">' + totalOwe.toLocaleString() + '₫</span></div><div class="d">완료일 + ' + DUE_DAYS + '일 이내 입금 원칙 · 입금 계좌는 관리자 안내를 따라주세요.</div></div>';
   const cyc = await loadMyCycles(ids);
@@ -5309,6 +5335,7 @@ async function load() {
     fillList('thList', providers.filter(p => p.kind === 'masseur'));
     if (window.loadAiRecos) loadAiRecos();
     try { const { data: fs } = await sb.from('app_settings').select('value').eq('key', 'fee').maybeSingle(); if (fs && fs.value) { FEE_RATE = fs.value.rate ?? FEE_RATE; DUE_DAYS = fs.value.due_days ?? DUE_DAYS; if (fs.value.tiers) FEE_TIERS = fs.value.tiers; } } catch (e) {}
+    loadBank();   // 입금 계좌도 받아 둔다.
     fillList('therapy', providers.filter(p => p.kind === 'therapist'));
     const { data: services, error: e3 } = await sb.from('services').select('*').eq('is_active', true);
     if (e3) throw e3; CACHE.services = services;
