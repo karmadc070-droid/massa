@@ -206,6 +206,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
     <a href="#s-match"><i class="dot"></i>매칭</a>
     <a href="#s-traffic"><i class="dot"></i>유입</a>
     <a href="#s-people"><i class="dot"></i>인기 순위</a>
+    <a href="#s-apps"><i class="dot"></i>가입 신청 심사</a>
     <a href="#s-roster"><i class="dot"></i>마사지사 명단</a>
     <a href="#s-members"><i class="dot"></i>가입자 명단</a>
     <div class="foot">
@@ -262,6 +263,26 @@ svg{display:block;width:100%;height:auto;overflow:visible}
       <h3>인기 마사지사</h3>
       <p class="note">이 기간에 들어온 예약이 많은 순입니다.</p>
       <div id="people"></div>
+    </div>
+
+    <!-- 가입 신청 심사. 서류를 보고 승인·반려한다.
+         서류 사진은 비공개 버킷이라 1시간짜리 임시 주소를 만들어 연다. -->
+    <div class="card" id="s-apps" style="margin-bottom:20px">
+      <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:220px">
+          <h3>가입 신청 심사</h3>
+          <p class="note" id="apps-note"></p>
+        </div>
+        <div class="tools">
+          <select id="apsort" class="pick">
+            <option value="new">최신순</option>
+            <option value="old">오래된순</option>
+            <option value="name">이름순</option>
+          </select>
+          <label class="chk"><input type="checkbox" id="apok">서류 완비만</label>
+        </div>
+      </div>
+      <div id="apps"></div>
     </div>
 
     <div class="card" id="s-roster">
@@ -476,7 +497,10 @@ function render(d) {
      ['새 예약', t.bookings, '오늘 들어온 요청', false, '#s-match'],
      ['완료', t.done, '오늘 끝난 시술', false, '#s-match'],
      ['확인 대기', t.deposit_pending, '입금 확인해야 할 건',
-      (t.deposit_pending || 0) > 0, '#s-roster']]
+      (t.deposit_pending || 0) > 0, '#s-roster'],
+     // 심사는 지금 화면에 들고 있는 값이라 따로 센다 (서버가 안 주는 숫자다)
+     ['심사 대기', (APPS || []).length, '서류 보고 승인할 건',
+      (APPS || []).length > 0, '#s-apps']]
     .map(([l, v, sub, alert, href]) =>
       `<a class="it${alert ? ' alert' : ''}" href="${href}"><b>${num(v)}</b>`
       + `<span>${esc(l)} · ${esc(sub)}</span></a>`)
@@ -613,6 +637,152 @@ document.addEventListener('click', (e) => {
   const t = th.dataset.tbl, k = th.dataset.k, s = SORT[t] || {};
   SORT[t] = { key: k, dir: s.key === k ? -s.dir : 1 };
   ({ members: drawMembers, roster: drawRoster, traffic: drawTraffic })[t]();
+});
+
+// ── 가입 신청 심사 ───────────────────────────
+// 콘솔(admin.html)에 있던 것을 여기로 옮겼다. 사장님이 두 화면을 오가지 않게.
+// 콘솔 쪽은 아직 지우지 않았다 — 한동안 둘 다 돌려 보고 문제 없으면 그때 정리한다.
+let APPS = null;
+
+async function loadApps() {
+  const box = $('apps'); box.innerHTML = '<div class="empty">불러오는 중…</div>';
+  const { data, error } = await sb.from('providers')
+    .select('*, provider_kyc(*)')
+    .eq('application_status', 'pending')
+    .order('created_at', { ascending: false });
+  if (error) { box.innerHTML = '<div class="empty">불러오지 못했습니다 — ' + esc(error.message) + '</div>'; return; }
+
+  // 서류 사진은 비공개 버킷(kyc-docs)에 있다. 1시간짜리 임시 주소를 만들어야 열린다.
+  // 이미 http 로 시작하면 옛 공개 주소라 그대로 쓴다.
+  const signed = async (v) => {
+    if (!v) return null;
+    if (/^https?:/.test(v)) return v;
+    const { data: sd } = await sb.storage.from('kyc-docs').createSignedUrl(v, 3600);
+    return sd ? sd.signedUrl : null;
+  };
+  APPS = await Promise.all((data || []).map(async p => {
+    const k = (p.provider_kyc || [])[0] || {};
+    const [idF, idB, lic, cert] = await Promise.all(
+      [k.id_front_url, k.id_back_url, k.business_license_url, k.cert_url].map(signed));
+    const shop = k.reg_type === 'shop';
+    // 승인을 막는 것은 '없으면 안 되는 서류' 뿐이다. 자격증은 선택이라 여기 넣지 않는다.
+    const lack = [];
+    if (!k.id_front_url) lack.push('신분증 앞면');
+    if (!k.id_back_url)  lack.push('신분증 뒷면');
+    if (shop && !k.business_license_url) lack.push('사업자 등록증');
+    return { p, k, shop, lack, idF, idB, lic, cert };
+  }));
+  drawApps();
+  // '오늘' 의 심사 대기 숫자는 이 목록 길이다. 목록이 늦게 오므로 다 받은 뒤 한 번 다시 그린다.
+  if (LAST) render(LAST);
+}
+
+function drawApps() {
+  if (!APPS) return;
+  let rows = APPS;
+  if ($('apok').checked) rows = rows.filter(r => !r.lack.length);
+  const by = $('apsort').value;
+  rows = rows.slice().sort(
+    by === 'old'  ? (a, b) => new Date(a.p.created_at) - new Date(b.p.created_at)
+  : by === 'name' ? (a, b) => String(a.p.display_name || '').localeCompare(String(b.p.display_name || ''), 'ko')
+  :                 (a, b) => new Date(b.p.created_at) - new Date(a.p.created_at));
+
+  const ready = APPS.filter(r => !r.lack.length).length;
+  $('apps-note').innerHTML = APPS.length
+    ? `심사 기다리는 신청 <b>${num(APPS.length)}건</b> · 서류 갖춰진 것 <b>${num(ready)}건</b>`
+      + `<br>신분증 앞·뒤를 눌러 사진을 확인한 뒤 승인해 주세요. 서류가 빠지면 승인 버튼이 눌리지 않습니다.`
+    : '심사를 기다리는 신청이 없습니다.';
+
+  if (!rows.length) { $('apps').innerHTML = '<div class="empty">해당하는 신청이 없습니다.</div>'; return; }
+
+  const doc = (url, label) => url
+    ? `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(label)}</a>`
+    : `<span class="miss">${esc(label)} 없음</span>`;
+  const d = (v) => v ? new Date(v).toLocaleString('ko-KR', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '-';
+
+  $('apps').innerHTML = rows.map((r, i) => {
+    const p = r.p, k = r.k, ok = r.lack.length === 0;
+    return `<div class="apc">
+      <h4>${esc(p.display_name || '(이름 없음)')}
+        <span class="tag">${r.shop ? '마사지샵' : '프리랜서'}</span>
+        <span class="tag">${esc(p.kind === 'therapist' ? '홈뷰티' : '마사지')}</span></h4>
+      <div class="meta">신청 ${esc(d(p.created_at))} · ${esc(p.service_area || '지역 미입력')}</div>
+      ${p.bio ? `<div class="meta">${esc(p.bio)}</div>` : ''}
+      <div class="meta">📞 ${esc(k.contact || '-')} · 🏦 ${esc(k.bank_name || '')} ${esc(k.bank_account || '')}</div>
+      <div class="docs">
+        ${doc(r.idF, '신분증 앞')}${doc(r.idB, '신분증 뒤')}
+        ${r.shop ? doc(r.lic, '사업자 등록증') : ''}
+        ${r.cert ? doc(r.cert, '자격증') : '<span class="miss">자격증 없음 (선택)</span>'}
+      </div>
+      ${ok ? '' : `<div class="why">${esc(r.lack.join(' · '))} 이(가) 없어 승인할 수 없습니다.</div>`}
+      <div class="act">
+        <button class="btn-ok" data-ok="${esc(p.id)}"${ok ? '' : ' disabled'}>승인</button>
+        <button class="btn-no" data-no="${esc(p.id)}">반려 (사유 입력)</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+const REJECT_WHY = ['신분증 사진이 흐리거나 식별이 어렵습니다',
+                    '신분증 정보와 입력한 정보가 다릅니다',
+                    '계좌 정보가 잘못되었거나 명의가 다릅니다',
+                    '사업자 등록증이 필요합니다',
+                    '직접 입력'];
+
+async function reviewApp(id, status, reason) {
+  // 승인과 인증은 다른 것이다. 승인은 '목록에 노출한다', 인증(✓)은 '신분증을 확인했다' 는 뜻이다.
+  // 예전에 승인하면 is_verified 가 같이 켜져서 서류 없는 사람에게 ✓ 가 붙은 적이 있다. 섞지 않는다.
+  const patch = { application_status: status, is_active: status === 'approved',
+    reviewed_at: new Date().toISOString(), reject_reason: status === 'rejected' ? (reason || null) : null };
+  const { data: me } = await sb.auth.getUser();
+  if (me && me.user) patch.reviewed_by = me.user.id;
+
+  const { error } = await sb.from('providers').update(patch).eq('id', id);
+  if (error) { alert('실패 — ' + error.message); return; }
+
+  // 신청자에게 결과를 알린다. 알림이 실패해도 승인 자체는 끝난 것이라 막지 않는다.
+  try {
+    const { data: pr } = await sb.from('providers')
+      .select('profile_id, owner_id').eq('id', id).single();
+    const uid = pr && (pr.profile_id || pr.owner_id);
+    if (uid) await sb.from('notifications').insert({
+      user_id: uid,
+      title: status === 'approved' ? '등록 승인 안내' : '등록 반려 안내',
+      body: status === 'approved'
+        ? '등록 신청이 승인되었습니다. 이제 고객 목록에 보이고 예약을 받을 수 있습니다.'
+        : '등록 신청이 반려되었습니다.\n사유: ' + (reason || '-')
+          + '\n계정 → 제공자 등록 신청에서 고쳐서 다시 보내실 수 있습니다.',
+      kind: status === 'approved' ? 'approved' : 'rejected' });
+  } catch (e) {}
+
+  loadApps();
+  loadRoster();   // 승인하면 마사지사 명단에도 바로 들어간다
+  loadData();
+}
+
+// 버튼은 다시 그릴 때마다 사라지므로 문서에 한 번만 건다.
+document.addEventListener('click', (e) => {
+  const ok = e.target.closest('[data-ok]');
+  if (ok) {
+    const r = (APPS || []).find(x => x.p.id === ok.dataset.ok);
+    const nm = r ? (r.p.display_name || '이 신청') : '이 신청';
+    if (confirm(nm + ' 님을 승인합니다.\n승인하면 바로 고객 목록에 보입니다. 진행할까요?'))
+      reviewApp(ok.dataset.ok, 'approved');
+    return;
+  }
+  const no = e.target.closest('[data-no]');
+  if (no) {
+    const pick = prompt('반려 사유를 고르거나 직접 적어 주세요.\n\n'
+      + REJECT_WHY.map((w, i) => (i + 1) + '. ' + w).join('\n')
+      + '\n\n번호 또는 사유를 입력하세요. 사유는 신청자에게 그대로 전달됩니다.', '1');
+    if (pick == null) return;
+    let why = String(pick).trim();
+    const n = Number(why);
+    if (n >= 1 && n <= REJECT_WHY.length - 1) why = REJECT_WHY[n - 1];
+    else if (n === REJECT_WHY.length) { why = (prompt('사유를 적어 주세요.', '') || '').trim(); }
+    if (!why) { alert('사유를 적어 주세요.'); return; }
+    reviewApp(no.dataset.no, 'rejected', why);
+  }
 });
 
 // ── 날짜별 유입 표 ───────────────────────────
@@ -840,8 +1010,9 @@ $('q').oninput = drawRoster;
 $('mq').oninput = drawMembers;
 ['rtier', 'rowe', 'rpend'].forEach(id => $(id).onchange = drawRoster);
 ['mtype', 'mbk'].forEach(id => $(id).onchange = drawMembers);
+['apsort', 'apok'].forEach(id => $(id).onchange = drawApps);
 $('tzero').onchange = drawTraffic;
-$('rf').onclick = () => { loadData(); loadRoster(); loadMembers(); };
+$('rf').onclick = () => { loadData(); loadRoster(); loadMembers(); loadApps(); };
 $('out').onclick = async () => { await sb.auth.signOut(); location.reload(); };
 
 $('go').onclick = async () => {
@@ -899,6 +1070,7 @@ async function start() {
   loadData();
   loadRoster();
   loadMembers();
+  loadApps();
 }
 start();
 </script>
